@@ -11,14 +11,17 @@
 1. git log (過往的commit紀錄) /git log --oneline (顯示commit訊息以及commit id，以一行的方式精簡地顯示出commit歷史。)
 2. git diff (專案檔案之間的差異就能用這個指令)
 3. git pull (把本地端的東西更新到與remote repository相同的狀態)
-4. git add (如果新增/刪除/更新了檔案後，可以用git add這個指令來將更動存到暫存區staging area之中。
-            不知道自己有沒有對檔案進行更動可以先用上面有講過的git status來確認看看目前的檔案狀況。)
+4. git add (如果新增/刪除/更新了檔案後，可以用git add這個指令來將更動存到暫存區staging area之中。不知道有沒有對檔案進行更動可以先用"git status"來確認看看目前的檔案狀況。)
+    ```
     git add 用法:
     $ git add [檔案名稱]
     $ git add .
     $ git add *
+    ```
 5. git commit (把在暫存區staging area內的更動存入local repository)
+    ```
     git commit 用法:
     $ git commit 
     $ git commit -m "commit訊息打在引號裡面~"
+    ```
 6. git push (把本地端的東西推上remote repository)
