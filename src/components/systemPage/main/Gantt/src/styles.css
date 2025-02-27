@@ -1,0 +1,212 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 1px; /* 增加外邊距，確保每間手術房之間有間距 */
+  border: 3px solid #ddd;
+  border-radius: 10px;
+  flex-wrap: nowrap; /* 禁止換行 */
+  align-items: stretch;
+  overflow-x: auto; /* 允許水平滾動 */
+  overflow-y: hidden; /* 隱藏垂直滾動條 */
+  flex-direction: row;
+  height: auto; /* 設置每個手術房的固定高度 */
+  min-height: 80px; /* 設置最小高度，確保不會太矮 */
+  white-space: nowrap; /* 防止內容換行 */ 
+  padding-left: 10px; /* 為房間名稱預留內邊距 */
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 10px;
+  border: 2.5px solid #ccc;
+  border-radius: 15px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.item.green {
+  background-color: #19ec9f;
+}
+
+.item.green:hover {
+  background-color: #86db1779;
+}
+
+.item.yellow {
+  background-color: #ebeb0a;
+}
+
+.item.yellow:hover {
+  background-color: #e7e71a79;
+}
+
+.item.red {
+  background-color: #e63030;
+}
+
+.item.red:hover {
+  background-color: #e2969679;
+}
+
+.item.blue {
+  background-color: #362de9;
+  color: rgb(208, 194, 230);
+}
+
+.item:active {
+  transform: scale(1.1);  
+}
+
+.item.dragging {
+  background-color: orange;
+  opacity: 0.5;
+}
+
+.scroll-container {
+  overflow: auto;
+}
+
+.time-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 使 wrapper 佔滿整個視窗高度*/
+  overflow-y: auto; /* 允許垂直滾動 */
+  overflow-x: hidden; /* 防止水平滾動條出現在外層 */
+  margin-top: 55px; /* 預留空白 */
+}
+
+.time-scale-container {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background-color: #f0f0f0;
+  z-index: 2; /* 確保時間刻度在其他元素上方 */
+  padding-left: 10px; 
+}
+
+.time-scale {
+  display: flex;
+  justify-content: flex-start;
+  height: 50px;
+  position: relative;
+  width: fit-content;
+  min-width: 100%;
+  background-color: #f0f0f0;
+  border-bottom: 2px solid #333;
+}
+
+.time-scale-mark {
+  position: relative;
+  width: 25px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* 刻度線基礎樣式 */
+.time-scale-mark::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-color: #333;
+  transform-origin: bottom left;
+}
+
+/* 不同類型的刻度線 */
+.time-scale-mark.hour::after {
+  width: 2px;
+  height: 30px;
+  background-color: #333;
+}
+
+.time-scale-mark.half::after {
+  width: 1px;
+  height: 20px;
+  background-color: #666;
+}
+
+.time-scale-mark.quarter::after {
+  width: 1px;
+  height: 15px;
+  background-color: #999;
+}
+
+/* 時間文字樣式 */
+.time-scale-hour-start {
+  font-size: 12px;
+  position: absolute;
+  bottom: 30px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* 8:30 特殊時間文字的樣式 */
+.time-scale-mark:first-child .time-scale-hour-start {
+  transform: none; /* 移除置中效果 */
+  left: 1px; /* 向右偏移 */
+}
+
+.gantt-chart {
+  margin-top: 10px; /* 調整甘特圖的上邊距，避免被時間刻度遮擋 */
+  height: calc(100vh - 30px); /* 調整甘特圖的高度 */
+  white-space: nowrap; /* 防止甘特圖換行 */
+}
+
+.pdf-button {
+  position: absolute;
+  top: 12.5%;
+  right: 100px;
+  width: 80px; /* 調整按鈕寬度 */
+  height: 40px; /* 調整按鈕高度 */
+  background-color: #1cbb3f;
+  color: white;
+  font-size: 14px;
+  border-radius: 100px;
+  cursor: pointer;
+  transform: translateY(-80%);
+  z-index: 3; /* 確保按鈕顯示在時間刻度之上 */
+}
+
+.pdf-button:hover {
+  background-color: #d2e9c3;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 18px;
+  color: #666;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #e45555;
+  font-size: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+  font-size: 16px;
+}
