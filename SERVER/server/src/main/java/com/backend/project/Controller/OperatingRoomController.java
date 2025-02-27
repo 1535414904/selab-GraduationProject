@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Service.OperatingRoomService;
 
-@CrossOrigin(origins = { "*" })
+@CrossOrigin(origins = { "http://localhost:5173/", "https://hadog-hub.github.io/" })
 @RestController
 @RequestMapping("/api")
 public class OperatingRoomController {
@@ -15,3 +15,4 @@ public class OperatingRoomController {
     private OperatingRoomService operatingRoomService;
     
 }
+

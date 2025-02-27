@@ -2,9 +2,6 @@ package com.backend.project.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -41,11 +38,7 @@ public class Department {
     @OneToMany(mappedBy = "department")
     private List<ChiefSurgeon> chiefSurgeons;
 
-    @JsonProperty("chiefSurgeonsCount")
-    public int getChiefSurgeonsCount() {
-        return chiefSurgeons != null ? chiefSurgeons.size() : 0;
-    }
-
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "department")
     private List<OperatingRoom> operatingRooms;
+    
 }

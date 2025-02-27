@@ -1,9 +1,11 @@
 package com.backend.project.model;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,7 +19,7 @@ public class Surgery {
     @Column(name = "application_id")
     private String applicationId;
 
-    public String getId() {
+    public String getApplicationId() {
         return applicationId;
     }
 
@@ -114,25 +116,71 @@ public class Surgery {
     }
 
     @Column(name = "estimated_surgery_time")
-    private int estimatedSurgeryTime;
+    private Integer estimatedSurgeryTime;
 
-    public int getEstimatedSurgeryTime() {
+    public Integer getEstimatedSurgeryTime() {
         return estimatedSurgeryTime;
     }
 
-    public void setEstimatedSurgeryTime(int estimatedSurgeryTime) {
+    public void setEstimatedSurgeryTime(Integer estimatedSurgeryTime) {
         this.estimatedSurgeryTime = estimatedSurgeryTime;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chief_surgeon_employee_id")
     private ChiefSurgeon chiefSurgeon;
 
-    @ManyToOne
+    public ChiefSurgeon getChiefSurgeon() {
+        return chiefSurgeon;
+    }
+
+    public void setChiefSurgeon(ChiefSurgeon chiefSurgeon) {
+        this.chiefSurgeon = chiefSurgeon;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "username")
     private User user;
 
-    @ManyToOne
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "operating_room_id")
     private OperatingRoom operatingRoom;
+
+    public OperatingRoom getOperatingRoom() {
+        return operatingRoom;
+    }
+
+    public void setOperatingRoom(OperatingRoom operatingRoom) {
+        this.operatingRoom = operatingRoom;
+    }
+
+    public String getFormattedTime() {
+        try {
+            if (this.date == null) {
+                return "00:00";
+            }
+            return new SimpleDateFormat("HH:mm").format(this.date);
+        } catch (Exception e) {
+            return "00:00";
+        }
+    }
+
+    public String getChiefSurgeonName() {
+        try {
+            return this.chiefSurgeon != null ? this.chiefSurgeon.getName() : "未指定醫師";
+        } catch (Exception e) {
+            return "未指定醫師";
+        }
+    }
+
+    public String getOperatingRoomName() {
+        return this.operatingRoom != null ? this.operatingRoom.getName() : "未指定手術室";
+    }
 }
