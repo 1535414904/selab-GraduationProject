@@ -1,9 +1,13 @@
 import UserList from "./UserList";
 import "../SystemPage.css";
+import { useEffect } from "react";
 
 /* eslint-disable react/prop-types */
 
 function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
+  useEffect(() => {
+      toggleMainPage("mainPage");
+  }, [toggleMainPage]);
   return (
     <div className="w-full bg-gradient-to-r from-blue-700 to-blue-900 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,7 +114,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
             )}
 
             {/* Quick Access Icons */}
-            <div className="hidden md:flex items-center ml-4 space-x-3">
+            {/* <div className="hidden md:flex items-center ml-4 space-x-3">
               <button className="text-white hover:text-blue-200 transition duration-300">
                 <svg
                   className="h-6 w-6"
@@ -158,7 +162,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                   <line x1="15" y1="9" x2="9" y2="15"></line>
                 </svg>
               </button>
-            </div>
+            </div> */}
 
             {/* User Profile */}
             <div className="ml-4">

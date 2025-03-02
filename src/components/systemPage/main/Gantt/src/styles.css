@@ -33,6 +33,8 @@
   box-sizing: border-box;
   cursor: pointer;
   transition: transform 0.1s ease;
+  position: absolute; /* 讓手術區塊可以自由移動 */
+  z-index: 1; /* 預設 z-index */
 }
 
 .item.green {
@@ -69,8 +71,12 @@
 }
 
 .item.dragging {
-  background-color: orange;
-  opacity: 0.5;
+  background-color: orange !important;
+  opacity: 1;
+  z-index: 9999 !important; /* 提高層級，確保在最上方 */
+   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: grabbing;
+  
 }
 
 .scroll-container {
@@ -83,7 +89,7 @@
   height: 100vh; /* 使 wrapper 佔滿整個視窗高度*/
   overflow-y: auto; /* 允許垂直滾動 */
   overflow-x: hidden; /* 防止水平滾動條出現在外層 */
-  margin-top: 55px; /* 預留空白 */
+  /* margin-top: 55px; 預留空白 */
 }
 
 .time-scale-container {
@@ -163,6 +169,11 @@
   margin-top: 10px; /* 調整甘特圖的上邊距，避免被時間刻度遮擋 */
   height: calc(100vh - 30px); /* 調整甘特圖的高度 */
   white-space: nowrap; /* 防止甘特圖換行 */
+}
+.gantt-container {
+  position: relative;
+  overflow: visible !important;
+  height: auto;
 }
 
 .pdf-button {

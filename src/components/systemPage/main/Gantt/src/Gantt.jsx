@@ -3,7 +3,7 @@ import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
 import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
-import "./styles.css";
+// import "./styles.css";
 
 function Gantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
@@ -15,7 +15,7 @@ function Gantt({ rows, setRows }) {
 
   useEffect(() => {
     fetchSurgeryData(setRows, setLoading, setError);
-  }, [setRows]);
+  }, []);
 
   // Add window resize listener
   useEffect(() => {
@@ -38,7 +38,7 @@ function Gantt({ rows, setRows }) {
   }, []);
 
   return (
-    <div className="container w-full bg-white rounded-lg shadow-md p-4 md:p-6">
+    <div className=" w-full bg-white rounded-lg shadow-md p-4 md:p-6">
       {loading && (
         <div className="loading flex justify-center items-center h-40">
           <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg">
@@ -163,8 +163,7 @@ function Gantt({ rows, setRows }) {
               <p className="font-medium">使用提示</p>
               <ul className="mt-1 list-disc list-inside text-blue-700 space-y-1">
                 <li>可以橫向滾動查看不同時間段的排程</li>
-                <li>點擊「匯出 PDF」按鈕可將當前甘特圖導出為 PDF 檔案</li>
-                <li>奇數行與偶數行背景顏色不同，方便區分不同手術室</li>
+                <li>點擊「生成 PDF」按鈕可將當前甘特生成圖為 PDF 檔案</li>
               </ul>
             </div>
           </div>
@@ -184,8 +183,6 @@ function Gantt({ rows, setRows }) {
                   <div
                     ref={ganttChartRef}
                     style={{
-                      transform: "translateZ(0)", // Enable hardware acceleration
-                      willChange: "transform", // Hint to browser that this element will change
                       position: "relative", // Ensure child elements are positioned correctly
                       minHeight: "fit-content", // Ensure container expands to fit content
                     }}
