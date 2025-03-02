@@ -1,13 +1,13 @@
-import React from 'react';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
-import RoomItem from '../ROOM/RoomItem';
+import React from "react";
+import { Droppable, Draggable } from "react-beautiful-dnd";
+import RoomItem from "../ROOM/RoomItem";
 
 function DroppableContainer({ room, roomIndex }) {
-  const fixedHeight = '60px';
+  const fixedHeight = "60px";
 
   return (
-    <Droppable 
-      droppableId={`droppable-${roomIndex}`} 
+    <Droppable
+      droppableId={`droppable-${roomIndex}`}
       direction="horizontal"
       type="SURGERY_PAIR"
     >
@@ -15,19 +15,21 @@ function DroppableContainer({ room, roomIndex }) {
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'row',
+          style={{
+            display: "flex",
+            flexDirection: "row",
             minHeight: fixedHeight,
-            minWidth: '100px', // 確保空房間也有最小寬度
-            background: snapshot.isDraggingOver ? 'rgba(100, 0, 100, 0.5)' : 'transparent',
-            transition: 'background 0.2s ease'
+            minWidth: "100px", // 確保空房間也有最小寬度
+            background: snapshot.isDraggingOver
+              ? "rgba(100, 0, 100, 0.5)"
+              : "transparent",
+            transition: "background 0.2s ease",
           }}
         >
           {/* 確保 room.data 存在且是陣列 */}
-          {(room.data && room.data.length > 0 ? 
-            Array.from({ length: Math.ceil(room.data.length / 2) }) : 
-            [null]
+          {(room.data && room.data.length > 0
+            ? Array.from({ length: Math.ceil(room.data.length / 2) })
+            : [null]
           ).map((_, index) => {
             const itemIndex = index * 2;
             const surgery = room.data?.[itemIndex];
@@ -41,9 +43,9 @@ function DroppableContainer({ room, roomIndex }) {
             if (!surgery) return null;
 
             return (
-              <Draggable 
-                key={`${surgery.id}-${itemIndex}`} 
-                draggableId={`draggable-${roomIndex}-${itemIndex}`} 
+              <Draggable
+                key={`${surgery.id}-${itemIndex}`}
+                draggableId={`draggable-${roomIndex}-${itemIndex}`}
                 index={index}
               >
                 {(provided, snapshot) => (
@@ -52,7 +54,7 @@ function DroppableContainer({ room, roomIndex }) {
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     style={{
-                      display: 'flex',
+                      display: "flex",
                       height: fixedHeight,
                       opacity: snapshot.isDragging ? 0.8 : 1,
                       ...provided.draggableProps.style,

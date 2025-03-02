@@ -18,35 +18,47 @@ import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 }*/
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
-    const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState([]);
 
-    const onDragEnd = (result) => {
-        handleDragEnd(result, rows, setRows);
-    };
+  const onDragEnd = (result) => {
+    handleDragEnd(result, rows, setRows);
+  };
 
-    return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div className="main-wrapper">
-                {mainState === "mainPage" && (
-                    <Gantt 
-                        rows={rows} 
-                        setRows={setRows}
-                    />
-                )}
-                {mainState === "userProfile" && (
-                    <UserProfile user={user} onUpdateUser={onUpdateUser} />
-                )}
-                {mainState === "accountMgr" && (
-                    <AccountMgrWrapper user={user} onUpdateUser={onUpdateUser} reloadKey={reloadKey} />
-                )}
-                {mainState === "departmentMgr" && (
-                    <DepartmentMgrWrapper reloadKey={reloadKey} />
-                )}
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex flex-col w-full min-h-screen bg-gray-100">
+        <div className="flex-grow p-4 md:p-6">
+          {mainState === "mainPage" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <Gantt rows={rows} setRows={setRows} />
             </div>
-        </DragDropContext>
-    );
+          )}
+
+          {mainState === "userProfile" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <UserProfile user={user} onUpdateUser={onUpdateUser} />
+            </div>
+          )}
+
+          {mainState === "accountMgr" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <AccountMgrWrapper
+                user={user}
+                onUpdateUser={onUpdateUser}
+                reloadKey={reloadKey}
+              />
+            </div>
+          )}
+
+          {mainState === "departmentMgr" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <DepartmentMgrWrapper reloadKey={reloadKey} />
+            </div>
+          )}
+        </div>
+      </div>
+    </DragDropContext>
+  );
 }
-
-
 
 export default MainWrapper;
