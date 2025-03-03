@@ -132,3 +132,4 @@ const GanttFilter = ({ onFilterChange }) => {
 };
 
 export default GanttFilter;
+
