@@ -3,7 +3,7 @@ import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
 import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
-// import "./styles.css";
+import "./styles.css";
 
 function Gantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
