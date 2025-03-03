@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import "../../styles.css"; // ✅ 引入外部 CSS
 
 const TimeWrapper = ({ children }) => {
   const startTime = 8 * 60 + 30; // 8:30 converted to minutes
@@ -46,38 +47,19 @@ const TimeWrapper = ({ children }) => {
   }
 
   return (
-    <div
-      className="relative w-full h-screen overflow-y-auto overflow-x-hidden mt-14"
-      ref={wrapperRef}
-      onWheel={handleScroll}
-    >
-      <div
-        className="sticky top-0 w-full bg-gray-100 z-10 pl-3"
-        onWheel={handleHorizontalScroll}
-      >
-        <div
-          className="flex justify-start h-12 relative w-fit min-w-full bg-gray-100 border-b-2 border-gray-800"
-          ref={timeScaleRef}
-          style={{ overflow: "visible" }}
-        >
+    <div className="time-wrapper" ref={wrapperRef} onWheel={handleScroll}>
+      <div className="time-scale-container" onWheel={handleHorizontalScroll}>
+        <div className="time-scale" ref={timeScaleRef}>
           {timeIntervals.map((interval, index) => (
             <div
               key={index}
-              className={`relative w-6 h-full flex justify-center items-end ${
-                interval.type === "hour"
-                  ? "time-mark-hour"
-                  : interval.type === "half"
-                  ? "time-mark-half"
-                  : "time-mark-quarter"
-              }`}
+              className={`time-scale-mark ${interval.type}`}
             >
               {(interval.type === "hour" || interval.isStartTime) && (
                 <div
-                  className={`text-xs absolute bottom-8 ${
-                    interval.isStartTime
-                      ? "transform-none left-px"
-                      : "transform -translate-x-1/2"
-                  } whitespace-nowrap`}
+                  className={`time-scale-hour-start ${
+                    interval.isStartTime ? "start-time" : ""
+                  }`}
                 >
                   {interval.time}
                 </div>
@@ -86,44 +68,7 @@ const TimeWrapper = ({ children }) => {
           ))}
         </div>
       </div>
-      <div className="mt-3 h-[calc(100vh-30px)] whitespace-nowrap">
-        {children}
-      </div>
-
-      <style jsx>{`
-        .time-mark-hour::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 2px;
-          height: 30px;
-          background-color: #333;
-          transform-origin: bottom left;
-        }
-
-        .time-mark-half::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 1px;
-          height: 20px;
-          background-color: #666;
-          transform-origin: bottom left;
-        }
-
-        .time-mark-quarter::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 1px;
-          height: 15px;
-          background-color: #999;
-          transform-origin: bottom left;
-        }
-      `}</style>
+      <div className="time-content">{children}</div>
     </div>
   );
 };

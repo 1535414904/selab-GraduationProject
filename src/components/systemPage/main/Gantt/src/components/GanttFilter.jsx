@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
+import "../styles.css"; // ✅ 引入外部 CSS
 
 const GanttFilter = ({ onFilterChange }) => {
-  const [isOpen, setIsOpen] = useState(false); // 控制篩選器顯示狀態
+  const [isOpen, setIsOpen] = useState(false);
   const filterOptions = [
     { value: "department", label: "科別" },
     { value: "roomType", label: "手術房類型" },
@@ -60,40 +61,29 @@ const GanttFilter = ({ onFilterChange }) => {
 
   return (
     <>
-      {/* 側邊篩選按鈕 */}
-      <button
-        className="fixed left-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-2 rounded-r-md shadow-lg"
-        onClick={() => setIsOpen(true)}
-      >
+      {/* ✅ 側邊篩選按鈕 */}
+      <button className="filter-button" onClick={() => setIsOpen(true)}>
         篩選
       </button>
 
-      {/* 側邊篩選器 */}
-      <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* 篩選器標題 */}
-        <div className="flex justify-between items-center bg-blue-600 text-white px-4 py-3">
-          <h3 className="text-lg font-semibold">篩選條件</h3>
-          <button onClick={() => setIsOpen(false)} className="text-xl">✕</button>
+      {/* ✅ 側邊篩選器 */}
+      <div className={`filter-sidebar ${isOpen ? "open" : ""}`}>
+        {/* ✅ 篩選器標題 */}
+        <div className="filter-header">
+          <h3>篩選條件</h3>
+          <button onClick={() => setIsOpen(false)} className="close-button">✕</button>
         </div>
 
-        <div className="p-4">
-          {/* 新增篩選條件 */}
-          <Select
-            options={filterOptions}
-            onChange={handleAddFilter}
-            placeholder="新增篩選條件..."
-          />
+        <div className="filter-body">
+          {/* ✅ 新增篩選條件 */}
+          <Select options={filterOptions} onChange={handleAddFilter} placeholder="新增篩選條件..." />
 
-          {/* 已選擇的篩選條件 */}
+          {/* ✅ 已選擇的篩選條件 */}
           {selectedFilters.map((filter) => (
-            <div key={filter.value} className="mt-3 border rounded-md p-3 bg-gray-100">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{filter.label}</span>
-                <button onClick={() => handleRemoveFilter(filter.value)} className="text-red-500 hover:text-red-700">✕</button>
+            <div key={filter.value} className="filter-box">
+              <div className="filter-box-header">
+                <span>{filter.label}</span>
+                <button onClick={() => handleRemoveFilter(filter.value)} className="remove-button">✕</button>
               </div>
 
               {filter.value === "department" && (
@@ -124,13 +114,13 @@ const GanttFilter = ({ onFilterChange }) => {
               )}
 
               {filter.value === "overtime" && (
-                <div className="mt-2 flex items-center">
+                <div className="filter-checkbox">
                   <input
                     type="checkbox"
                     checked={filterValues.overtime || false}
                     onChange={(e) => setFilterValues({ ...filterValues, overtime: e.target.checked })}
                   />
-                  <label className="ml-2">僅顯示超時手術</label>
+                  <label>僅顯示超時手術</label>
                 </div>
               )}
             </div>

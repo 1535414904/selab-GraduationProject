@@ -1,5 +1,5 @@
 import React from "react";
-import "./SurgeryModal.css";
+import "../../styles.css";
 
 function SurgeryModal({ surgery, onClose }) {
   if (!surgery) return null;
