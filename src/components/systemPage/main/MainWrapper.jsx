@@ -7,16 +7,6 @@ import { useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 
-/*function MainWrapper({user, mainState, onUpdateUser, reloadKey}){
-
-    return <div className="main-wrapper">
-        {mainState == "mainPage" && <div />}
-        {mainState == "userProfile" && <UserProfile user={user} onUpdateUser={onUpdateUser}/>}
-        {mainState == "accountMgr" && <AccountMgrWrapper reloadKey={reloadKey}/>}
-        {mainState == "departmentMgr" && <DepartmentMgrWrapper reloadKey={reloadKey}/>}
-    </div>
-}*/
-
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
   const [rows, setRows] = useState([]);
 
@@ -27,6 +17,11 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="flex flex-col w-full min-h-screen bg-gray-100">
+        <style jsx global>{`
+          .react-beautiful-dnd-dragging {
+            z-index: 9999 !important;
+          }
+        `}</style>
         <div className="flex-grow p-4 md:p-6">
           {mainState === "mainPage" && (
             <div className="transition-all duration-300 ease-in-out">

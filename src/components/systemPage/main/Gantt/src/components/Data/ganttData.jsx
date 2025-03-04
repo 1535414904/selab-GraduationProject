@@ -59,7 +59,20 @@ export const formatSurgeryData = (surgeries) => {
         surgery: `${surgery.surgeryName || '未命名手術'} (${surgery.patientName || '未知病患'})`,
         startTime: "08:30",
         duration: surgery.estimatedSurgeryTime || 60,
-        isCleaningTime: false
+        isCleaningTime: false,
+        // 保存原始手術資料的所有欄位，用於詳細資訊顯示
+        applicationId: surgery.applicationId,
+        medicalRecordNumber: surgery.medicalRecordNumber,
+        patientName: surgery.patientName,
+        date: surgery.date,
+        surgeryName: surgery.surgeryName,
+        chiefSurgeonName: surgery.chiefSurgeonName,
+        operatingRoomName: surgery.operatingRoomName,
+        estimatedSurgeryTime: surgery.estimatedSurgeryTime,
+        anesthesiaMethod: surgery.anesthesiaMethod,
+        surgeryReason: surgery.surgeryReason,
+        specialOrRequirements: surgery.specialOrRequirements,
+        user: surgery.user
       };
 
       // 清潔時間項目

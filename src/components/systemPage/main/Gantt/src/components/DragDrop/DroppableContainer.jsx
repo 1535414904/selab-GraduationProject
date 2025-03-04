@@ -57,6 +57,7 @@ function DroppableContainer({ room, roomIndex }) {
                       display: "flex",
                       height: fixedHeight,
                       opacity: snapshot.isDragging ? 0.8 : 1,
+                      zIndex: snapshot.isDragging ? 9999 : 'auto', // 當拖曳時，將 z-index 設置為最高值
                       ...provided.draggableProps.style,
                     }}
                   >

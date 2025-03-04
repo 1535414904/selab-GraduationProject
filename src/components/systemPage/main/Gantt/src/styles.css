@@ -21,80 +21,67 @@
   padding-left: 10px; /* 為房間名稱預留內邊距 */
 }
 
-/* styles/roomItem.css */
-
-.room-item {
+.item {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
-  padding: 4px;
-  border: 2px solid #ccc;
+  height: 100%;
+  padding: 10px;
+  border: 2.5px solid #ccc;
   border-radius: 15px;
-  transition: transform 0.1s ease-in-out;
-  position: relative;
-  align-self: flex-start;
-  z-index: 1;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  position: absolute; /* 讓手術區塊可以自由移動 */
+  z-index: 1; /* 預設 z-index */
 }
 
-/* ✅ 拖動時的樣式 */
-.room-item.dragging {
-  background-color: orange !important;
-  opacity: 0.5 !important;
-  z-index: 9999 !important;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-  cursor: grabbing;
-}
-
-/* ✅ 顏色分類 */
-.room-item.green {
+.item.green {
   background-color: #19ec9f;
 }
 
-.room-item.green:hover {
+.item.green:hover {
   background-color: #86db1779;
 }
 
-.room-item.yellow {
+.item.yellow {
   background-color: #ebeb0a;
 }
 
-.room-item.yellow:hover {
+.item.yellow:hover {
   background-color: #e7e71a79;
 }
 
-.room-item.red {
+.item.red {
   background-color: #e63030;
-  color: white;
 }
 
-.room-item.red:hover {
+.item.red:hover {
   background-color: #e2969679;
 }
 
-.room-item.blue {
+.item.blue {
   background-color: #362de9;
   color: rgb(208, 194, 230);
 }
 
-.room-item.blue:hover {
-  background-color: #2925b8;
+.item:active {
+  transform: scale(1.1);  
 }
-
-/* ✅ 點擊時的縮放效果 */
-.room-item:active {
-  transform: scale(1.1);
-}
-
 
 .item.dragging {
   background-color: orange !important;
   opacity: 1;
   z-index: 9999 !important; /* 提高層級，確保在最上方 */
-   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
   cursor: grabbing;
-  
+  position: relative !important; /* 確保拖曳時的位置正確 */
+}
+
+/* 添加新的樣式，確保拖曳中的元素始終在最上層 */
+.react-beautiful-dnd-dragging {
+  z-index: 9999 !important;
 }
 
 .scroll-container {
@@ -107,7 +94,6 @@
   height: 100vh; /* 使 wrapper 佔滿整個視窗高度*/
   overflow-y: auto; /* 允許垂直滾動 */
   overflow-x: hidden; /* 防止水平滾動條出現在外層 */
-  /* margin-top: 55px; 預留空白 */
 }
 
 .time-scale-container {
@@ -193,11 +179,7 @@
   overflow: visible !important;
   height: auto;
 }
-.gantt-container {
-  position: relative;
-  overflow: visible !important;
-  height: auto;
-}
+
 .pdf-button {
   position: absolute;
   top: 12.5%;
@@ -244,307 +226,4 @@
   height: 200px;
   color: #666;
   font-size: 16px;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  z-index: 100000000;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-}
-
-.close-button:hover {
-  color: #333;
-}
-
-.modal-body {
-  color: #333;
-}
-
-.info-group {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-}
-
-.info-group h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #2c3e50;
-}
-
-.info-group p {
-  margin: 8px 0;
-  line-height: 1.5;
-}
-
-.info-group strong {
-  color: #2c3e50;
-  margin-right: 8px;
-} 
-/* ✅ 手術室外框 */
-.room-section {
-  position: relative;
-  padding: 8px 0;
-}
-
-/* ✅ 手術室標題 */
-.room-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 4px 0;
-  padding-left: 12px;
-  color: #333;
-}
-
-/* ✅ 手術室內部區塊 */
-.room-container {
-  position: relative;
-  z-index: 0;
-  overflow: visible;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  padding: 8px;
-  border: 1px solid #ddd;
-}
-/* styles/ganttFilter.css */
-
-/* ✅ 篩選按鈕 */
-.filter-button {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #1e40af;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 0 5px 5px 0;
-  cursor: pointer;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
-
-.filter-button:hover {
-  background-color: #2563eb;
-}
-
-/* ✅ 篩選側邊欄 */
-.filter-sidebar {
-  position: fixed;
-  top: 0;
-  left: -300px; /* 預設隱藏 */
-  width: 280px;
-  height: 100vh;
-  background: white;
-  box-shadow: 3px 0px 5px rgba(0, 0, 0, 0.1);
-  transition: left 0.3s ease-in-out;
-  overflow-y: auto;
-  z-index: 100;
-}
-
-/* ✅ 當篩選側邊欄開啟時 */
-.filter-sidebar.open {
-  left: 0;
-}
-
-/* ✅ 篩選側邊欄標題 */
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #1e40af;
-  color: white;
-  padding: 12px 16px;
-  font-size: 16px;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: white;
-}
-
-.close-button:hover {
-  color: #f8fafc;
-}
-
-/* ✅ 篩選條件內容 */
-.filter-body {
-  padding: 16px;
-}
-
-/* ✅ 單個篩選條件框 */
-.filter-box {
-  background: #f1f5f9;
-  padding: 12px;
-  border-radius: 5px;
-  margin-top: 12px;
-}
-
-.filter-box-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-}
-
-/* ✅ 刪除篩選條件按鈕 */
-.remove-button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: red;
-}
-
-.remove-button:hover {
-  color: darkred;
-}
-
-/* ✅ 篩選條件中的 checkbox */
-.filter-checkbox {
-  display: flex;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.filter-checkbox label {
-  margin-left: 6px;
-}
-/* styles/timeWrapper.css */
-
-/* ✅ 外層容器 */
-.time-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100vh; /* 使 wrapper 佔滿整個視窗高度 */
-  overflow-y: auto; /* 允許垂直滾動 */
-  overflow-x: hidden; /* 防止水平滾動條出現在外層 */
-  margin-top: 3.5rem; /* 預留空間 */
-}
-
-/* ✅ 時間刻度區塊 */
-.time-scale-container {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  background-color: #f0f0f0;
-  z-index: 2; /* 確保時間刻度在其他元素上方 */
-  padding-left: 10px;
-  overflow-x: auto;
-}
-
-/* ✅ 時間刻度條 */
-.time-scale {
-  display: flex;
-  justify-content: flex-start;
-  height: 50px;
-  position: relative;
-  width: fit-content;
-  min-width: 100%;
-  background-color: #f0f0f0;
-  border-bottom: 2px solid #333;
-}
-
-/* ✅ 單個時間刻度標記 */
-.time-scale-mark {
-  position: relative;
-  width: 25px;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-/* ✅ 刻度線基礎樣式 */
-.time-scale-mark::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  transform-origin: bottom left;
-}
-
-/* ✅ 小時刻度 */
-.time-scale-mark.hour::after {
-  width: 2px;
-  height: 30px;
-  background-color: #333;
-}
-
-/* ✅ 半小時刻度 */
-.time-scale-mark.half::after {
-  width: 1px;
-  height: 20px;
-  background-color: #666;
-}
-
-/* ✅ 15 分鐘刻度 */
-.time-scale-mark.quarter::after {
-  width: 1px;
-  height: 15px;
-  background-color: #999;
-}
-
-/* ✅ 時間標籤 */
-.time-scale-hour-start {
-  font-size: 12px;
-  position: absolute;
-  bottom: 30px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-/* ✅ 8:30 特殊時間標籤 */
-.time-scale-mark:first-child .time-scale-hour-start {
-  transform: none;
-  left: 1px;
-}
-
-/* ✅ 內容區塊 */
-.time-content {
-  margin-top: 10px;
-  height: calc(100vh - 30px);
-  white-space: nowrap;
 }

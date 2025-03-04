@@ -1,11 +1,14 @@
 import React, { useRef } from "react";
-import "../../styles.css"; // ✅ 引入外部 CSS
 
 const TimeWrapper = ({ children }) => {
   const startTime = 8 * 60 + 30; // 8:30 converted to minutes
   const endTime = 24 * 60; // 24:00 converted to minutes
   const wrapperRef = useRef(null);
   const timeScaleRef = useRef(null);
+
+  // 每15分鐘對應25px
+  const pixelsPerMinute = 25 / 15; // 1.67 px per minute
+  const pixelsPer15Minutes = 25; // 每15分鐘25px
 
   const handleScroll = (event) => {
     if (wrapperRef.current) {
@@ -43,23 +46,50 @@ const TimeWrapper = ({ children }) => {
       time: formatTime(hour, minute),
       type: isHourMark ? "hour" : isHalfHourMark ? "half" : "quarter",
       isStartTime,
+      position: i * pixelsPer15Minutes, // 計算每個時間刻度的位置
     });
   }
 
+  // 計算時間軸的總寬度
+  const totalWidth = totalIntervals * pixelsPer15Minutes;
+
   return (
-    <div className="time-wrapper" ref={wrapperRef} onWheel={handleScroll}>
-      <div className="time-scale-container" onWheel={handleHorizontalScroll}>
-        <div className="time-scale" ref={timeScaleRef}>
+    <div
+      className="relative w-full h-screen overflow-y-auto overflow-x-auto mt-14"
+      ref={wrapperRef}
+      onWheel={handleScroll}
+    >
+      <div
+        className="sticky top-0 w-full bg-gray-100 z-10 pl-3"
+        onWheel={handleHorizontalScroll}
+      >
+        <div
+          className="flex h-12 relative bg-gray-100 border-b-2 border-gray-800"
+          ref={timeScaleRef}
+          style={{ width: `${totalWidth}px`, minWidth: "100%" }}
+        >
           {timeIntervals.map((interval, index) => (
             <div
               key={index}
-              className={`time-scale-mark ${interval.type}`}
+              className={`absolute h-full flex justify-center items-end ${
+                interval.type === "hour"
+                  ? "time-mark-hour"
+                  : interval.type === "half"
+                  ? "time-mark-half"
+                  : "time-mark-quarter"
+              }`}
+              style={{ 
+                left: `${interval.position}px`,
+                width: "1px" // 時間刻度線的寬度
+              }}
             >
               {(interval.type === "hour" || interval.isStartTime) && (
                 <div
-                  className={`time-scale-hour-start ${
-                    interval.isStartTime ? "start-time" : ""
-                  }`}
+                  className={`text-xs absolute bottom-8 ${
+                    interval.isStartTime
+                      ? "transform-none"
+                      : "transform -translate-x-1/2"
+                  } whitespace-nowrap`}
                 >
                   {interval.time}
                 </div>
@@ -68,7 +98,44 @@ const TimeWrapper = ({ children }) => {
           ))}
         </div>
       </div>
-      <div className="time-content">{children}</div>
+      <div className="mt-3 h-[calc(100vh-30px)] whitespace-nowrap">
+        {children}
+      </div>
+
+      <style jsx>{`
+        .time-mark-hour::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 2px;
+          height: 30px;
+          background-color: #333;
+          transform-origin: bottom left;
+        }
+
+        .time-mark-half::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 1px;
+          height: 20px;
+          background-color: #666;
+          transform-origin: bottom left;
+        }
+
+        .time-mark-quarter::after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 1px;
+          height: 15px;
+          background-color: #999;
+          transform-origin: bottom left;
+        }
+      `}</style>
     </div>
   );
 };

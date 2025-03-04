@@ -1,12 +1,11 @@
 import React from "react";
-import DroppableContainer from "../DragDrop/DroppableContainer";
-import "../../styles.css"; // ✅ 引入外部 CSS
+import DroppableContainer from "../DragDrop/DroppableContainer"; // Import DroppableContainer component
 
 function RoomSection({ room, roomIndex }) {
   return (
-    <div className="room-section">
-      <h3 className="room-title">{room.room}</h3>
-      <div className="room-container">
+    <div className="relative">
+      <h3 className="text-sm font-medium my-0.5 pl-3">{room.room}</h3>
+      <div className="relative overflow-visible" style={{ zIndex: 1 }}>
         <DroppableContainer room={room} roomIndex={roomIndex} />
       </div>
     </div>
@@ -14,4 +13,3 @@ function RoomSection({ room, roomIndex }) {
 }
 
 export default RoomSection;
-
