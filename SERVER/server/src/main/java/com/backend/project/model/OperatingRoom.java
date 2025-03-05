@@ -63,6 +63,14 @@ public class OperatingRoom {
     @JoinColumn(name = "department_id")
     private Department department;
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
     @OneToMany(mappedBy = "operatingRoom")
     private List<Surgery> surgeries;
 }

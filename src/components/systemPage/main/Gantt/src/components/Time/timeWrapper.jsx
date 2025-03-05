@@ -55,41 +55,38 @@ const TimeWrapper = ({ children }) => {
 
   return (
     <div
-      className="relative w-full h-screen overflow-y-auto overflow-x-auto mt-14"
+      className="time-wrapper-container"
       ref={wrapperRef}
       onWheel={handleScroll}
     >
       <div
-        className="sticky top-0 w-full bg-gray-100 z-10 pl-3"
+        className="time-scale-header"
         onWheel={handleHorizontalScroll}
       >
         <div
-          className="flex h-12 relative bg-gray-100 border-b-2 border-gray-800"
+          className="time-scale-ruler"
           ref={timeScaleRef}
-          style={{ width: `${totalWidth}px`, minWidth: "100%" }}
+          style={{ width: `${totalWidth}px` }}
         >
           {timeIntervals.map((interval, index) => (
             <div
               key={index}
-              className={`absolute h-full flex justify-center items-end ${
+              className={`time-mark ${
                 interval.type === "hour"
                   ? "time-mark-hour"
                   : interval.type === "half"
                   ? "time-mark-half"
                   : "time-mark-quarter"
               }`}
-              style={{ 
-                left: `${interval.position}px`,
-                width: "1px" // 時間刻度線的寬度
-              }}
+              style={{ left: `${interval.position}px` }}
             >
               {(interval.type === "hour" || interval.isStartTime) && (
                 <div
-                  className={`text-xs absolute bottom-8 ${
+                  className={`time-mark-label ${
                     interval.isStartTime
-                      ? "transform-none"
-                      : "transform -translate-x-1/2"
-                  } whitespace-nowrap`}
+                      ? "time-mark-start"
+                      : ""
+                  }`}
                 >
                   {interval.time}
                 </div>
@@ -98,44 +95,9 @@ const TimeWrapper = ({ children }) => {
           ))}
         </div>
       </div>
-      <div className="mt-3 h-[calc(100vh-30px)] whitespace-nowrap">
+      <div className="time-wrapper-content">
         {children}
       </div>
-
-      <style jsx>{`
-        .time-mark-hour::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 2px;
-          height: 30px;
-          background-color: #333;
-          transform-origin: bottom left;
-        }
-
-        .time-mark-half::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 1px;
-          height: 20px;
-          background-color: #666;
-          transform-origin: bottom left;
-        }
-
-        .time-mark-quarter::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 1px;
-          height: 15px;
-          background-color: #999;
-          transform-origin: bottom left;
-        }
-      `}</style>
     </div>
   );
 };

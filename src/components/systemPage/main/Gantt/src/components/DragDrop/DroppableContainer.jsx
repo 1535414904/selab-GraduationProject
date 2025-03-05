@@ -2,7 +2,7 @@ import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "../ROOM/RoomItem";
 
-function DroppableContainer({ room, roomIndex }) {
+function DroppableContainer({ room, roomIndex, isPinned }) {
   const fixedHeight = "60px";
 
   return (
@@ -10,6 +10,7 @@ function DroppableContainer({ room, roomIndex }) {
       droppableId={`droppable-${roomIndex}`}
       direction="horizontal"
       type="SURGERY_PAIR"
+      isDropDisabled={isPinned}
     >
       {(provided, snapshot) => (
         <div
@@ -22,11 +23,18 @@ function DroppableContainer({ room, roomIndex }) {
             minWidth: "100px", // 確保空房間也有最小寬度
             background: snapshot.isDraggingOver
               ? "rgba(100, 0, 100, 0.5)"
-              : "transparent",
+              : isPinned ? "rgba(254, 226, 226, 0.4)" : "transparent",
             transition: "background 0.2s ease",
+            position: "relative",
           }}
         >
-          {/* 確保 room.data 存在且是陣列 */}
+          {isPinned && (
+            <div 
+              className="absolute inset-0 border-2 border-red-300 rounded-md pointer-events-none"
+              style={{ zIndex: 1 }}
+            ></div>
+          )}
+          
           {(room.data && room.data.length > 0
             ? Array.from({ length: Math.ceil(room.data.length / 2) })
             : [null]
@@ -47,6 +55,7 @@ function DroppableContainer({ room, roomIndex }) {
                 key={`${surgery.id}-${itemIndex}`}
                 draggableId={`draggable-${roomIndex}-${itemIndex}`}
                 index={index}
+                isDragDisabled={isPinned}
               >
                 {(provided, snapshot) => (
                   <div
@@ -58,6 +67,7 @@ function DroppableContainer({ room, roomIndex }) {
                       height: fixedHeight,
                       opacity: snapshot.isDragging ? 0.8 : 1,
                       zIndex: snapshot.isDragging ? 9999 : 'auto', // 當拖曳時，將 z-index 設置為最高值
+                      cursor: isPinned ? 'not-allowed' : 'move',
                       ...provided.draggableProps.style,
                     }}
                   >
@@ -67,6 +77,7 @@ function DroppableContainer({ room, roomIndex }) {
                       roomIndex={roomIndex}
                       fixedHeight={fixedHeight}
                       isDragging={snapshot.isDragging}
+                      isPinned={isPinned}
                     />
                     {cleaning && (
                       <RoomItem
@@ -75,6 +86,7 @@ function DroppableContainer({ room, roomIndex }) {
                         roomIndex={roomIndex}
                         fixedHeight={fixedHeight}
                         isDragging={snapshot.isDragging}
+                        isPinned={isPinned}
                       />
                     )}
                   </div>

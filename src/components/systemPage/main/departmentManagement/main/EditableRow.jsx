@@ -3,7 +3,7 @@ import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
-function EditableRow({ department, handleSave }) {
+function EditableRow({ key, department, handleSave }) {
   const [editedDepartment, setEditedDepartment] = useState({
     id: department.id,
     name: department.name,
@@ -17,37 +17,27 @@ function EditableRow({ department, handleSave }) {
   };
 
   return (
-    <tr className="bg-blue-50 hover:bg-blue-100 transition-colors duration-150">
-      <td className="py-3 px-4">
+    <tr key={key} className="editable-row">
+      <td>
         <input
           type="text"
-          name="nid"
+          name="id"
           value={editedDepartment.id}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </td>
-      <td className="py-3 px-4">
+      <td>
         <input
           type="text"
           name="name"
           value={editedDepartment.name}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </td>
-      <td className="py-3 px-4 text-sm text-gray-800">
+      <td>
         {department.chiefSurgeonsCount}
       </td>
-      <td className="py-3 px-4">
-        <button
-          onClick={() => handleSave(editedDepartment)}
-          className="text-green-600 hover:text-green-800 transition-colors duration-150"
-          title="儲存變更"
-        >
-          <FontAwesomeIcon icon={faFloppyDisk} size="lg" />
-        </button>
-      </td>
+      <td><FontAwesomeIcon icon={faFloppyDisk} size="lg" onClick={() => handleSave(editedDepartment)} /></td>
     </tr>
   );
 }

@@ -3,8 +3,153 @@
   flex-direction: column;
 } */
 
+/* 甘特圖主容器 */
+.gantt-main-container {
+  width: 100%;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
 
+@media (min-width: 768px) {
+  .gantt-main-container {
+    padding: 1.5rem;
+  }
+}
 
+/* 甘特圖頭部區域 */
+.gantt-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .gantt-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* 甘特圖標題區域 */
+.gantt-title-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.gantt-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* 甘特圖操作區域 */
+.gantt-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .gantt-actions {
+    margin-top: 0;
+  }
+}
+
+/* 手術室計數器 */
+.gantt-room-count {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .gantt-room-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+  }
+}
+
+.gantt-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.gantt-room-count-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* 使用提示區域 */
+.gantt-tips {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.gantt-tips-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #3b82f6;
+  margin-top: 0.125rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.gantt-tips-content {
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.gantt-tips-title {
+  font-weight: 500;
+}
+
+.gantt-tips-list {
+  margin-top: 0.25rem;
+  list-style-type: disc;
+  list-style-position: inside;
+  color: #1e40af;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* 甘特圖內容區域 */
+.gantt-content {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.scroll-container {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gantt-timescale-container {
+  min-width: 100%;
+}
+
+.gantt-chart-container {
+  position: relative;
+  min-height: fit-content;
+}
+
+/* 行樣式 */
 .row {
   display: flex;
   margin-bottom: 1px; /* 增加外邊距，確保每間手術房之間有間距 */
@@ -19,6 +164,311 @@
   min-height: 80px; /* 設置最小高度，確保不會太矮 */
   white-space: nowrap; /* 防止內容換行 */ 
   padding-left: 10px; /* 為房間名稱預留內邊距 */
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.row-even {
+  background-color: #f9fafb;
+}
+
+.row-odd {
+  background-color: white;
+}
+
+.row-pinned {
+  background-color: #fee2e2;
+}
+
+/* 手術房區域 */
+.room-section {
+  position: relative;
+}
+
+/* 手術房標題 */
+.room-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0.125rem 0;
+  padding-left: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+/* 釘選按鈕 */
+.room-pin-button {
+  cursor: pointer;
+  margin-left: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 釘選圖標 */
+.pin-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #4b5563;
+}
+
+.pin-icon-active {
+  color: #dc2626;
+}
+
+/* 釘選文字 */
+.pin-text {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.pin-text-active {
+  color: #dc2626;
+}
+
+/* 手術房內容 */
+.room-content {
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+/* 無數據顯示 */
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 15rem;
+  color: #6b7280;
+}
+
+.no-data-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.no-data-subtitle {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 確保拖曳元素在最上層 */
+.react-beautiful-dnd-dragging {
+  z-index: 9999 !important;
+  position: relative !important;
+}
+
+/* 篩選面板容器 */
+.filter-panel-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+  z-index: 1050;
+}
+
+.filter-panel-open {
+  transform: translateX(0);
+}
+
+.filter-panel-closed {
+  transform: translateX(-18rem); /* -72px */
+}
+
+/* 篩選面板 */
+.filter-panel {
+  width: 18rem; /* 72px */
+  height: 100%;
+  background-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* 篩選面板標題 */
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1rem;
+}
+
+.filter-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.filter-close-btn {
+  font-size: 1.25rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* 篩選面板內容 */
+.filter-content {
+  padding: 1rem;
+}
+
+/* 篩選項目 */
+.filter-item {
+  margin-top: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+}
+
+.filter-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.filter-item-title {
+  font-weight: 500;
+}
+
+.filter-remove-btn {
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-remove-btn:hover {
+  color: #b91c1c;
+}
+
+/* 篩選複選框 */
+.filter-checkbox-container {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.filter-checkbox-label {
+  margin-left: 0.5rem;
+}
+
+/* 篩選切換按鈕 */
+.filter-toggle-btn {
+  position: absolute;
+  right: -4rem; /* -64px */
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 3.5rem; /* 56px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+
+/* 時間軸容器 */
+.time-wrapper-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  margin-top: 3.5rem;
+}
+
+/* 時間軸頭部 */
+.time-scale-header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background-color: #f3f4f6;
+  z-index: 10;
+  padding-left: 0.75rem;
+}
+
+/* 時間軸尺 */
+.time-scale-ruler {
+  display: flex;
+  height: 3rem;
+  position: relative;
+  background-color: #f3f4f6;
+  border-bottom: 2px solid #1f2937;
+  min-width: 100%;
+}
+
+/* 時間標記 */
+.time-mark {
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* 時間標記標籤 */
+.time-mark-label {
+  font-size: 0.75rem;
+  position: absolute;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* 起始時間標記 */
+.time-mark-start {
+  transform: none;
+}
+
+/* 小時標記 */
+.time-mark-hour::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  height: 30px;
+  background-color: #333;
+  transform-origin: bottom left;
+}
+
+/* 半小時標記 */
+.time-mark-half::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 20px;
+  background-color: #666;
+  transform-origin: bottom left;
+}
+
+/* 15分鐘標記 */
+.time-mark-quarter::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 15px;
+  background-color: #999;
+  transform-origin: bottom left;
+}
+
+/* 時間軸內容 */
+.time-wrapper-content {
+  margin-top: 0.75rem;
+  height: calc(100vh - 30px);
+  white-space: nowrap;
 }
 
 .item {

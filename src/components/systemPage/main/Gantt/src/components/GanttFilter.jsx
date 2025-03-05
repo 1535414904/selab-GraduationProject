@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 
-const GanttFilter = ({ onFilterChange }) => {
+const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const filterOptions = [
     { value: "department", label: "科別" },
@@ -33,9 +33,10 @@ const GanttFilter = ({ onFilterChange }) => {
     fetchData();
   }, []);
 
+  // 當篩選條件變更時，應用篩選並通知父組件
   useEffect(() => {
-    onFilterChange(filterValues);
-  }, [filterValues]);
+    applyFilters();
+  }, [filterValues, originalRows]);
 
   // 點擊篩選器外部時，自動關閉
   useEffect(() => {
@@ -51,6 +52,26 @@ const GanttFilter = ({ onFilterChange }) => {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
+
+  // 應用篩選邏輯
+  const applyFilters = () => {
+    if (!originalRows || originalRows.length === 0) {
+      onFilteredDataChange([]);
+      return;
+    }
+
+    const filteredData = originalRows.filter((room) => {
+      // 基本篩選條件
+      if (filterValues.department?.length > 0 && !filterValues.department.includes(room.department)) return false;
+      if (filterValues.roomType?.length > 0 && !filterValues.roomType.includes(room.roomType)) return false;
+      if (filterValues.roomName?.length > 0 && !filterValues.roomName.includes(room.room)) return false;
+      if (filterValues.overtime && !room.hasOvertime) return false;
+      
+      return true;
+    });
+
+    onFilteredDataChange(filteredData);
+  };
 
   const handleAddFilter = (selected) => {
     if (selected && !selectedFilters.find((f) => f.value === selected.value)) {
@@ -78,28 +99,26 @@ const GanttFilter = ({ onFilterChange }) => {
       {/* 整個篩選器 + 按鈕區域，讓它們同步移動 */}
       <div
         ref={filterRef}
-        className={`fixed top-0 left-0 h-full flex items-center transition-transform duration-300 z-[70] ${
-          isOpen ? "translate-x-0" : "-translate-x-72"
-        }`}
+        className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"}`}
       >
         {/* 篩選面板 */}
-        <div className="w-72 h-full bg-white shadow-lg relative">
+        <div className="filter-panel">
           {/* 標題 */}
-          <div className="flex justify-between items-center bg-blue-600 text-white px-4 py-3">
-            <h3 className="text-lg font-semibold">篩選條件</h3>
-            <button onClick={() => setIsOpen(false)} className="text-xl">✕</button>
+          <div className="filter-header">
+            <h3 className="filter-title">篩選條件</h3>
+            <button onClick={() => setIsOpen(false)} className="filter-close-btn">✕</button>
           </div>
 
-          <div className="p-4">
+          <div className="filter-content">
             {/* 新增篩選條件 */}
             <Select options={filterOptions} onChange={handleAddFilter} placeholder="新增篩選條件..." />
 
             {/* 已選擇的篩選條件 */}
             {selectedFilters.map((filter) => (
-              <div key={filter.value} className="mt-3 border rounded-md p-3 bg-gray-100">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{filter.label}</span>
-                  <button onClick={() => handleRemoveFilter(filter.value)} className="text-red-500 hover:text-red-700">✕</button>
+              <div key={filter.value} className="filter-item">
+                <div className="filter-item-header">
+                  <span className="filter-item-title">{filter.label}</span>
+                  <button onClick={() => handleRemoveFilter(filter.value)} className="filter-remove-btn">✕</button>
                 </div>
 
                 {filter.value === "department" && (
@@ -130,13 +149,13 @@ const GanttFilter = ({ onFilterChange }) => {
                 )}
 
                 {filter.value === "overtime" && (
-                  <div className="mt-2 flex items-center">
+                  <div className="filter-checkbox-container">
                     <input
                       type="checkbox"
                       checked={filterValues.overtime || false}
                       onChange={(e) => setFilterValues({ ...filterValues, overtime: e.target.checked })}
                     />
-                    <label className="ml-2">僅顯示超時手術</label>
+                    <label className="filter-checkbox-label">僅顯示超時手術</label>
                   </div>
                 )}
               </div>
@@ -146,7 +165,7 @@ const GanttFilter = ({ onFilterChange }) => {
 
         {/* 「篩選」按鈕，與篩選面板一起移動 */}
         <button
-          className="absolute right-[-64px] bg-blue-600 text-white px-4 py-2 rounded-r-md shadow-lg h-14 flex items-center justify-center"
+          className="filter-toggle-btn"
           onClick={() => setIsOpen(!isOpen)}
         >
           篩選

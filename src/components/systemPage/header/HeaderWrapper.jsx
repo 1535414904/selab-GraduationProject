@@ -85,7 +85,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                   <button
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => {
-                      toggleMainPage("accountMgr");
+                      toggleMainPage("ORMgr");
                       setReloadKey((prevKey) => prevKey + 1);
                     }}
                   >
@@ -175,58 +175,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
           </div>
         </div>
 
-        {/* Secondary Navigation - Mobile Friendly View */}
-        <div className="md:hidden py-2 flex overflow-x-auto space-x-2 pb-3">
-          {user.role == 3 && (
-            <>
-              <button
-                className="flex-shrink-0 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-500"
-                onClick={() => {
-                  toggleMainPage("accountMgr");
-                  setReloadKey((prevKey) => prevKey + 1);
-                }}
-              >
-                帳號管理
-              </button>
-              <button
-                className="flex-shrink-0 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-500"
-                onClick={() => {
-                  toggleMainPage("departmentMgr");
-                  setReloadKey((prevKey) => prevKey + 1);
-                }}
-              >
-                科別管理
-              </button>
-              <button
-                className="flex-shrink-0 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-500"
-                onClick={() => {
-                  toggleMainPage("accountMgr");
-                  setReloadKey((prevKey) => prevKey + 1);
-                }}
-              >
-                手術房管理
-              </button>
-              <button
-                className="flex-shrink-0 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-500"
-                onClick={() => {
-                  toggleMainPage("accountMgr");
-                  setReloadKey((prevKey) => prevKey + 1);
-                }}
-              >
-                手術管理
-              </button>
-              <button
-                className="flex-shrink-0 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-500"
-                onClick={() => {
-                  toggleMainPage("accountMgr");
-                  setReloadKey((prevKey) => prevKey + 1);
-                }}
-              >
-                排班管理
-              </button>
-            </>
-          )}
-        </div>
+
       </div>
     </div>
   );

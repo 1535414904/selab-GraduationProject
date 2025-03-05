@@ -1,14 +1,12 @@
 package com.backend.project.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.ChiefSurgeonRepository;
 import com.backend.project.Dao.DepartmentRepository;
-import com.backend.project.Dto.ChiefSurgeonDTO;
 import com.backend.project.model.ChiefSurgeon;
 import com.backend.project.model.Department;
 
@@ -28,17 +26,13 @@ public class ChiefSurgeonService {
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public List<ChiefSurgeon> addChiefSurgeon(String departmentId, List<ChiefSurgeonDTO> chiefSurgeonDTOs) {
+    public List<ChiefSurgeon> addChiefSurgeon(String departmentId, List<ChiefSurgeon> chiefSurgeons) {
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
 
-        List<ChiefSurgeon> chiefSurgeons = chiefSurgeonDTOs.stream().map(dto -> {
-            ChiefSurgeon surgeon = new ChiefSurgeon();
-            surgeon.setId(dto.getId()); 
-            surgeon.setName(dto.getName());
-            surgeon.setDepartment(department);
-            return surgeon;
-        }).collect(Collectors.toList());
+        for(ChiefSurgeon chiefSurgeon : chiefSurgeons) {
+            chiefSurgeon.setDepartment(department);
+        }
 
         return chiefSurgeonRepository.saveAll(chiefSurgeons);
     }

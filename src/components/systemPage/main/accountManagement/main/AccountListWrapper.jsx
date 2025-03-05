@@ -105,11 +105,10 @@ function AccountListWrapper({ users, setUsers,
                 <tbody ref={tbodyRef}>
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
-                            <tr key={user.username}>
-                                {editingUser?.username === user.username ? (
-                                    <EditableRow user={user} handleSave={handleSave} />
+                                editingUser?.username === user.username ? (
+                                    <EditableRow key={user.username} user={user} handleSave={handleSave} />
                                 ) : (
-                                    <>
+                                    <tr key={user.username}>
                                         <td>{user.username}</td>
                                         <td>{user.name}</td>
                                         <td>{user.unit}</td>
@@ -126,9 +125,8 @@ function AccountListWrapper({ users, setUsers,
                                                 <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(user)} />
                                             )}
                                         </td>
-                                    </>
-                                )}
-                            </tr>
+                                    </tr>
+                                )
                         ))
                     ) : (
                         <tr>

@@ -3,7 +3,7 @@ import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
-function EditableRow({ user, handleSave }) {
+function EditableRow({ key, user, handleSave }) {
     const [editedUser, setEditedUser] = useState({
         username: user.username,
         name: user.name,
@@ -20,7 +20,7 @@ function EditableRow({ user, handleSave }) {
     };
 
     return (
-        <tr className="editable-row">
+        <tr key={key} className="editable-row">
             <td>{editedUser.username}</td>
             <td><input type="text" name="name" value={editedUser.name} onChange={handleChange} /></td>
             <td><input type="text" name="unit" value={editedUser.unit} onChange={handleChange} /></td>

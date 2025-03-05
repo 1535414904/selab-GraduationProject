@@ -6,6 +6,7 @@ import Gantt from "./Gantt/src/Gantt";
 import { useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
+import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
   const [rows, setRows] = useState([]);
@@ -48,6 +49,12 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
           {mainState === "departmentMgr" && (
             <div className="transition-all duration-300 ease-in-out">
               <DepartmentMgrWrapper reloadKey={reloadKey} />
+            </div>
+          )}
+
+          {mainState === "ORMgr" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <ORMgrWrapper reloadKey={reloadKey} />
             </div>
           )}
         </div>

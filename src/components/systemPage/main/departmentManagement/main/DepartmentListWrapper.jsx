@@ -26,13 +26,13 @@ function DepartmentListWrapper({
     const newFilteredDepartments = departments.filter((department) => {
       const matchesId = filterDepartment.id
         ? department.id
-            .toLowerCase()
-            .includes(filterDepartment.id.toLowerCase())
+          .toLowerCase()
+          .includes(filterDepartment.id.toLowerCase())
         : true;
       const matchesName = filterDepartment.name
         ? department.name
-            .toLowerCase()
-            .includes(filterDepartment.name.toLowerCase())
+          .toLowerCase()
+          .includes(filterDepartment.name.toLowerCase())
         : true;
 
       return matchesId && matchesName;
@@ -94,77 +94,58 @@ function DepartmentListWrapper({
   };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-6 overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-        <thead ref={theadRef} className="bg-gray-50">
+    <div className="mgr-list">
+      <table className="system-table">
+        <thead ref={theadRef}>
           <tr>
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b">
-              科別編號
-            </th>
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b">
-              科別名稱
-            </th>
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b">
-              醫師人數
-            </th>
-            <th className="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b">
-              動作
-            </th>
+            <th>科別編號</th>
+            <th>科別名稱</th>
+            <th>醫師人數</th>
+            <th>動作</th>
           </tr>
         </thead>
-        <tbody ref={tbodyRef} className="divide-y divide-gray-200">
+        <tbody ref={tbodyRef}>
           {filteredDepartments.length > 0 ? (
             filteredDepartments.map((department) => (
-              <tr
-                key={department.id}
-                className="hover:bg-gray-50 transition-colors duration-150"
-              >
-                {editingDepartment?.id === department.id ? (
-                  <EditableRow
-                    department={department}
-                    handleSave={handleSave}
-                  />
-                ) : (
-                  <>
-                    <td className="py-3 px-4 text-sm text-gray-800">
-                      {department.id}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-800">
-                      {department.name}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-800">
-                      {department.chiefSurgeonsCount}
-                    </td>
-                    <td className="py-3 px-4 text-sm">
-                      {deleteMode ? (
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-                          checked={selectedDepartments.includes(department.id)}
-                          onChange={() => handleCheckboxChange(department.id)}
-                        />
-                      ) : (
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(department)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
-                            title="編輯科別"
-                          >
-                            <FontAwesomeIcon icon={faPenSquare} size="lg" />
-                          </button>
-                          <button
-                            onClick={() => setIdforChiefSurgeons(department.id)}
-                            className="text-green-600 hover:text-green-800 transition-colors duration-150"
-                            title="查看醫師"
-                          >
-                            <FontAwesomeIcon icon={faPerson} size="lg" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </>
-                )}
-              </tr>
+              editingDepartment?.id === department.id ? (
+                <EditableRow
+                  key={department.id}
+                  department={department}
+                  handleSave={handleSave}
+                />
+              ) : (
+                <tr key={department.id}>
+                  <td>{department.id}</td>
+                  <td>{department.name}</td>
+                  <td>{department.chiefSurgeonsCount}</td>
+                  <td>
+                    {deleteMode ? (
+                      <input
+                        type="checkbox"
+                        checked={selectedDepartments.includes(department.id)}
+                        onChange={() => handleCheckboxChange(department.id)}
+                      />
+                    ) : (
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => handleEdit(department)}
+                          className="edit-button"
+                          title="編輯科別"
+                        >
+                          <FontAwesomeIcon icon={faPenSquare} size="lg" />
+                        </button>
+                        <button
+                          onClick={() => setIdforChiefSurgeons(department.id)}
+                          className="view-button"
+                          title="查看醫師"
+                        >
+                          <FontAwesomeIcon icon={faPerson} size="lg" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )
             ))
           ) : (
             <tr>

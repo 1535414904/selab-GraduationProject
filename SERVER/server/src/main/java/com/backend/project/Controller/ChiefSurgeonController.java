@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.project.Dto.ChiefSurgeonDTO;
 import com.backend.project.Service.ChiefSurgeonService;
 import com.backend.project.model.ChiefSurgeon;
 
@@ -34,9 +33,8 @@ public class ChiefSurgeonController {
     @PostMapping("/system/{departmentId}/chief-surgeons/add")
     public ResponseEntity<List<ChiefSurgeon>> addChiefSurgeons(
             @PathVariable String departmentId,
-            @RequestBody List<ChiefSurgeonDTO> chiefSurgeonDTOs) {
-        List<ChiefSurgeon> addChiefSurgeons = chiefSurgeonService.addChiefSurgeon(departmentId, chiefSurgeonDTOs);
-        return ResponseEntity.ok(addChiefSurgeons);
+            @RequestBody List<ChiefSurgeon> chiefSurgeons) {
+        return ResponseEntity.ok(chiefSurgeonService.addChiefSurgeon(departmentId, chiefSurgeons));
     }
 
     @DeleteMapping("/system/chief-surgeons/delete")

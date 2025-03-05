@@ -5,7 +5,7 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ item, fixedHeight, isDragging }) {
+function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -35,12 +35,13 @@ function RoomItem({ item, fixedHeight, isDragging }) {
             // 如果後端沒有這些欄位，則使用甘特圖中的資料
             doctor: response.data.chiefSurgeonName || item.doctor,
             surgery: response.data.surgeryName ? `${response.data.surgeryName} (${response.data.patientName || '未知病患'})` : item.surgery,
-            color: item.color
+            color: item.color,
+            isPinned: isPinned // 傳遞釘選狀態
           };
           setSurgeryDetails(mergedData);
         } else {
           // 如果沒有獲取到資料，使用現有的項目資料
-          setSurgeryDetails(item);
+          setSurgeryDetails({...item, isPinned});
         }
         
         setIsModalOpen(true);
@@ -48,7 +49,7 @@ function RoomItem({ item, fixedHeight, isDragging }) {
         console.error('獲取手術詳細資料時發生錯誤:', error);
         setError(`獲取手術詳細資料失敗: ${error.message}`);
         // 發生錯誤時，使用現有的項目資料
-        setSurgeryDetails(item);
+        setSurgeryDetails({...item, isPinned});
         setIsModalOpen(true);
       } finally {
         setLoading(false);
@@ -77,14 +78,14 @@ function RoomItem({ item, fixedHeight, isDragging }) {
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 border-2 border-gray-300 rounded-2xl ${colorClass()} ${
+        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : 'border-gray-300'} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 active:scale-110 ${loading ? 'cursor-wait' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'}`}
+        } transform transition-transform duration-100 ${isPinned ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'} relative`}
         style={{
           width: width,
           height: fixedHeight,
           opacity: isDragging || isOver24Hours ? 0.5 : 1,
-          cursor: loading ? 'wait' : (item.isCleaningTime ? "move" : "pointer"),
+          cursor: loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer")),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
@@ -92,6 +93,12 @@ function RoomItem({ item, fixedHeight, isDragging }) {
         }}
         onClick={handleClick}
       >
+        {isPinned && (
+          <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
+            <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-10 rounded-xl"></div>
+          </div>
+        )}
+        
         <div>{item.doctor}</div>
         <div>{item.surgery}</div>
         <div>
@@ -101,7 +108,7 @@ function RoomItem({ item, fixedHeight, isDragging }) {
 
       {isModalOpen && 
         createPortal(
-          <SurgeryModal surgery={surgeryDetails || item} onClose={() => setIsModalOpen(false)} error={error} />,
+          <SurgeryModal surgery={{...surgeryDetails || item, isPinned}} onClose={() => setIsModalOpen(false)} error={error} />,
           document.body
         )
       }

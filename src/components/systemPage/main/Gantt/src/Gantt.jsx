@@ -13,11 +13,16 @@ function Gantt({ rows, setRows }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [filters, setFilters] = useState({}); // ✅ 儲存篩選條件
+  const [filteredRows, setFilteredRows] = useState([]); // 儲存篩選後的結果
 
   useEffect(() => {
     fetchSurgeryData(setRows, setLoading, setError);
   }, []);
+
+  // 當原始數據變更時，更新篩選後的結果
+  useEffect(() => {
+    setFilteredRows(rows);
+  }, [rows]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -31,39 +36,42 @@ function Gantt({ rows, setRows }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ 依據篩選條件過濾手術室
-  const filteredRows = rows.filter((room) => {
-    if (filters.selectedDepartments?.length > 0 && !filters.selectedDepartments.includes(room.department)) return false;
-    if (filters.selectedRoomTypes?.length > 0 && !filters.selectedRoomTypes.includes(room.roomType)) return false;
-    if (filters.selectedRoomNames?.length > 0 && !filters.selectedRoomNames.includes(room.room)) return false;
-    if (filters.showOvertime && !room.hasOvertime) return false;
-    return true;
-  });
+  // 處理手術房釘選狀態變更
+  const handleRoomPinStatusChange = (roomIndex, isPinned) => {
+    setRows(prevRows => {
+      const newRows = [...prevRows];
+      if (newRows[roomIndex]) {
+        // 更新手術房的釘選狀態
+        newRows[roomIndex] = {
+          ...newRows[roomIndex],
+          isPinned: isPinned
+        };
+      }
+      return newRows;
+    });
+  };
+
+  // 處理篩選結果
+  const handleFilterChange = (filteredData) => {
+    setFilteredRows(filteredData);
+  };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-4 md:p-6">
-      {/* 添加全局樣式，確保拖曳時的元素始終顯示在最上層 */}
-      <style jsx>{`
-        .react-beautiful-dnd-dragging {
-          z-index: 10000 !important;
-          position: relative !important;
-        }
-      `}</style>
-      
+    <div className="gantt-main-container">
       {/* ✅ 上方資訊區塊 */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">手術排程甘特圖</h2>
-          <p className="text-sm text-gray-500 mt-1">顯示所有手術室的排程安排</p>
+      <div className="gantt-header">
+        <div className="gantt-title">
+          <h2 className="gantt-title-text">手術排程甘特圖</h2>
+          <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
         </div>
 
         {/* ✅ 手術室數量 & PDF 按鈕 */}
-        <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center space-x-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-md">
-            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="gantt-actions">
+          <div className="gantt-room-count">
+            <svg className="gantt-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs font-medium">共 {filteredRows.length} 間手術室</span>
+            <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
           
           <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
@@ -71,32 +79,43 @@ function Gantt({ rows, setRows }) {
       </div>
 
       {/* ✅ 使用提示 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4 flex items-start">
-        <svg className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <div className="gantt-tips">
+        <svg className="gantt-tips-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
         </svg>
-        <div className="text-sm text-blue-800">
-          <p className="font-medium">使用提示</p>
-          <ul className="mt-1 list-disc list-inside text-blue-700 space-y-1">
+        <div className="gantt-tips-content">
+          <p className="gantt-tips-title">使用提示</p>
+          <ul className="gantt-tips-list">
             <li>可以橫向滾動查看不同時間段的排程</li>
             <li>點擊「生成 PDF」按鈕可將當前甘特生成圖為 PDF 檔案</li>
+            <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
           </ul>
         </div>
       </div>
 
       {/* ✅ 篩選器放在提示下方 */}
-      <GanttFilter onFilterChange={setFilters} />
+      <GanttFilter 
+        originalRows={rows} 
+        onFilteredDataChange={handleFilterChange} 
+      />
 
       {/* ✅ 手術排程內容 */}
       {!loading && !error && filteredRows.length > 0 && (
-        <div className="border border-gray-200 rounded-lg overflow-hidden mt-4">
-          <div ref={scrollContainerRef} className="scroll-container overflow-x-auto" style={{ width: "100%", WebkitOverflowScrolling: "touch" }}>
-            <div ref={timeScaleRef} className="min-w-full">
+        <div className="gantt-content">
+          <div ref={scrollContainerRef} className="scroll-container">
+            <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
-                <div ref={ganttChartRef} style={{ position: "relative", minHeight: "fit-content" }}>
+                <div ref={ganttChartRef} className="gantt-chart-container">
                   {filteredRows.map((room, roomIndex) => (
-                    <div key={room.room || roomIndex} className={`row border-b border-gray-200 ${roomIndex % 2 === 0 ? "bg-gray-50" : "bg-white"} z-10 relative`}>
-                      <RoomSection room={room} roomIndex={roomIndex} />
+                    <div 
+                      key={room.room || roomIndex} 
+                      className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                    >
+                      <RoomSection 
+                        room={room} 
+                        roomIndex={roomIndex} 
+                        onPinStatusChange={handleRoomPinStatusChange}
+                      />
                     </div>
                   ))}
                 </div>
@@ -108,9 +127,9 @@ function Gantt({ rows, setRows }) {
 
       {/* ✅ 當篩選後無符合的資料 */}
       {!loading && !error && filteredRows.length === 0 && (
-        <div className="no-data flex flex-col items-center justify-center h-60 text-gray-500">
-          <p className="text-lg font-medium">尚無符合條件的排程資料</p>
-          <p className="text-sm mt-1">請更改篩選條件或稍後再試</p>
+        <div className="no-data">
+          <p className="no-data-title">尚無符合條件的排程資料</p>
+          <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
       )}
     </div>

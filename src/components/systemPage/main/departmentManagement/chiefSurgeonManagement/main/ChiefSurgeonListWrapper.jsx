@@ -94,11 +94,10 @@ function ChiefSurgeonListWrapper({ chiefSurgeons, setChiefSurgeons,
                 <tbody ref={tbodyRef}>
                     {filteredChiefSurgeons.length > 0 ? (
                         filteredChiefSurgeons.map(chiefSurgeon => (
-                            <tr key={chiefSurgeon.id}>
-                                {editingChiefSurgeon?.id === chiefSurgeon.id ? (
-                                    <EditableRow chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
+                                editingChiefSurgeon?.id === chiefSurgeon.id ? (
+                                    <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
                                 ) : (
-                                    <>
+                                    <tr key={chiefSurgeon.id}>
                                         <td>{chiefSurgeon.id}</td>
                                         <td>{chiefSurgeon.name}</td>
                                         <td>
@@ -112,10 +111,8 @@ function ChiefSurgeonListWrapper({ chiefSurgeons, setChiefSurgeons,
                                                 <FontAwesomeIcon className="edit-button" icon={faPenSquare} size="lg" onClick={() => handleEdit(chiefSurgeon)} />
                                             )}
                                         </td>
-                                    </>
-                                )}
-
-                            </tr>
+                                    </tr>
+                                )
                         ))
                     ) : (
                         <tr>
