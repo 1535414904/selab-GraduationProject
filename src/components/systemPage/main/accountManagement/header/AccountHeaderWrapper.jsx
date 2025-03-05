@@ -2,6 +2,8 @@
 import axios from "axios";
 import { useState } from "react";
 import { BASE_URL } from "../../../../../config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 function AccountHeaderWrapper({ users, setUsers,
     username, setUsername,
@@ -69,7 +71,8 @@ function AccountHeaderWrapper({ users, setUsers,
 
             {pageState === "list" && (
                 <div className="header-function">
-                    <div className="filter">篩選</div>
+
+                    <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
 
                     <input
                         placeholder="請輸入帳號"
