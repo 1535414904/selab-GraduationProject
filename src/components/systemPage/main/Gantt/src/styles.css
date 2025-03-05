@@ -648,6 +648,18 @@
 .pdf-button:hover {
   background-color: #d2e9c3;
 }
+.filter-toggle-btn {
+  position: absolute; /* 固定定位 */
+  top: 5px; /* 往上移 */
+  background-color: #2563eb; /* 保持藍色 */
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  z-index: 1000; /* 確保不被擋住 */
+  box-shadow: 0px 2px 4px rgb(114, 156, 255);
+}
 
 .loading {
   display: flex;

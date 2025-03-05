@@ -3,7 +3,7 @@ import LoginWrapper from "./LoginWrapper";
 import "./LoginPage.css"
 import { useState } from "react";
 import ForgotPasswordWrapper from "./ForgotPasswordWrapper";
-import ChangePasswordWrapper from "./changePasswordWrapper";
+import ChangePasswordWrapper from "./ChangePasswordWrapper";
 
 function LoginPageWrapper({fullTogglePage, nowUsername, setNowUsername}) {
     const [pageState, setPageState] = useState("loginPage");

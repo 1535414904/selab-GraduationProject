@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
+import "../styles.css";
 
 const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,21 +20,34 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const resDepartments = await fetch("/api/departments");
+        const resDepartments = await fetch("/api/system/departments");
         const resRoomTypes = await fetch("/api/roomTypes");
         const resRoomNames = await fetch("/api/roomNames");
 
-        setAvailableDepartments(await resDepartments.json());
-        setAvailableRoomTypes(await resRoomTypes.json());
-        setAvailableRoomNames(await resRoomNames.json());
+        if (!resDepartments.ok || !resRoomTypes.ok || !resRoomNames.ok) {
+          throw new Error("API 回應失敗");
+        }
+
+        const departments = await resDepartments.json();
+        const roomTypes = await resRoomTypes.json();
+        const roomNames = await resRoomNames.json();
+
+        console.log("科別:", departments);
+        console.log("手術房類型:", roomTypes);
+        console.log("手術房名稱:", roomNames);
+
+        setAvailableDepartments(departments);
+        setAvailableRoomTypes([...new Set([...roomTypes, "一般房", "鉛牆房"])]); // 後端抓取並加上基本選項
+        setAvailableRoomNames(roomNames);
       } catch (error) {
         console.error("載入篩選條件失敗", error);
+        setAvailableRoomTypes(["一般房", "鉛牆房"]); // 確保 API 失敗時仍有基本選項
       }
     }
     fetchData();
   }, []);
 
-  // 當篩選條件變更時，應用篩選並通知父組件
+  // 應用篩選條件
   useEffect(() => {
     applyFilters();
   }, [filterValues, originalRows]);
@@ -61,7 +75,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     }
 
     const filteredData = originalRows.filter((room) => {
-      // 基本篩選條件
       if (filterValues.department?.length > 0 && !filterValues.department.includes(room.department)) return false;
       if (filterValues.roomType?.length > 0 && !filterValues.roomType.includes(room.roomType)) return false;
       if (filterValues.roomName?.length > 0 && !filterValues.roomName.includes(room.room)) return false;
@@ -96,24 +109,19 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 
   return (
     <>
-      {/* 整個篩選器 + 按鈕區域，讓它們同步移動 */}
       <div
         ref={filterRef}
         className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"}`}
       >
-        {/* 篩選面板 */}
         <div className="filter-panel">
-          {/* 標題 */}
           <div className="filter-header">
             <h3 className="filter-title">篩選條件</h3>
             <button onClick={() => setIsOpen(false)} className="filter-close-btn">✕</button>
           </div>
 
           <div className="filter-content">
-            {/* 新增篩選條件 */}
             <Select options={filterOptions} onChange={handleAddFilter} placeholder="新增篩選條件..." />
 
-            {/* 已選擇的篩選條件 */}
             {selectedFilters.map((filter) => (
               <div key={filter.value} className="filter-item">
                 <div className="filter-item-header">
@@ -163,11 +171,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
           </div>
         </div>
 
-        {/* 「篩選」按鈕，與篩選面板一起移動 */}
-        <button
-          className="filter-toggle-btn"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
           篩選
         </button>
       </div>
@@ -176,3 +180,5 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 };
 
 export default GanttFilter;
+
+

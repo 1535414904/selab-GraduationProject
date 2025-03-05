@@ -55,15 +55,28 @@ function Gantt({ rows, setRows }) {
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
+  const [currentDate, setCurrentDate] = useState("");
+
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    setCurrentDate(formattedDate);
+  }, []);
 
   return (
     <div className="gantt-main-container">
       {/* ✅ 上方資訊區塊 */}
       <div className="gantt-header">
         <div className="gantt-title">
-          <h2 className="gantt-title-text">手術排程甘特圖</h2>
+        <div className="gantt-date">
+          <h2 className="gantt-title-text">{currentDate}手術排程甘特圖</h2>
           <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
         </div>
+      </div>
 
         {/* ✅ 手術室數量 & PDF 按鈕 */}
         <div className="gantt-actions">
@@ -79,19 +92,29 @@ function Gantt({ rows, setRows }) {
       </div>
 
       {/* ✅ 使用提示 */}
-      <div className="gantt-tips">
-        <svg className="gantt-tips-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-        </svg>
-        <div className="gantt-tips-content">
-          <p className="gantt-tips-title">使用提示</p>
-          <ul className="gantt-tips-list">
-            <li>可以橫向滾動查看不同時間段的排程</li>
-            <li>點擊「生成 PDF」按鈕可將當前甘特生成圖為 PDF 檔案</li>
-            <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
-          </ul>
-        </div>
+    <div className="gantt-tips">
+      <svg 
+        className="gantt-tips-icon" 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24" 
+        width="20" 
+        height="20" 
+        fill="currentColor"
+      >
+        <circle cx="12" cy="12" r="10" fill="#3B82F6" />
+        <circle cx="12" cy="7" r="1.5" fill="white" />
+        <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
+      </svg>
+      <div className="gantt-tips-content">
+        <p className="gantt-tips-title">使用提示</p>
+        <ul className="gantt-tips-list">
+          <li>可以橫向滾動查看不同時間段的排程</li>
+          <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
+          <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
+        </ul>
       </div>
+    </div>
+
 
       {/* ✅ 篩選器放在提示下方 */}
       <GanttFilter 
