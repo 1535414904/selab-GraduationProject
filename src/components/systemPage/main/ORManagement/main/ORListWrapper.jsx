@@ -4,6 +4,8 @@ import { faPenSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useRef, useState } from "react";
 import EditableRow from "./EditableRow";
+import axios from "axios";
+import { BASE_URL } from "../../../../../config";
 
 function ORListWrapper({
     operatingRooms, setOperatingRooms,
@@ -31,6 +33,8 @@ function ORListWrapper({
                 : true;
             const matchesName = filterOperatingRoom.name
                 ? operatingRoom.name
+
+                
                     .toLowerCase()
                     .includes(filterOperatingRoom.name.toLowerCase())
                 : true;
@@ -69,26 +73,26 @@ function ORListWrapper({
 
     const handleSave = async (updatedOperatingRoom) => {
         try {
-          await axios.put(
-            `${BASE_URL}/api/system/operating-room/${updatedOperatingRoom.id}`,
-            updatedOperatingRoom
-          );
-          const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
-          setOperatingRooms(response.data);
-          setEditingOperatingRoom(null);
+            await axios.put(
+                `${BASE_URL}/api/system/operating-room/${updatedOperatingRoom.id}`,
+                updatedOperatingRoom
+            );
+            const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
+            setOperatingRooms(response.data);
+            setEditingOperatingRoom(null);
         } catch (error) {
-          console.error("updated error：", error);
+            console.error("updated error：", error);
         }
-      };
+    };
 
     const handleEdit = (operatingRoom) => {
         setEditingOperatingRoom(operatingRoom);
     };
 
-    const handleCheckboxChange = (operatingRoom) => {
+    const handleCheckboxChange = (id) => {
         setSelectedOperatingRooms((prevSelected) =>
-            prevSelected.includes(operatingRoom)
-                ? prevSelected.filter(operatingRoom => operatingRoom !== id)
+            prevSelected.includes(id)
+                ? prevSelected.filter(operatingRoom => operatingRoom != id)
                 : [...prevSelected, id])
     }
 
@@ -109,10 +113,10 @@ function ORListWrapper({
                     {filteredOperatingRooms.length > 0 ? (
                         filteredOperatingRooms.map((operatingRoom) => (
                             editingOperatingRoom?.id === operatingRoom.id ? (
-                                <EditableRow 
-                                key={operatingRoom.id}
-                                operatingRoom={operatingRoom}
-                                handleSave={handleSave}
+                                <EditableRow
+                                    key={operatingRoom.id}
+                                    operatingRoom={operatingRoom}
+                                    handleSave={handleSave}
                                 />
                             ) : (
                                 <tr key={operatingRoom.id}>

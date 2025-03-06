@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@CrossOrigin(origins = { "http://localhost:5173/", "https://hadog-hub.github.io/" })
+@CrossOrigin(origins = { "*" })
 @RestController
 @RequestMapping("/api")
 public class OperatingRoomController {
@@ -36,7 +36,7 @@ public class OperatingRoomController {
         return ResponseEntity.ok("OperatingRoom update successfully");
     }
 
-    @PostMapping("/system/operating-rooms")
+    @PostMapping("/system/operating-rooms/add")
     public ResponseEntity<?> addOperatingRooms(
             @RequestBody List<OperatingRoom> operatingRooms) {
         operatingRoomService.addOperatingRooms(operatingRooms);

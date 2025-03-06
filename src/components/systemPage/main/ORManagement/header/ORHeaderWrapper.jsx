@@ -1,5 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../../../../../config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 /* eslint-disable react/prop-types */
 function ORHeaderWrapper({ operatingRooms, setOperatingRooms,
@@ -46,7 +48,7 @@ function ORHeaderWrapper({ operatingRooms, setOperatingRooms,
 
             {pageState === "list" && (
                 <div className="header-function">
-                    <div className="filter">篩選</div>
+                    <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
 
                     <input
                         type="text"
@@ -69,16 +71,16 @@ function ORHeaderWrapper({ operatingRooms, setOperatingRooms,
                     {!deleteMode ? (
                         <button className="account-button mgr-cancel" onClick={() => setDeleteMode(true)}>刪除</button>
                     ) : (
-                        <div>
+                        <>
                             <button className="account-button department-right-button" onClick={handleDelete}>確認</button>
                             <button className="account-button mgr-cancel" onClick={() => setDeleteMode(false)}>取消</button>
-                        </div>
+                        </>
                     )}
                 </div>
             )}
 
             {pageState === "add" && (
-                <div>
+                <div className="header-function">
                     <button className="account-button" onClick={addHandleSubmit}>確認</button>
                     <button className="account-button mgr-cancel" onClick={handleBack}>返回</button>
                 </div>

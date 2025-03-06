@@ -57,6 +57,12 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
               <ORMgrWrapper reloadKey={reloadKey} />
             </div>
           )}
+
+          {mainState === "surgeryMgr" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <ORMgrWrapper reloadKey={reloadKey} />
+            </div>
+          )}
         </div>
       </div>
     </DragDropContext>

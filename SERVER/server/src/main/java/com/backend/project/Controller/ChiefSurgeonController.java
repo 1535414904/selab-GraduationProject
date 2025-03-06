@@ -42,5 +42,4 @@ public class ChiefSurgeonController {
         chiefSurgeonService.deleteChiefSurgeon(ids);
         return ResponseEntity.ok("ChiefSurgeon delete successfully");
     }
-
 }

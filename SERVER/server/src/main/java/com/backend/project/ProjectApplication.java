@@ -24,6 +24,6 @@ public class ProjectApplication {
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
-        };
+        };  
     }
 }

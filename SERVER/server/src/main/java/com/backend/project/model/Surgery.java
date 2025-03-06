@@ -149,6 +149,7 @@ public class Surgery {
     public void setUser(User user) {
         this.user = user;
     }
+    
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "operating_room_id")
     private OperatingRoom operatingRoom;

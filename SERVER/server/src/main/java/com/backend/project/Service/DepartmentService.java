@@ -27,7 +27,7 @@ public class DepartmentService {
             department.setId(updatedDepartment.getId());
             department.setName(updatedDepartment.getName());
             return departmentRepository.save(department);
-        }).orElseThrow(() -> new RuntimeException("User not found"));
+        }).orElseThrow(() -> new RuntimeException("Department not found"));
     }
 
     public void addDepartments(List<Department> departments) {
