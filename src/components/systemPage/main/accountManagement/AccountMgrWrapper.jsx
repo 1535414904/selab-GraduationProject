@@ -52,6 +52,36 @@ function AccountMgrWrapper({ reloadKey }) {
 
     }
 
+    const handleDeleteAll = async (selectedUsers) => {
+        if (selectedUsers.length === 0) {
+            alert("請選擇要刪除的帳戶");
+            return;
+        }
+        try {
+            await axios.delete(`${BASE_URL}/api/system/users/delete`, {
+                params: {selectedUsers}
+            });
+            const response = await axios.get(BASE_URL + "/api/system/users");
+            setUsers(response.data);
+            setSelectedUsers([]);
+            setDeleteMode(false);
+        } catch (error) {
+            console.error("刪除失敗：", error);
+        }
+    };
+
+    const handleDelete = async (username) => {
+        try {
+            await axios.delete(`${BASE_URL}/api/system/user/delete/${username}`);
+            const response = await axios.get(BASE_URL + "/api/system/users");
+            setUsers(response.data);
+            setSelectedUsers([]);
+            setDeleteMode(false);
+        } catch (error) {
+            console.error("刪除失敗：", error);
+        }
+    };
+
     return (
         <div key={reloadKey} className="mgr-wrapper">
             <AccountHeaderWrapper
@@ -73,6 +103,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 setSelectedUsers={setSelectedUsers}
                 addHandleSubmit={addHandleSubmit}
                 setEmptyError={setEmptyError}
+                handleDelete={handleDeleteAll}
             />
             {pageState === "list" && (
                 <AccountListWrapper
@@ -85,6 +116,7 @@ function AccountMgrWrapper({ reloadKey }) {
                     deleteMode={deleteMode}
                     selectedUsers={selectedUsers}
                     setSelectedUsers={setSelectedUsers}
+                    handleDelete={handleDelete}
                 />
             )}
             {pageState === "add" && (

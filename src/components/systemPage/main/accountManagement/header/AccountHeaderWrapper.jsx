@@ -13,7 +13,8 @@ function AccountHeaderWrapper({ users, setUsers,
     pageState, toggleState,
     deleteMode, setDeleteMode,
     selectedUsers, setSelectedUsers,
-    addHandleSubmit, setEmptyError }) {
+    addHandleSubmit, setEmptyError,
+    handleDelete }) {
 
     const [unitOpen, setUnitOpen] = useState(false);
     const [roleOpen, setRoleOpen] = useState(false);
@@ -39,23 +40,6 @@ function AccountHeaderWrapper({ users, setUsers,
     const clearPermission = () => {
         setRole("");
         setRoleOpen(false);
-    };
-
-    const handleDelete = async () => {
-        if (selectedUsers.length === 0) {
-            alert("請選擇要刪除的帳戶");
-            return;
-        }
-        try {
-            await axios.delete(`${BASE_URL}/api/system/users/delete`, {
-                data: selectedUsers
-            });
-            setUsers(users.filter(user => !selectedUsers.includes(user.username)));
-            setSelectedUsers([]);
-            setDeleteMode(false);
-        } catch (error) {
-            console.error("刪除失敗：", error);
-        }
     };
 
     const handleBack = () => {
@@ -120,7 +104,7 @@ function AccountHeaderWrapper({ users, setUsers,
                         <button className="account-button mgr-cancel" onClick={() => setDeleteMode(true)}>刪除</button>
                     ) : (
                         <div>
-                            <button className="account-button account-right-button" onClick={handleDelete}>確認</button>
+                            <button className="account-button account-right-button" onClick={() => handleDelete(selectedUsers)}>確認</button>
                             <button className="account-button mgr-cancel" onClick={() => setDeleteMode(false)}>取消</button>
                         </div>
                     )}

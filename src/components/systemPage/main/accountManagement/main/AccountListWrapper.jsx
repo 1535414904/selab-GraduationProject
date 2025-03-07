@@ -4,12 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { BASE_URL } from "../../../../../config";
 import EditableRow from "./EditableRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function AccountListWrapper({ users, setUsers,
     username, name, unit, role, deleteMode,
-    selectedUsers, setSelectedUsers }) {
-        
+    selectedUsers, setSelectedUsers, handleDelete }) {
+
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
     const tbodyRef = useRef(null);
@@ -94,6 +94,7 @@ function AccountListWrapper({ users, setUsers,
             <table className="system-table">
                 <thead ref={theadRef}>
                     <tr>
+                        <th></th>
                         <th>帳號</th>
                         <th>姓名</th>
                         <th>單位</th>
@@ -105,28 +106,31 @@ function AccountListWrapper({ users, setUsers,
                 <tbody ref={tbodyRef}>
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
-                                editingUser?.username === user.username ? (
-                                    <EditableRow key={user.username} user={user} handleSave={handleSave} />
-                                ) : (
-                                    <tr key={user.username}>
-                                        <td>{user.username}</td>
-                                        <td>{user.name}</td>
-                                        <td>{user.unit}</td>
-                                        <td>{roleDisplayMap[user.role]}</td>
-                                        <td>{user.email}</td>
-                                        <td>
-                                            {deleteMode ? (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedUsers.includes(user.username)}
-                                                    onChange={() => handleCheckboxChange(user.username)}
-                                                />
-                                            ) : (
-                                                <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(user)} />
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
+                            editingUser?.username === user.username ? (
+                                <EditableRow key={user.username} user={user} handleSave={handleSave} />
+                            ) : (
+                                <tr key={user.username}>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedUsers.includes(user.username)}
+                                            onChange={() => handleCheckboxChange(user.username)}
+                                        />
+                                    </td>
+                                    <td>{user.username}</td>
+                                    <td>{user.name}</td>
+                                    <td>{user.unit}</td>
+                                    <td>{roleDisplayMap[user.role]}</td>
+                                    <td>{user.email}</td>
+                                    <td>
+                                        <div className="action-buttons">
+                                            <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(user)} />
+                                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => {handleDelete(user.username);}}/>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            )
                         ))
                     ) : (
                         <tr>

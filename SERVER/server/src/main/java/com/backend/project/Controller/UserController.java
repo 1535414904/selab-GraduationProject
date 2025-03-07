@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Service.UserService;
@@ -78,9 +79,14 @@ public class UserController {
         return ResponseEntity.ok("Users add successfully");
     }
     
+    @DeleteMapping("/system/user/delete/{username}")
+    public ResponseEntity<?> deleteUsers(@PathVariable String username) {
+        userService.deleteUser(username);
+        return ResponseEntity.ok("User deleted successfully");
+    }
 
     @DeleteMapping("/system/users/delete")
-    public ResponseEntity<?> deleteUsers(@RequestBody List<String> usernames) {
+    public ResponseEntity<?> deleteUsers(@RequestParam List<String> usernames) {
         userService.deleteUsers(usernames);
         return ResponseEntity.ok("Users deleted successfully");
     }

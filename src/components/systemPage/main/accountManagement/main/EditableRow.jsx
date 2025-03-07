@@ -21,6 +21,7 @@ function EditableRow({ key, user, handleSave }) {
 
     return (
         <tr key={key} className="editable-row">
+            <td></td>
             <td>{editedUser.username}</td>
             <td><input type="text" name="name" value={editedUser.name} onChange={handleChange} /></td>
             <td><input type="text" name="unit" value={editedUser.unit} onChange={handleChange} /></td>
