@@ -1,5 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../../../../../config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 /* eslint-disable react/prop-types */
 function DepartmentHeaderWrapper({ departments, setDepartments,
@@ -37,7 +39,7 @@ function DepartmentHeaderWrapper({ departments, setDepartments,
         toggleState("list");
         setEmptyError(null);
     }
-
+    
     return (
         <div className="header-wrapper">
             <div className="title">
@@ -46,7 +48,7 @@ function DepartmentHeaderWrapper({ departments, setDepartments,
 
             {pageState === "list" && (
                 <div className="header-function">
-                    <div className="filter">篩選</div>
+                    <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
 
                     <input
                         type="text"

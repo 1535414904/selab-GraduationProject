@@ -1,6 +1,8 @@
 import axios from "axios";
 import { BASE_URL } from "../../../../../../config";
 import { useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 /* eslint-disable react/prop-types */
 function ChiefSurgeonHeaderWrapper({ setChiefSurgeon,
@@ -54,7 +56,7 @@ function ChiefSurgeonHeaderWrapper({ setChiefSurgeon,
 
             {pageState === "list" && (
                 <div className="header-function">
-                    <div className="filter">篩選</div>
+                    <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
 
                     <input
                         type="text"
