@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import axios from "axios";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import EditableRow from "./EditableRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,7 +9,7 @@ import AddRow from "./AddRow";
 
 function AccountListWrapper({ users, setUsers,
     username, name, unit, role,
-    selectedUsers, setSelectedUsers, handleDelete, addUsers, setAddUsers, handleAdd }) {
+    selectedUsers, setSelectedUsers, handleDelete, addUsers, setAddUsers, handleAdd, emptyError }) {
 
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
@@ -85,6 +85,7 @@ function AccountListWrapper({ users, setUsers,
                         addUsers={addUsers}
                         setAddUsers={setAddUsers}
                         handleAdd={handleAdd}
+                        emptyError={emptyError}
                     />
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
