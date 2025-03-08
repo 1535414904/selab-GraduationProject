@@ -9,17 +9,18 @@ import AccountHeaderWrapper from "./header/AccountHeaderWrapper";
 
 function AccountMgrWrapper({ reloadKey }) {
     const [users, setUsers] = useState([]);
-    const [pageState, setPageState] = useState("list");
+    //const [pageState, setPageState] = useState("list");
     const [username, setUsername] = useState("");
     const [name, setName] = useState("");
     const [unit, setUnit] = useState("");
     const [role, setRole] = useState("");
-    const [deleteMode, setDeleteMode] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
-    const [addUsers, setAddUsers] = useState([
-        { username: "", name: "", unit: "", role: 1, email: "" }
-    ]);
+    const [addUsers, setAddUsers] = useState([]);
     const [emptyError, setEmptyError] = useState(null);
+
+    useEffect(() => {
+        console.log("AddUsers:", addUsers)
+    }, [addUsers])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,7 +35,7 @@ function AccountMgrWrapper({ reloadKey }) {
         fetchData();
     }, []);
 
-    const addHandleSubmit = async () => {
+    /*const addHandleSubmit = async () => {
         const hasEmptyField = addUsers.some(user => !user.username.trim());
         if (hasEmptyField) {
             setEmptyError("*帳號欄位不得為空");
@@ -44,12 +45,27 @@ function AccountMgrWrapper({ reloadKey }) {
                 const response = await axios.get(BASE_URL + "/api/system/users");
                 setUsers(response.data);
                 setEmptyError(null);
-                setPageState("list");
+                //setPageState("list");
             } catch (error) {
                 console.log("Error add data: ", error);
             }
         }
+    }*/
 
+    const handleAdd = async (user) => {
+        if (!user.username.trim()) {
+            setEmptyError("*帳號欄位不得為空");
+        } else {
+            try {
+                console.log("User:", user);
+                await axios.post(`${BASE_URL}/api/system/user/add`, user);
+                const response = await axios.get(BASE_URL + "/api/system/users");
+                setUsers(response.data);
+                setEmptyError(null);
+            } catch (error) {
+                console.log("Error add data: ", error);
+            }
+        }
     }
 
     const handleDeleteAll = async (selectedUsers) => {
@@ -59,12 +75,11 @@ function AccountMgrWrapper({ reloadKey }) {
         }
         try {
             await axios.delete(`${BASE_URL}/api/system/users/delete`, {
-                params: {selectedUsers}
+                data: selectedUsers
             });
             const response = await axios.get(BASE_URL + "/api/system/users");
             setUsers(response.data);
             setSelectedUsers([]);
-            setDeleteMode(false);
         } catch (error) {
             console.error("刪除失敗：", error);
         }
@@ -76,7 +91,6 @@ function AccountMgrWrapper({ reloadKey }) {
             const response = await axios.get(BASE_URL + "/api/system/users");
             setUsers(response.data);
             setSelectedUsers([]);
-            setDeleteMode(false);
         } catch (error) {
             console.error("刪除失敗：", error);
         }
@@ -95,37 +109,27 @@ function AccountMgrWrapper({ reloadKey }) {
                 setUnit={setUnit}
                 role={role}
                 setRole={setRole}
-                pageState={pageState}
-                toggleState={setPageState}
-                deleteMode={deleteMode}
-                setDeleteMode={setDeleteMode}
                 selectedUsers={selectedUsers}
                 setSelectedUsers={setSelectedUsers}
-                addHandleSubmit={addHandleSubmit}
                 setEmptyError={setEmptyError}
                 handleDelete={handleDeleteAll}
+                addUsers={addUsers}
+                setAddUsers={setAddUsers}
             />
-            {pageState === "list" && (
-                <AccountListWrapper
-                    users={users}
-                    setUsers={setUsers}
-                    username={username}
-                    name={name}
-                    unit={unit}
-                    role={role}
-                    deleteMode={deleteMode}
-                    selectedUsers={selectedUsers}
-                    setSelectedUsers={setSelectedUsers}
-                    handleDelete={handleDelete}
-                />
-            )}
-            {pageState === "add" && (
-                <AccountAddWrapper
-                    users={addUsers}
-                    setUsers={setAddUsers}
-                    emptyError={emptyError}
-                />
-            )}
+            <AccountListWrapper
+                users={users}
+                setUsers={setUsers}
+                username={username}
+                name={name}
+                unit={unit}
+                role={role}
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                handleDelete={handleDelete}
+                addUsers={addUsers}
+                setAddUsers={setAddUsers}
+                handleAdd={handleAdd}
+            />
         </div>
     );
 }

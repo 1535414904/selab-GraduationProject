@@ -63,6 +63,10 @@ public class UserService {
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    public User addUser(User user) {
+        return userRepository.save(user);
+    }
+
     public void addUsers(List<User> users) {
         userRepository.saveAll(users);
     }

@@ -5,15 +5,14 @@ import { BASE_URL } from "../../../../../config";
 import EditableRow from "./EditableRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
+import AddRow from "./AddRow";
 
 function AccountListWrapper({ users, setUsers,
-    username, name, unit, role, deleteMode,
-    selectedUsers, setSelectedUsers, handleDelete }) {
+    username, name, unit, role,
+    selectedUsers, setSelectedUsers, handleDelete, addUsers, setAddUsers, handleAdd }) {
 
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
-    const tbodyRef = useRef(null);
-    const theadRef = useRef(null);
 
     const roleDisplayMap = {
         1: <p>查看者</p>,
@@ -44,28 +43,6 @@ function AccountListWrapper({ users, setUsers,
         setFilteredUsers(sortedUsers);
     }, [username, name, unit, role, users]);
 
-    useEffect(() => {
-        const adjustTheadWidth = () => {
-            if (tbodyRef.current.scrollHeight > window.innerHeight * 0.6) {
-                theadRef.current.style.width = "calc(100% - 17px)";
-            } else {
-                theadRef.current.style.width = "100%";
-            }
-        };
-
-        if (tbodyRef.current) {
-            adjustTheadWidth();
-            tbodyRef.current.addEventListener("scroll", adjustTheadWidth);
-        }
-
-        return () => {
-            if (tbodyRef.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                tbodyRef.current.removeEventListener("scroll", adjustTheadWidth);
-            }
-        };
-    }, [filteredUsers]);
-
     const handleEdit = (user) => {
         console.log("🔍 現在正在編輯的使用者：", user);
         setEditingUser(user);
@@ -92,7 +69,7 @@ function AccountListWrapper({ users, setUsers,
     return (
         <div className="mgr-list">
             <table className="system-table">
-                <thead ref={theadRef}>
+                <thead>
                     <tr>
                         <th></th>
                         <th>帳號</th>
@@ -103,7 +80,12 @@ function AccountListWrapper({ users, setUsers,
                         <th>動作</th>
                     </tr>
                 </thead>
-                <tbody ref={tbodyRef}>
+                <tbody>
+                    <AddRow
+                        addUsers={addUsers}
+                        setAddUsers={setAddUsers}
+                        handleAdd={handleAdd}
+                    />
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
                             editingUser?.username === user.username ? (
@@ -125,9 +107,8 @@ function AccountListWrapper({ users, setUsers,
                                     <td>
                                         <div className="action-buttons">
                                             <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(user)} />
-                                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => {handleDelete(user.username);}}/>
+                                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => { handleDelete(user.username); }} />
                                         </div>
-
                                     </td>
                                 </tr>
                             )

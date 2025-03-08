@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
@@ -14,7 +14,7 @@ function AccountHeaderWrapper({ users, setUsers,
     deleteMode, setDeleteMode,
     selectedUsers, setSelectedUsers,
     addHandleSubmit, setEmptyError,
-    handleDelete }) {
+    handleDelete, addUsers, setAddUsers }) {
 
     const [unitOpen, setUnitOpen] = useState(false);
     const [roleOpen, setRoleOpen] = useState(false);
@@ -47,69 +47,64 @@ function AccountHeaderWrapper({ users, setUsers,
         setEmptyError(null);
     }
 
+    const addRow = () => {
+        setAddUsers([...addUsers, { username: "", name: "", unit: "", role: 1, email: "" }]);
+    };
+
     return (
         <div className="header-wrapper">
             <div className="title">
                 <h1>帳號管理</h1>
             </div>
 
-            {pageState === "list" && (
-                <div className="header-function">
+            <div className="header-function">
 
-                    <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
+                <FontAwesomeIcon className="filter" icon={faMagnifyingGlass} />
 
-                    <input
-                        placeholder="請輸入帳號"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
+                <input
+                    placeholder="請輸入帳號"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
 
-                    <input
-                        placeholder="請輸入姓名"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
+                <input
+                    placeholder="請輸入姓名"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
 
-                    <div className={`custom-select ${unitOpen ? "open" : ""}`} onClick={toggleUnitSelect}>
-                        <div className="select-box">
-                            <span className="select-text">{unit || "選擇單位"}</span>
-                            <i className="arrow">▼</i>
-                        </div>
-                        <div className="options">
-                            {[...new Set(users.map(user => user.unit))].map((unitOption) => (
-                                <div key={unitOption} className="option" onClick={() => selectUnit(unitOption)}>
-                                    {unitOption}
-                                </div>
-                            ))}
-                            <div className="option clear-option" onClick={clearUnit}>清空</div>
-                        </div>
+                <div className={`custom-select ${unitOpen ? "open" : ""}`} onClick={toggleUnitSelect}>
+                    <div className="select-box">
+                        <span className="select-text">{unit || "選擇單位"}</span>
+                        <i className="arrow">▼</i>
                     </div>
-
-                    <div className={`custom-select ${roleOpen ? "open" : ""}`} onClick={toggleRoleSelect}>
-                        <div className="select-box">
-                            <span className="select-text">{role || "選擇權限"}</span>
-                            <i className="arrow">▼</i>
-                        </div>
-                        <div className="options">
-                            <div className="option" onClick={() => selectRole("管理者")}>管理者</div>
-                            <div className="option" onClick={() => selectRole("編輯者")}>編輯者</div>
-                            <div className="option" onClick={() => selectRole("查看者")}>查看者</div>
-                            <div className="option clear-option" onClick={clearPermission}>清空</div>
-                        </div>
+                    <div className="options">
+                        {[...new Set(users.map(user => user.unit))].map((unitOption) => (
+                            <div key={unitOption} className="option" onClick={() => selectUnit(unitOption)}>
+                                {unitOption}
+                            </div>
+                        ))}
+                        <div className="option clear-option" onClick={clearUnit}>清空</div>
                     </div>
-
-                    {!deleteMode && <button className="account-button account-right-button" onClick={() => toggleState("add")}>新增</button>}
-
-                    {!deleteMode ? (
-                        <button className="account-button mgr-cancel" onClick={() => setDeleteMode(true)}>刪除</button>
-                    ) : (
-                        <div>
-                            <button className="account-button account-right-button" onClick={() => handleDelete(selectedUsers)}>確認</button>
-                            <button className="account-button mgr-cancel" onClick={() => setDeleteMode(false)}>取消</button>
-                        </div>
-                    )}
                 </div>
-            )}
+
+                <div className={`custom-select ${roleOpen ? "open" : ""}`} onClick={toggleRoleSelect}>
+                    <div className="select-box">
+                        <span className="select-text">{role || "選擇權限"}</span>
+                        <i className="arrow">▼</i>
+                    </div>
+                    <div className="options">
+                        <div className="option" onClick={() => selectRole("管理者")}>管理者</div>
+                        <div className="option" onClick={() => selectRole("編輯者")}>編輯者</div>
+                        <div className="option" onClick={() => selectRole("查看者")}>查看者</div>
+                        <div className="option clear-option" onClick={clearPermission}>清空</div>
+                    </div>
+                </div>
+
+                <button className="account-button account-right-button" onClick={addRow}>新增</button>    
+                <button className="account-button mgr-cancel" onClick={() => handleDelete(selectedUsers)}>刪除</button>
+
+            </div>
 
             {pageState === "add" && (
                 <div>

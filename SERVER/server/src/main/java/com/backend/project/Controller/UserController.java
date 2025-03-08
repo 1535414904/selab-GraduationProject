@@ -73,6 +73,12 @@ public class UserController {
         return ResponseEntity.ok("User update successfully");
     }
 
+    @PostMapping("/system/user/add")
+    public ResponseEntity<?> addUser(@RequestBody User user) {
+        userService.addUser(user);
+        return ResponseEntity.ok("User add successfully");
+    }
+
     @PostMapping("/system/users/add")
     public ResponseEntity<?> addUsers(@RequestBody List<User> users) {
         userService.addUsers(users);
@@ -86,7 +92,7 @@ public class UserController {
     }
 
     @DeleteMapping("/system/users/delete")
-    public ResponseEntity<?> deleteUsers(@RequestParam List<String> usernames) {
+    public ResponseEntity<?> deleteUsers(@RequestBody List<String> usernames) {
         userService.deleteUsers(usernames);
         return ResponseEntity.ok("Users deleted successfully");
     }

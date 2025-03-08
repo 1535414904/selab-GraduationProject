@@ -8,7 +8,7 @@ function AccountAddWrapper({ users, setUsers, emptyError }) {
     };
 
     const addRow = () => {
-        setUsers([...users, { username: "", name: "", unit: "", role: 1, email: "" }]);
+        setUsers([...users, { username: "aaa", name: "", unit: "", role: 1, email: "" }]);
     };
 
     const removeRow = () => {
