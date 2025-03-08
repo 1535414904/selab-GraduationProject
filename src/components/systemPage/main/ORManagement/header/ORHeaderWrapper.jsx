@@ -43,7 +43,7 @@ function ORHeaderWrapper({ operatingRooms, setOperatingRooms,
     return (
         <div className="header-wrapper">
             <div className="title">
-                <h1>科別管理</h1>
+                <h1>手術房管理</h1>
             </div>
 
             {pageState === "list" && (
