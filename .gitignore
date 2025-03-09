@@ -27,4 +27,4 @@ dist-ssr
 src/main/resources/application.properties
 
 # 忽略 pom.xml
-pom.xml
+#pom.xml
