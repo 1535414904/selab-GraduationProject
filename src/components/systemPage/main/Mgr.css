@@ -72,6 +72,10 @@
   font-weight: bold;
 }
 
+.error {
+  color: red;
+}
+
 /* Custom select styles */
 .custom-select {
   margin-top: 0.3%;

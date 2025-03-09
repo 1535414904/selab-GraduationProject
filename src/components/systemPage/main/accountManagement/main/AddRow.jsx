@@ -1,7 +1,8 @@
+/* eslint-disable react/prop-types */
 import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-function AddRow({ addUsers, setAddUsers, handleAdd }) {
+function AddRow({ addUsers, setAddUsers, handleAdd, emptyError }) {
 
     const handleChange = (index, event) => {
         const { name, value } = event.target;
@@ -28,6 +29,7 @@ function AddRow({ addUsers, setAddUsers, handleAdd }) {
                             onChange={(e) => handleChange(index, e)}
                             placeholder="輸入帳號"
                         />
+                        <div className="error">{emptyError}</div>
                     </td>
                     <td>
                         <input
@@ -65,7 +67,10 @@ function AddRow({ addUsers, setAddUsers, handleAdd }) {
                     </td>
                     <td>
                         <div className="action-buttons">
-                            <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {handleAdd(user); handleDelete(index);}} />
+                            <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {
+                                handleAdd(user);
+                                if (user.username.trim()) { handleDelete(index); }
+                            }} />
                             <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(index)} />
                         </div></td>
                 </tr>

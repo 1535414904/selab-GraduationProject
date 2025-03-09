@@ -4,7 +4,6 @@ import "../Mgr.css"
 import AccountListWrapper from "./main/AccountListWrapper";
 import { BASE_URL } from "../../../../config";
 import axios from "axios";
-import AccountAddWrapper from "./main/AccountAddWrapper";
 import AccountHeaderWrapper from "./header/AccountHeaderWrapper";
 
 function AccountMgrWrapper({ reloadKey }) {
@@ -129,6 +128,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 addUsers={addUsers}
                 setAddUsers={setAddUsers}
                 handleAdd={handleAdd}
+                emptyError={emptyError}
             />
         </div>
     );
