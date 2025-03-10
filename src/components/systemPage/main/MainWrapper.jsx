@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 /* eslint-disable react/prop-types */
 import AccountMgrWrapper from "./accountManagement/AccountMgrWrapper";
 import DepartmentMgrWrapper from "./departmentManagement/DepartmentMgrWrapper";

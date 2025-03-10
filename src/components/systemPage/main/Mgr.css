@@ -26,8 +26,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
-  border-bottom: 2px solid black;
+  font-size: 2.5em;
+  font-weight: bold;
+
 }
 
 .header-function {

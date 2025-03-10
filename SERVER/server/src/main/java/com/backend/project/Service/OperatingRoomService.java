@@ -36,6 +36,14 @@ public class OperatingRoomService {
         }).orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
     }
 
+    public void addOperatingRoom(OperatingRoom operatingRoom) {
+        Department department = departmentRepository.findById(operatingRoom.getDepartmentId())
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        operatingRoom.setDepartment(department);
+
+        operatingRoomRepository.save(operatingRoom);
+    }
+
     public void addOperatingRooms(List<OperatingRoom> operatingRooms) {
 
         for (OperatingRoom operatingRoom : operatingRooms) {
@@ -45,6 +53,10 @@ public class OperatingRoomService {
         }
 
         operatingRoomRepository.saveAll(operatingRooms);
+    }
+
+    public void deleteOperatingRoom(String id) {
+        operatingRoomRepository.deleteById(id);
     }
 
     public void deleteOperatingRooms(List<String> ids) {

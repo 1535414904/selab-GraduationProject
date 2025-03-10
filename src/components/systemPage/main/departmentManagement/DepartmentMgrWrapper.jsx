@@ -55,7 +55,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
                 setDepartments(response.data);
                 setEmptyError(null);
             } catch (error) {
-                console.log("Error add data: ", error);
+                console.error("Error add data: ", error);
             }
         }
     }
@@ -73,7 +73,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
             setDepartments(response.data);
             setSelectedDepartments([]);
         } catch (error) {
-            console.error("刪除失敗：", error);
+            console.error("Delete fail：", error);
         }
     };
 
@@ -84,7 +84,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
             setDepartments(response.data);
             setSelectedDepartments([]);
         } catch (error) {
-            console.error("刪除失敗：", error);
+            console.error("Delete fail：", error);
         }
     };
 

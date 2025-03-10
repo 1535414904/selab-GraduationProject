@@ -1,21 +1,22 @@
 /* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
-import { faPenSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import EditableRow from "./EditableRow";
 import axios from "axios";
 import { BASE_URL } from "../../../../../config";
+import AddRow from "./AddRow";
 
 function ORListWrapper({
     operatingRooms, setOperatingRooms,
-    filterOperatingRoom, deleteMode,
-    selectedOperatingRooms, setSelectedOperatingRooms }) {
+    filterOperatingRoom, selectedOperatingRooms,
+    setSelectedOperatingRooms, handleDelete,
+    addOperatingRooms, setAddOperatingRooms,
+    handleAdd, emptyError }) {
 
     const [filteredOperatingRooms, setFilteredOperatingRooms] = useState([]);
     const [editingOperatingRoom, setEditingOperatingRoom] = useState(null);
-    const tbodyRef = useRef(null);
-    const theadRef = useRef(null);
 
     const statusDisplayMap = {
         1: <td>開啟</td>,
@@ -34,7 +35,7 @@ function ORListWrapper({
             const matchesName = filterOperatingRoom.name
                 ? operatingRoom.name
 
-                
+
                     .toLowerCase()
                     .includes(filterOperatingRoom.name.toLowerCase())
                 : true;
@@ -49,27 +50,9 @@ function ORListWrapper({
         setFilteredOperatingRooms(sortedOperatingRooms);
     }, [filterOperatingRoom.id, filterOperatingRoom.name, operatingRooms, setOperatingRooms]);
 
-    useEffect(() => {
-        const adjustTheadWidth = () => {
-            if (tbodyRef.current.scrollHeight > window.innerHeight * 0.6) {
-                theadRef.current.style.width = "calc(100% - 17px)";
-            } else {
-                theadRef.current.style.width = "100%";
-            }
-        };
-
-        if (tbodyRef.current) {
-            adjustTheadWidth();
-            tbodyRef.current.addEventListener("scroll", adjustTheadWidth);
-        }
-
-        return () => {
-            if (tbodyRef.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                tbodyRef.current.removeEventListener("scroll", adjustTheadWidth);
-            }
-        };
-    }, [filteredOperatingRooms]);
+    const handleEdit = (operatingRoom) => {
+        setEditingOperatingRoom(operatingRoom);
+    };
 
     const handleSave = async (updatedOperatingRoom) => {
         try {
@@ -85,9 +68,6 @@ function ORListWrapper({
         }
     };
 
-    const handleEdit = (operatingRoom) => {
-        setEditingOperatingRoom(operatingRoom);
-    };
 
     const handleCheckboxChange = (id) => {
         setSelectedOperatingRooms((prevSelected) =>
@@ -99,8 +79,9 @@ function ORListWrapper({
     return (
         <div className="mgr-list">
             <table className="system-table">
-                <thead ref={theadRef}>
+                <thead>
                     <tr>
+                        <th></th>
                         <th>手術房編號</th>
                         <th>手術房名稱</th>
                         <th>所屬科別</th>
@@ -109,7 +90,13 @@ function ORListWrapper({
                         <th>動作</th>
                     </tr>
                 </thead>
-                <tbody ref={tbodyRef}>
+                <tbody>
+                    <AddRow 
+                        addOperatingRooms={addOperatingRooms}
+                        setAddOperatingRooms={setAddOperatingRooms}
+                        handleAdd={handleAdd}
+                        emptyError={emptyError}
+                    />
                     {filteredOperatingRooms.length > 0 ? (
                         filteredOperatingRooms.map((operatingRoom) => (
                             editingOperatingRoom?.id === operatingRoom.id ? (
@@ -120,21 +107,23 @@ function ORListWrapper({
                                 />
                             ) : (
                                 <tr key={operatingRoom.id}>
+                                    <td>
+                                        <input 
+                                            type="checkbox"
+                                            checked={selectedOperatingRooms.includes(operatingRoom.id)}
+                                            onChange={() => handleCheckboxChange(operatingRoom.id)}
+                                        />
+                                    </td>
                                     <td>{operatingRoom.id}</td>
                                     <td>{operatingRoom.name}</td>
                                     <td>{operatingRoom.department.name}</td>
                                     <td>{operatingRoom.roomType}</td>
                                     {statusDisplayMap[operatingRoom.status]}
                                     <td>
-                                        {deleteMode ? (
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedOperatingRooms.includes(operatingRoom.id)}
-                                                onChange={() => handleCheckboxChange(operatingRoom.id)}
-                                            />
-                                        ) : (
+                                        <div className="action-buttons">
                                             <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(operatingRoom)} />
-                                        )}
+                                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(operatingRoom.id)} />
+                                        </div>
                                     </td>
                                 </tr>
                             )

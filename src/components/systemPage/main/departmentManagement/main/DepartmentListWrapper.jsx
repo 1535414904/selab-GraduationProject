@@ -94,7 +94,11 @@ function DepartmentListWrapper({
           {filteredDepartments.length > 0 ? (
             filteredDepartments.map((department, index) => (
               editingDepartment?.id === department.id ? (
-                <EditableRow key={department.id} department={department} handleSave={handleSave} />
+                <EditableRow
+                  key={department.id}
+                  department={department}
+                  handleSave={handleSave}
+                />
               ) : (
                 <>
                   <tr key={department.id}>

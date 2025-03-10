@@ -31,16 +31,30 @@ public class OperatingRoomController {
     }
 
     @PutMapping("/system/operating-room/{id}")
-    public ResponseEntity<?> updateOperatingRoom(@PathVariable String id, @RequestBody OperatingRoom updatOperatingRoom){
+    public ResponseEntity<?> updateOperatingRoom(@PathVariable String id,
+            @RequestBody OperatingRoom updatOperatingRoom) {
         operatingRoomService.updateOperatingRoom(id, updatOperatingRoom);
         return ResponseEntity.ok("OperatingRoom update successfully");
+    }
+
+    @PostMapping("system/operating-room/add")
+    public ResponseEntity<?> addOperatingRoom(
+            @RequestBody OperatingRoom operatingRoom) {
+        operatingRoomService.addOperatingRoom(operatingRoom);
+        return ResponseEntity.ok("OperatingRoom add successfully");
     }
 
     @PostMapping("/system/operating-rooms/add")
     public ResponseEntity<?> addOperatingRooms(
             @RequestBody List<OperatingRoom> operatingRooms) {
         operatingRoomService.addOperatingRooms(operatingRooms);
-        return ResponseEntity.ok("OperatingRoom add successfully");
+        return ResponseEntity.ok("OperatingRooms add successfully");
+    }
+
+    @DeleteMapping("/system/operating-room/delete/{id}")
+    public ResponseEntity<?> deleteOperatingRoom(@PathVariable String id) {
+        operatingRoomService.deleteOperatingRoom(id);
+        return ResponseEntity.ok("OperatingRoom delete successfully");
     }
 
     @DeleteMapping("/system/operating-rooms/delete")

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
