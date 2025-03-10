@@ -63,6 +63,12 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
               <ORMgrWrapper reloadKey={reloadKey} />
             </div>
           )}
+
+          {mainState === "shiftMgr" && (
+            <div className="transition-all duration-300 ease-in-out">
+              <Gantt rows={rows} setRows={setRows} />
+            </div>
+          )}
         </div>
       </div>
     </DragDropContext>

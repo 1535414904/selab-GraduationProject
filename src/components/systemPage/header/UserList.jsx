@@ -29,13 +29,13 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
     <div className="relative" ref={dropdownRef}>
       {/* 用戶按鈕 */}
       <button
-        className={`flex items-center space-x-2 py-2 px-3 rounded-full ${
+        className={`flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${
           isListOpen ? "bg-white text-blue-700" : "text-white hover:bg-blue-600"
         } transition-all duration-300`}
         onClick={toggleMenu}
       >
         <FontAwesomeIcon icon={faUser} className="text-sm" />
-        <span className="hidden md:inline text-sm font-medium">{name}</span>
+        <span className="hidden md:inline text-2xl font-medium">{name}</span>
         <svg
           className={`h-4 w-4 transition-transform duration-300 ${
             isListOpen ? "transform rotate-180" : ""
@@ -55,13 +55,13 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
       {/* 下拉選單 */}
       {isListOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 transform origin-top-right transition-all duration-300">
-          <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+          <div className="px-4 py-2 text-lg text-gray-500 border-b border-gray-100">
             <p>已登入為</p>
             <p className="font-semibold text-gray-700">{name}</p>
           </div>
 
           <button
-            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+            className="block w-full text-left px-4 py-2 text-2xl text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             onClick={() => {
               toggleMainPage("userProfile");
               setListOpen(false);
@@ -85,7 +85,7 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
           </button>
 
           <button
-            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+            className="block w-full text-left px-4 py-2 text-2xl text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             onClick={() => fullTogglePage("loginPage")}
           >
             <div className="flex items-center">

@@ -10,8 +10,8 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
   }, [toggleMainPage]);
   return (
     <div className="w-full bg-gradient-to-r from-blue-700 to-blue-900 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
+        <div className="flex items-center mr-auto h-16">
           {/* Logo and Hospital Name */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -29,16 +29,16 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
               </svg>
             </div>
             <div className="ml-2">
-              <span className="text-white text-lg font-semibold">
+              <span className="text-white text-3xl font-semibold">
                 手術排班系統
               </span>
             </div>
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-4 ml-auto">
             <button
-              className="px-3 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-500 transition duration-300"
+              className="px-4 py-2 text-white text-2xl bg-blue-600 rounded-md hover:bg-blue-500 transition duration-300"
               onClick={() => toggleMainPage("mainPage")}
             >
               首頁
@@ -47,7 +47,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
 
             {user.role == 3 && (
               <div className="ml-4 relative group">
-                <button className="px-3 py-2 text-white hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
+                <button className="px- py-2 text-white text-2xl hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
                   管理功能
                   <svg
                     className="ml-1 h-4 w-4"
@@ -63,55 +63,55 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                   </svg>
                 </button>
 
-                <div className="dropdown-menu absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg py-1">
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      toggleMainPage("accountMgr");
-                      setReloadKey((prevKey) => prevKey + 1);
-                    }}
-                  >
-                    帳號管理
-                  </button>
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      toggleMainPage("departmentMgr");
-                      setReloadKey((prevKey) => prevKey + 1);
-                    }}
-                  >
-                    科別管理
-                  </button>
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      toggleMainPage("ORMgr");
-                      setReloadKey((prevKey) => prevKey + 1);
-                    }}
-                  >
-                    手術房管理
-                  </button>
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      toggleMainPage("surgeryMgr");
-                      setReloadKey((prevKey) => prevKey + 1);
-                    }}
-                  >
-                    手術管理
-                  </button>
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      toggleMainPage("accountMgr");
-                      setReloadKey((prevKey) => prevKey + 1);
-                    }}
-                  >
-                    排班管理
-                  </button>
-                </div>
+                <div className="dropdown-menu absolute text-2xl z-10 mt-1 w-48 bg-white rounded-md shadow-lg py-1">
+                <button
+                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    toggleMainPage("accountMgr");
+                    setReloadKey((prevKey) => prevKey + 1);
+                  }}
+                >
+                  帳號管理
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    toggleMainPage("departmentMgr");
+                    setReloadKey((prevKey) => prevKey + 1);
+                  }}
+                >
+                  科別管理
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    toggleMainPage("ORMgr");
+                    setReloadKey((prevKey) => prevKey + 1);
+                  }}
+                >
+                  手術房管理
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    toggleMainPage("surgeryMgr");
+                    setReloadKey((prevKey) => prevKey + 1);
+                  }}
+                >
+                  手術管理
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    toggleMainPage("shiftMgr");
+                    setReloadKey((prevKey) => prevKey + 1);
+                  }}
+                >
+                  排班管理
+                </button>
               </div>
-            )}
+            </div>
+          )}
 
             {/* Quick Access Icons */}
             {/* <div className="hidden md:flex items-center ml-4 space-x-3">
@@ -165,7 +165,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
             </div> */}
 
             {/* User Profile */}
-            <div className="ml-4">
+            <div className="ml-4 text-2xl">
               <UserList
                 fullTogglePage={fullTogglePage}
                 name={user.name}
