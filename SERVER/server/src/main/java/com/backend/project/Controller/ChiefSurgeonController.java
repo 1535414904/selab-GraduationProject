@@ -30,16 +30,30 @@ public class ChiefSurgeonController {
         return ResponseEntity.ok("ChiefSurgeon update successfully");
     }
 
+    @PostMapping("/system/{departmentId}/chief-surgeon/add")
+    public ResponseEntity<ChiefSurgeon> addChiefSurgeon(
+        @PathVariable String departmentId,
+        @RequestBody ChiefSurgeon chiefSurgeon) {
+        return ResponseEntity.ok(chiefSurgeonService.addChiefSurgeon(departmentId, chiefSurgeon));
+    }
+    
+
     @PostMapping("/system/{departmentId}/chief-surgeons/add")
     public ResponseEntity<List<ChiefSurgeon>> addChiefSurgeons(
             @PathVariable String departmentId,
             @RequestBody List<ChiefSurgeon> chiefSurgeons) {
-        return ResponseEntity.ok(chiefSurgeonService.addChiefSurgeon(departmentId, chiefSurgeons));
+        return ResponseEntity.ok(chiefSurgeonService.addChiefSurgeons(departmentId, chiefSurgeons));
+    }
+
+    @DeleteMapping("/system/chief-surgeon/delete/{id}")
+    public ResponseEntity<?> deleteChiefSurgeon(@PathVariable String id) {
+        chiefSurgeonService.deleteChiefSurgeon(id);
+        return ResponseEntity.ok("ChiefSurgeon delete successfully");
     }
 
     @DeleteMapping("/system/chief-surgeons/delete")
     public ResponseEntity<?> deleteChiefSurgeons(@RequestBody List<String> ids) {
-        chiefSurgeonService.deleteChiefSurgeon(ids);
-        return ResponseEntity.ok("ChiefSurgeon delete successfully");
+        chiefSurgeonService.deleteChiefSurgeons(ids);
+        return ResponseEntity.ok("ChiefSurgeons delete successfully");
     }
 }
