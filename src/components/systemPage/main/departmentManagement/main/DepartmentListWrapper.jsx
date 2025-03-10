@@ -23,6 +23,7 @@ function DepartmentListWrapper({
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [editingDepartment, setEditingDepartment] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [addChiefSurgeons, setAddChiefSurgeons] = useState([]);
 
   useEffect(() => {
     if (!departments.length) return;
@@ -67,6 +68,10 @@ function DepartmentListWrapper({
     );
   };
 
+  const addRow = () => {
+    setAddChiefSurgeons([...addChiefSurgeons, { id: "", name: "" }])
+  }
+
   return (
     <div className="mgr-list">
       <table className="system-table">
@@ -108,11 +113,16 @@ function DepartmentListWrapper({
                         <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(department)} />
                         <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(department.id)} />
                         <FontAwesomeIcon className="view-button" icon={faUsers} onClick={() => toggleRow(index)} />
-                        {expandedRow === index && <FontAwesomeIcon className="add-button" icon={faPlus} />}
+                        {expandedRow === index && <FontAwesomeIcon className="add-button" icon={faPlus} onClick={addRow} />}
                       </div>
                     </td>
                   </tr>
-                  {expandedRow === index && <ChiefSurgeonListWrapper departmentId={department.id} />}
+                  {expandedRow === index &&
+                    <ChiefSurgeonListWrapper
+                      departmentId={department.id}
+                      addChiefSurgeons={addChiefSurgeons}
+                      setAddChiefSurgeons={setAddChiefSurgeons}
+                    />}
                 </>
               )
             ))

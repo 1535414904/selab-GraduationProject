@@ -26,18 +26,30 @@ public class ChiefSurgeonService {
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public List<ChiefSurgeon> addChiefSurgeon(String departmentId, List<ChiefSurgeon> chiefSurgeons) {
+    public ChiefSurgeon addChiefSurgeon(String departmentId, ChiefSurgeon chiefSurgeon) {
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        chiefSurgeon.setDepartment(department);
+
+        return chiefSurgeonRepository.save(chiefSurgeon);
+    }
+
+    public List<ChiefSurgeon> addChiefSurgeons(String departmentId, List<ChiefSurgeon> chiefSurgeons) {
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
 
-        for(ChiefSurgeon chiefSurgeon : chiefSurgeons) {
+        for (ChiefSurgeon chiefSurgeon : chiefSurgeons) {
             chiefSurgeon.setDepartment(department);
         }
 
         return chiefSurgeonRepository.saveAll(chiefSurgeons);
     }
-    
-    public void deleteChiefSurgeon(List<String> ids) {
+
+    public void deleteChiefSurgeon(String id) {
+        chiefSurgeonRepository.deleteById(id);
+    }
+
+    public void deleteChiefSurgeons(List<String> ids) {
         chiefSurgeonRepository.deleteAllById(ids);
     }
 }
