@@ -4,9 +4,11 @@ import { BASE_URL } from "../../../../../config";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
+import EditableRow from "./EditableRow";
 
 function ChiefSurgeonListWrapper({ departmentId }) {
     const [chiefSurgeons, setChiefSurgeons] = useState([]);
+    const [editingChiefSurgeon, setEditingChiefSurgeon] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,8 +23,12 @@ function ChiefSurgeonListWrapper({ departmentId }) {
         fetchData();
     }, [departmentId]);
 
+    const handleEdit = (chiefSurgeon) => {
+        setEditingChiefSurgeon(chiefSurgeon);
+    };
+
     return (
-        <td colSpan={5} >
+        <td colSpan={5} className="aaa">
             <table className="system-table chief-surgeon-list">
                 <thead>
                     <tr>
@@ -34,25 +40,30 @@ function ChiefSurgeonListWrapper({ departmentId }) {
                 </thead>
                 <tbody>
                     {chiefSurgeons.map((chiefSurgeon) => (
-                        <tr key={chiefSurgeon.id}>
-                            <td>
-                                <input
-                                    type="checkbox"
-                                />
-                            </td>
-                            <td>{chiefSurgeon.id}</td>
-                            <td>{chiefSurgeon.name}</td>
-                            <td>
-                                <div className="action-buttons">
-                                    <FontAwesomeIcon className="edit-button" icon={faPenSquare} />
-                                    <FontAwesomeIcon className="delete-button" icon={faTrash} />
-                                </div>
-                            </td>
-                        </tr>
+                        editingChiefSurgeon?.id === chiefSurgeon.id ? (
+                            <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon}/>
+                        ) : (
+                            <tr key={chiefSurgeon.id}>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                    />
+                                </td>
+                                <td>{chiefSurgeon.id}</td>
+                                <td>{chiefSurgeon.name}</td>
+                                <td>
+                                    <div className="action-buttons">
+                                        <FontAwesomeIcon className="edit-button" icon={faPenSquare}
+                                            onClick={() => handleEdit(chiefSurgeon)} />
+                                        <FontAwesomeIcon className="delete-button" icon={faTrash} />
+                                    </div>
+                                </td>
+                            </tr>
+                        )
                     ))}
                 </tbody>
             </table>
-        </td>
+        </td >
     )
 }
 

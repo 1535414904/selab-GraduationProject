@@ -216,12 +216,6 @@
   background-color: #f3f4f6;
 }
 
-.system-table tbody td {
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #1f2937;
-}
-
 .system-table tbody tr td {
   font-size: 20px;
   text-align: center;
@@ -265,6 +259,14 @@ td {
 }
 
 .view-button:hover {
+  filter: brightness(0.8);
+}
+
+.add-button {
+  cursor: pointer;
+}
+
+.add-button:hover {
   filter: brightness(0.8);
 }
 

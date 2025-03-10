@@ -38,7 +38,7 @@ function EditableRow({ key, department, handleSave }) {
       <td>
         {department.chiefSurgeonsCount}
       </td>
-      <td><FontAwesomeIcon icon={faFloppyDisk} size="lg" onClick={() => handleSave(editedDepartment)} /></td>
+      <td><FontAwesomeIcon icon={faFloppyDisk} className="edit-button" onClick={() => handleSave(editedDepartment)} /></td>
     </tr>
   );
 }

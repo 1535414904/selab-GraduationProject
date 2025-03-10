@@ -1,63 +1,61 @@
 /* eslint-disable react/prop-types */
-import { BASE_URL } from "../../../../../config";
-import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import EditableRow from "./EditableRow";
+import { BASE_URL } from "../../../../../config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenSquare, faPlus, faTrash, faUsers } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import EditableRow from "./EditableRow";
 import AddRow from "./AddRow";
 import ChiefSurgeonListWrapper from "../chiefSurgeonManagement/ChiefSurgeonListWrapper";
 
 function DepartmentListWrapper({
-  departments, setDepartments,
-  filterDepartment, selectedDepartments,
-  setSelectedDepartments, handleDelete,
-  addDepartments, setAddDepartments,
-  handleAdd, emptyError, }) {
-
+  departments,
+  setDepartments,
+  filterDepartment,
+  selectedDepartments,
+  setSelectedDepartments,
+  handleDelete,
+  addDepartments,
+  setAddDepartments,
+  handleAdd,
+  emptyError,
+}) {
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [editingDepartment, setEditingDepartment] = useState(null);
+  const [expandedRow, setExpandedRow] = useState(null);
 
   useEffect(() => {
     if (!departments.length) return;
 
     const newFilteredDepartments = departments.filter((department) => {
       const matchesId = filterDepartment.id
-        ? department.id
-          .toLowerCase()
-          .includes(filterDepartment.id.toLowerCase())
+        ? department.id.toLowerCase().includes(filterDepartment.id.toLowerCase())
         : true;
       const matchesName = filterDepartment.name
-        ? department.name
-          .toLowerCase()
-          .includes(filterDepartment.name.toLowerCase())
+        ? department.name.toLowerCase().includes(filterDepartment.name.toLowerCase())
         : true;
-
       return matchesId && matchesName;
     });
 
-    const sortedDepartments = newFilteredDepartments.sort(
-      (a, b) => b.role - a.role
-    );
-
-    setFilteredDepartments(sortedDepartments);
+    setFilteredDepartments(newFilteredDepartments.sort((a, b) => b.role - a.role));
   }, [departments, filterDepartment.id, filterDepartment.name]);
+
+  const toggleRow = (index) => {
+    setExpandedRow(expandedRow === index ? null : index);
+  };
 
   const handleEdit = (department) => {
     setEditingDepartment(department);
   };
 
-  const handleSave = async (updatedDeparment) => {
+  const handleSave = async (updatedDepartment) => {
     try {
-      await axios.put(
-        `${BASE_URL}/api/system/department/${updatedDeparment.id}`,
-        updatedDeparment
-      );
+      await axios.put(`${BASE_URL}/api/system/department/${updatedDepartment.id}`, updatedDepartment);
       const response = await axios.get(`${BASE_URL}/api/system/departments`);
       setDepartments(response.data);
       setEditingDepartment(null);
     } catch (error) {
-      console.error("updated error：", error);
+      console.error("Update error:", error);
     }
   };
 
@@ -89,13 +87,9 @@ function DepartmentListWrapper({
             emptyError={emptyError}
           />
           {filteredDepartments.length > 0 ? (
-            filteredDepartments.map((department) => (
+            filteredDepartments.map((department, index) => (
               editingDepartment?.id === department.id ? (
-                <EditableRow
-                  key={department.id}
-                  department={department}
-                  handleSave={handleSave}
-                />
+                <EditableRow key={department.id} department={department} handleSave={handleSave} />
               ) : (
                 <>
                   <tr key={department.id}>
@@ -112,22 +106,19 @@ function DepartmentListWrapper({
                     <td>
                       <div className="action-buttons">
                         <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(department)} />
-                        <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => { handleDelete(department.id); }} />
+                        <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(department.id)} />
+                        <FontAwesomeIcon className="view-button" icon={faUsers} onClick={() => toggleRow(index)} />
+                        {expandedRow === index && <FontAwesomeIcon className="add-button" icon={faPlus} />}
                       </div>
                     </td>
                   </tr>
-                  <ChiefSurgeonListWrapper 
-                    departmentId={department.id}
-                  />
+                  {expandedRow === index && <ChiefSurgeonListWrapper departmentId={department.id} />}
                 </>
               )
             ))
           ) : (
             <tr>
-              <td
-                colSpan="4"
-                className="py-4 px-4 text-center text-gray-500 italic"
-              >
+              <td colSpan="5" className="py-4 px-4 text-center text-gray-500 italic">
                 無符合條件的資料
               </td>
             </tr>
