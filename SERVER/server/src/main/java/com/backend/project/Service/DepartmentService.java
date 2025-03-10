@@ -30,8 +30,16 @@ public class DepartmentService {
         }).orElseThrow(() -> new RuntimeException("Department not found"));
     }
 
+    public Department addDepartment(Department department) {
+        return departmentRepository.save(department);
+    }
+
     public void addDepartments(List<Department> departments) {
         departmentRepository.saveAll(departments);
+    }
+
+    public void deleteDepartment(String id) {
+        departmentRepository.deleteById(id);
     }
 
     public void deleteDepartments(List<String> ids) {

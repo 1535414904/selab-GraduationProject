@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.backend.project.Service.DepartmentService;
 import com.backend.project.model.ChiefSurgeon;
 import com.backend.project.model.Department;
+import com.backend.project.model.User;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,13 +38,23 @@ public class DepartmentController {
         return ResponseEntity.ok("Department update successfully");
     }
 
+    @PostMapping("/system/department/add")
+    public ResponseEntity<?> addUser(@RequestBody Department department) {
+        departmentService.addDepartment(department);
+        return ResponseEntity.ok("Department add successfully");
+    }
+
     @PostMapping("/system/departments/add")
     public ResponseEntity<?> addDepartments(@RequestBody List<Department> departments) {
-        
         departmentService.addDepartments(departments);
         return ResponseEntity.ok("Departments add successfully");
     }
     
+    @DeleteMapping("/system/department/delete/{id}")
+    public ResponseEntity<?> deleteDepartment(@PathVariable String id) {
+        departmentService.deleteDepartment(id);
+        return ResponseEntity.ok("Department deleted successfully");
+    }
 
     @DeleteMapping("/system/departments/delete")
     public ResponseEntity<?> deleteDepartments(@RequestBody List<String> ids) {

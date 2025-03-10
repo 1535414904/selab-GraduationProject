@@ -105,13 +105,6 @@ function AccountHeaderWrapper({ users, setUsers,
                 <button className="account-button mgr-cancel" onClick={() => handleDelete(selectedUsers)}>刪除</button>
 
             </div>
-
-            {pageState === "add" && (
-                <div>
-                    <button className="account-button" onClick={addHandleSubmit}>確認</button>
-                    <button className="account-button mgr-cancel" onClick={handleBack}>返回</button>
-                </div>
-            )}
         </div>
     );
 }

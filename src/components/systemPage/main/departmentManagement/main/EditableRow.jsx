@@ -18,6 +18,7 @@ function EditableRow({ key, department, handleSave }) {
 
   return (
     <tr key={key} className="editable-row">
+      <td></td>
       <td>
         <input
           type="text"

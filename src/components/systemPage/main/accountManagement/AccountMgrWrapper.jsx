@@ -8,7 +8,6 @@ import AccountHeaderWrapper from "./header/AccountHeaderWrapper";
 
 function AccountMgrWrapper({ reloadKey }) {
     const [users, setUsers] = useState([]);
-    //const [pageState, setPageState] = useState("list");
     const [username, setUsername] = useState("");
     const [name, setName] = useState("");
     const [unit, setUnit] = useState("");
@@ -16,10 +15,6 @@ function AccountMgrWrapper({ reloadKey }) {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [addUsers, setAddUsers] = useState([]);
     const [emptyError, setEmptyError] = useState(null);
-
-    useEffect(() => {
-        console.log("AddUsers:", addUsers)
-    }, [addUsers])
 
     useEffect(() => {
         const fetchData = async () => {

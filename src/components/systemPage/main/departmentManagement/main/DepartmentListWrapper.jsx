@@ -1,24 +1,22 @@
 /* eslint-disable react/prop-types */
 import { BASE_URL } from "../../../../../config";
-import { faPenSquare, faPerson } from "@fortawesome/free-solid-svg-icons";
+import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import EditableRow from "./EditableRow";
 import axios from "axios";
+import AddRow from "./AddRow";
+import ChiefSurgeonListWrapper from "../chiefSurgeonManagement/ChiefSurgeonListWrapper";
 
 function DepartmentListWrapper({
-  departments,
-  setDepartments,
-  filterDepartment,
-  deleteMode,
-  selectedDepartments,
-  setSelectedDepartments,
-  setIdforChiefSurgeons,
-}) {
+  departments, setDepartments,
+  filterDepartment, selectedDepartments,
+  setSelectedDepartments, handleDelete,
+  addDepartments, setAddDepartments,
+  handleAdd, emptyError, }) {
+
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [editingDepartment, setEditingDepartment] = useState(null);
-  const tbodyRef = useRef(null);
-  const theadRef = useRef(null);
 
   useEffect(() => {
     if (!departments.length) return;
@@ -44,28 +42,6 @@ function DepartmentListWrapper({
 
     setFilteredDepartments(sortedDepartments);
   }, [departments, filterDepartment.id, filterDepartment.name]);
-
-  useEffect(() => {
-    const adjustTheadWidth = () => {
-      if (tbodyRef.current.scrollHeight > window.innerHeight * 0.6) {
-        theadRef.current.style.width = "calc(100% - 17px)";
-      } else {
-        theadRef.current.style.width = "100%";
-      }
-    };
-
-    if (tbodyRef.current) {
-      adjustTheadWidth();
-      tbodyRef.current.addEventListener("scroll", adjustTheadWidth);
-    }
-
-    return () => {
-      if (tbodyRef.current) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        tbodyRef.current.removeEventListener("scroll", adjustTheadWidth);
-      }
-    };
-  }, [filteredDepartments]);
 
   const handleEdit = (department) => {
     setEditingDepartment(department);
@@ -96,15 +72,22 @@ function DepartmentListWrapper({
   return (
     <div className="mgr-list">
       <table className="system-table">
-        <thead ref={theadRef}>
+        <thead>
           <tr>
+            <th></th>
             <th>科別編號</th>
             <th>科別名稱</th>
             <th>醫師人數</th>
             <th>動作</th>
           </tr>
         </thead>
-        <tbody ref={tbodyRef}>
+        <tbody>
+          <AddRow
+            addDepartments={addDepartments}
+            setAddDepartments={setAddDepartments}
+            handleAdd={handleAdd}
+            emptyError={emptyError}
+          />
           {filteredDepartments.length > 0 ? (
             filteredDepartments.map((department) => (
               editingDepartment?.id === department.id ? (
@@ -114,37 +97,29 @@ function DepartmentListWrapper({
                   handleSave={handleSave}
                 />
               ) : (
-                <tr key={department.id}>
-                  <td>{department.id}</td>
-                  <td>{department.name}</td>
-                  <td>{department.chiefSurgeonsCount}</td>
-                  <td>
-                    {deleteMode ? (
+                <>
+                  <tr key={department.id}>
+                    <td>
                       <input
                         type="checkbox"
                         checked={selectedDepartments.includes(department.id)}
                         onChange={() => handleCheckboxChange(department.id)}
                       />
-                    ) : (
+                    </td>
+                    <td>{department.id}</td>
+                    <td>{department.name}</td>
+                    <td>{department.chiefSurgeonsCount}</td>
+                    <td>
                       <div className="action-buttons">
-                        <button
-                          onClick={() => handleEdit(department)}
-                          className="edit-button"
-                          title="編輯科別"
-                        >
-                          <FontAwesomeIcon icon={faPenSquare} size="lg" />
-                        </button>
-                        <button
-                          onClick={() => setIdforChiefSurgeons(department.id)}
-                          className="view-button"
-                          title="查看醫師"
-                        >
-                          <FontAwesomeIcon icon={faPerson} size="lg" />
-                        </button>
+                        <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(department)} />
+                        <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => { handleDelete(department.id); }} />
                       </div>
-                    )}
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                  <ChiefSurgeonListWrapper 
+                    departmentId={department.id}
+                  />
+                </>
               )
             ))
           ) : (

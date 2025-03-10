@@ -198,6 +198,10 @@
   border-collapse: collapse;
 }
 
+.chief-surgeon-list {
+  width: 100%;
+}
+
 .system-table thead {
   background-color: #f9fafb;
   font-size: 1.5em;

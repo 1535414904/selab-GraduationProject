@@ -12,7 +12,7 @@ function AddRow({ addUsers, setAddUsers, handleAdd, emptyError }) {
     };
 
     const handleDelete = (index) => {
-        const updated = addUsers.filter((user, idx) => idx !== index); // 根據索引刪除
+        const updated = addUsers.filter((user, idx) => idx !== index); 
         setAddUsers(updated);
     };
 
