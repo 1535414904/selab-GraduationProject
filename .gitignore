@@ -28,3 +28,5 @@ src/main/resources/application.properties
 
 # 忽略 pom.xml
 #pom.xml
+SERVER/server/src/main/resources/application.properties
+SERVER/server/pom.xml

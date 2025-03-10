@@ -7,7 +7,7 @@ import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import EditableRow from "./EditableRow";
 import AddRow from "./AddRow";
 
-function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSurgeons }) {
+function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSurgeons, setDepartments }) {
     const [chiefSurgeons, setChiefSurgeons] = useState([]);
     const [editingChiefSurgeon, setEditingChiefSurgeon] = useState(null);
     const [emptyError, setEmptyError] = useState(null);
@@ -37,6 +37,8 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                 await axios.post(`${BASE_URL}/api/system/${departmentId}/chief-surgeon/add`, chiefSurgeon);
                 const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
                 setChiefSurgeons(response.data);
+                const responseDpartments = await axios.get(BASE_URL + "/api/system/departments");
+                setDepartments(responseDpartments.data);
                 setEmptyError(null);
             } catch (error) {
                 console.error("Error add data: ", error);
@@ -60,6 +62,8 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
             await axios.delete(`${BASE_URL}/api/system/chief-surgeon/delete/${id}`);
             const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
             setChiefSurgeons(response.data);
+            const responseDpartments = await axios.get(BASE_URL + "/api/system/departments");
+            setDepartments(responseDpartments.data);
         } catch (error) {
             console.error("刪除失敗：", error);
         }
@@ -77,7 +81,7 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                     </tr>
                 </thead>
                 <tbody>
-                    <AddRow 
+                    <AddRow
                         addChiefSurgeons={addChiefSurgeons}
                         setAddChiefSurgeons={setAddChiefSurgeons}
                         handleAdd={handleAdd}
@@ -85,7 +89,7 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                     />
                     {chiefSurgeons.map((chiefSurgeon) => (
                         editingChiefSurgeon?.id === chiefSurgeon.id ? (
-                            <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave}/>
+                            <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
                         ) : (
                             <tr key={chiefSurgeon.id}>
                                 <td>

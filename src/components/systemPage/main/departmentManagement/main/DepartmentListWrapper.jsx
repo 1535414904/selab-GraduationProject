@@ -112,7 +112,10 @@ function DepartmentListWrapper({
                       <div className="action-buttons">
                         <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(department)} />
                         <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(department.id)} />
-                        <FontAwesomeIcon className="view-button" icon={faUsers} onClick={() => toggleRow(index)} />
+                        <FontAwesomeIcon className="view-button" icon={faUsers} onClick={() => {
+                          toggleRow(index);
+                          setAddChiefSurgeons([]);
+                        }} />
                         {expandedRow === index && <FontAwesomeIcon className="add-button" icon={faPlus} onClick={addRow} />}
                       </div>
                     </td>
@@ -122,6 +125,7 @@ function DepartmentListWrapper({
                       departmentId={department.id}
                       addChiefSurgeons={addChiefSurgeons}
                       setAddChiefSurgeons={setAddChiefSurgeons}
+                      setDepartments={setDepartments}
                     />}
                 </>
               )
