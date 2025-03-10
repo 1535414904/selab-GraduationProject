@@ -6,7 +6,7 @@ import axios from "axios";
 import MainWrapper from "./main/MainWrapper";
 
 
-function SystemWrapper({fullTogglePage, nowUsername}) {
+function ShiftWrapper({fullTogglePage, nowUsername}) {
 
   const [user, setUser] = useState([]);
   const [error, setError] = useState("");
@@ -39,4 +39,4 @@ function SystemWrapper({fullTogglePage, nowUsername}) {
   </div>
 }
 
-export default SystemWrapper;
+export default ShiftWrapper;

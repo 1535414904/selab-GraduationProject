@@ -58,14 +58,17 @@ function Gantt({ rows, setRows }) {
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString("zh-TW", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    setCurrentDate(formattedDate);
-  }, []);
+      const today = new Date();
+      today.setDate(today.getDate() + 1); // 加一天變成明天的日期
+    
+      const formattedDate = today.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    
+      setCurrentDate(formattedDate);
+    }, []);
 
   return (
     <div className="gantt-main-container">

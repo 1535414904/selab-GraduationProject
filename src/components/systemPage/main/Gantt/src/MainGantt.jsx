@@ -4,9 +4,9 @@ import TimeWrapper from "./components/Time/timeWrapper";
 import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
-import GanttFilter from "../GanttFilter"; // ✅ 加入篩選器
+import GanttFilter from "../src/components/GanttFilter"; // ✅ 加入篩選器
 
-function Ganttshift({ rows, setRows }) {
+function MainGantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -37,19 +37,19 @@ function Ganttshift({ rows, setRows }) {
   }, []);
 
   // 處理手術房釘選狀態變更
-  const handleRoomPinStatusChange = (roomIndex, isPinned) => {
-    setRows(prevRows => {
-      const newRows = [...prevRows];
-      if (newRows[roomIndex]) {
-        // 更新手術房的釘選狀態
-        newRows[roomIndex] = {
-          ...newRows[roomIndex],
-          isPinned: isPinned
-        };
-      }
-      return newRows;
-    });
-  };
+  // const handleRoomPinStatusChange = (roomIndex, isPinned) => {
+  //   setRows(prevRows => {
+  //     const newRows = [...prevRows];
+  //     if (newRows[roomIndex]) {
+  //       // 更新手術房的釘選狀態
+  //       newRows[roomIndex] = {
+  //         ...newRows[roomIndex],
+  //         isPinned: isPinned
+  //       };
+  //     }
+  //     return newRows;
+  //   });
+  // };
 
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
@@ -57,15 +57,16 @@ function Ganttshift({ rows, setRows }) {
   };
   const [currentDate, setCurrentDate] = useState("");
 
-  useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString("zh-TW", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    setCurrentDate(formattedDate);
-  }, []);
+    useEffect(() => {
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      setCurrentDate(formattedDate);
+    }, []);
+  
 
   return (
     <div className="gantt-main-container">
@@ -110,7 +111,6 @@ function Ganttshift({ rows, setRows }) {
         <ul className="gantt-tips-list">
           <li>可以橫向滾動查看不同時間段的排程</li>
           <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
-          <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
         </ul>
       </div>
     </div>
@@ -137,7 +137,7 @@ function Ganttshift({ rows, setRows }) {
                       <RoomSection 
                         room={room} 
                         roomIndex={roomIndex} 
-                        onPinStatusChange={handleRoomPinStatusChange}
+                        // onPinStatusChange={handleRoomPinStatusChange}
                       />
                     </div>
                   ))}
@@ -159,4 +159,4 @@ function Ganttshift({ rows, setRows }) {
   );
 }
 
-export default Ganttshift;
+export default MainGantt;

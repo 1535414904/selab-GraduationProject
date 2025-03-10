@@ -3,6 +3,7 @@ import AccountMgrWrapper from "./accountManagement/AccountMgrWrapper";
 import DepartmentMgrWrapper from "./departmentManagement/DepartmentMgrWrapper";
 import UserProfile from "./UserProfile";
 import Gantt from "./Gantt/src/Gantt";
+import MainGantt from "./Gantt/src/MainGantt";
 import { useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
@@ -26,7 +27,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
         <div className="flex-grow p-4 md:p-6">
           {mainState === "mainPage" && (
             <div className="transition-all duration-300 ease-in-out">
-              <Gantt rows={rows} setRows={setRows} />
+              <MainGantt rows={rows} setRows={setRows} />
             </div>
           )}
 

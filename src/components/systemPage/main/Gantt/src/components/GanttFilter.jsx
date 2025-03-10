@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import "../styles.css";
 
+
 const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const filterOptions = [
