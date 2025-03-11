@@ -37,7 +37,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
       });
       setMessage(response.data);
     } catch (error) {
-      setMessage("Error during login");
+      setMessage("登入時發生錯誤");
     }
   };
 
@@ -48,75 +48,40 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
     }
   }, [message, fullTogglePage, setNowUsername, username]);
 
-  const handleKeyDown = (e, type) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (type === "username") {
-        document.getElementById("passwordInput").focus();
-      } else if (type === "password") {
-        confirmHandler();
-      } else if (type === "button") {
-        confirmHandler();
-      }
-    }
-  };
-
   return (
-    <div className="flex items-center justify-center w-full h-screen bg-gray-100">
-      <div className="w-full h-full flex flex-col items-center justify-center bg-white md:p-8">
-        <div className="w-full max-w-lg mx-auto px-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">
-            手術排班網站
-          </h1>
-          <h1 className="text-2xl font-semibold text-gray-700 mb-6 text-center">
-            登入
-          </h1>
+    <div className="flex items-center justify-center w-full h-screen bg-gradient-to-br from-blue-800 via-blue-600 to-blue-400">
+      <div className="w-full max-w-md bg-white bg-opacity-95 p-8 rounded-lg shadow-2xl transform transition-all duration-500 hover:scale-105">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">手術排班網站</h1>
+        <h1 className="text-2xl font-semibold text-gray-700 mb-6 text-center">登入</h1>
 
-          <input
-            id="usernameInput"
-            className="w-full px-4 py-3 mb-1 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="帳號"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, "username")}
-          />
-          <div className="w-full flex justify-between items-center mb-4">
-            <div></div>
-            {error.username && (
-              <p className="text-red-600 text-sm">{error.username}</p>
-            )}
-          </div>
+        <input
+          className="w-full px-4 py-3 mb-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
+          placeholder="帳號"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        {error.username && <p className="text-red-600 text-sm">{error.username}</p>}
 
-          <input
-            id="passwordInput"
-            className="w-full px-4 py-3 mb-1 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="密碼"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, "password")}
-          />
+        <input
+          className="w-full px-4 py-3 mt-2 mb-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
+          placeholder="密碼"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error.password && <p className="text-red-600 text-sm">{error.password}</p>}
+        {message && <p className="text-red-600 text-sm text-center">{message}</p>}
 
-          <div className="w-full flex justify-between items-center mb-6">
-            <button
-              className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none"
-              onClick={() => togglePage("forgotPasswordPage")}
-            >
-              忘記密碼
-            </button>
-            <div className="text-right">
-              {error.password && (
-                <p className="text-red-600 text-sm">{error.password}</p>
-              )}
-              {message && <p className="text-red-600 text-sm">{message}</p>}
-            </div>
-          </div>
-
+        <div className="flex justify-between w-full mt-4">
           <button
-            id="confirmButton"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300"
+            className="text-sm text-blue-600 font-semibold hover:underline transition-all duration-300"
+            onClick={() => togglePage("forgotPasswordPage")}
+          >
+            忘記密碼？
+          </button>
+          <button
+            className="bg-blue-600 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-110 shadow-md"
             onClick={confirmHandler}
-            onKeyDown={(e) => handleKeyDown(e, "button")}
           >
             確認
           </button>
