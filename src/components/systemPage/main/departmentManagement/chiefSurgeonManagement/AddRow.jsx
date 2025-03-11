@@ -1,0 +1,60 @@
+/* eslint-disable react/prop-types */
+import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+function AddRow({
+    addChiefSurgeons, setAddChiefSurgeons,
+    handleAdd, emptyError }) {
+
+    const handleChange = (index, event) => {
+        const { name, value } = event.target;
+        const updated = [...addChiefSurgeons];
+        updated[index][name] = value;
+        setAddChiefSurgeons(updated);
+    };
+
+    const handleDelete = (index) => {
+        const updated = addChiefSurgeons.filter((chiefSurgeon, idx) => idx !== index);
+        setAddChiefSurgeons(updated);
+    };
+
+    return (
+        <>
+            {addChiefSurgeons.map((chiefSurgeon, index) => (
+                <tr className="editable-row" key={index}>
+                    <td></td>
+                    <td>
+                        <input 
+                            type="text"
+                            name="id"
+                            value={chiefSurgeon.id}
+                            onChange={(e) => handleChange(index, e)}
+                            placeholder="請輸入員工編號"
+                        />
+                        <div className="error">{emptyError}</div>
+                    </td>
+                    <td>
+                    <input 
+                            type="text"
+                            name="name"
+                            value={chiefSurgeon.name}
+                            onChange={(e) => handleChange(index, e)}
+                            placeholder="請輸入醫師姓名"
+                        />
+                    </td>   
+                    <td>
+                        <div className="action-buttons">
+                            <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {
+                                handleAdd(chiefSurgeon);
+                                if (chiefSurgeon.id.trim()) { handleDelete(index); }
+                            }} />
+                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(index)} />
+                        </div>
+                    </td>
+                </tr>
+            ))}
+        </>
+    )
+}
+
+export default AddRow;
