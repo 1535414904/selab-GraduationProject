@@ -1,8 +1,3 @@
-/* .container {
-  display: flex;
-  flex-direction: column;
-} */
-
 /* 甘特圖主容器 */
 .gantt-main-container {
   width: 100%;
@@ -134,10 +129,11 @@
   margin-top: 1rem;
 }
 
+/* 移除重複的 .scroll-container 定義，合併為單一定義 */
 .scroll-container {
-  overflow-x: auto;
+  overflow: auto;
   width: 100%;
-  -webkit-overflow-scrollin: touch;
+  -webkit-overflow-scrolling: touch;
 }
 
 .gantt-timescale-container {
@@ -152,20 +148,19 @@
 /* 行樣式 */
 .row {
   display: flex;
-  margin-bottom: 1px; /* 增加外邊距，確保每間手術房之間有間距 */
-  border: 3px solid #ddd;
-  border-radius: 10px;
-  flex-wrap: nowrap; /* 禁止換行 */
+  margin-bottom: 1px;
+  border: none;
+  border-radius: 0;
+  flex-wrap: nowrap;
   align-items: stretch;
-  overflow-x: auto; /* 允許水平滾動 */
-  overflow-y: hidden; /* 隱藏垂直滾動條 */
+  overflow: visible;
   flex-direction: row;
-  height: auto; /* 設置每個手術房的固定高度 */
-  min-height: 80px; /* 設置最小高度，確保不會太矮 */
-  white-space: nowrap; /* 防止內容換行 */ 
-  padding-left: 10px; /* 為房間名稱預留內邊距 */
+  height: auto;
+  min-height: 80px;
+  white-space: nowrap;
+  padding-left: 0;
   position: relative;
-  z-index: 10;
+  z-index: 1;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -230,6 +225,8 @@
   position: relative;
   overflow: visible;
   z-index: 1;
+  min-width: 100%;
+  height: 100%;
 }
 
 /* 無數據顯示 */
@@ -254,8 +251,8 @@
 
 /* 確保拖曳元素在最上層 */
 .react-beautiful-dnd-dragging {
-  z-index: 9999 !important;
-  position: relative !important;
+  z-index: 1000 !important;
+  pointer-events: auto !important;
 }
 
 /* 篩選面板容器 */
@@ -374,34 +371,43 @@
   cursor: pointer;
 }
 
-/* 時間軸容器 */
-.time-wrapper-container {
-  position: relative;
+/* 統一滾動容器樣式 */
+.scrollable-container {
   width: 100%;
-  height: 100vh;
-  overflow-y: auto;
   overflow-x: auto;
-  margin-top: 3.5rem;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f3f4f6;
 }
 
-/* 時間軸頭部 */
+/* 時間軸容器 */
+.time-wrapper-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 時間刻度頭部 */
 .time-scale-header {
   position: sticky;
   top: 0;
-  width: 100%;
-  background-color: #f3f4f6;
-  z-index: 10;
-  padding-left: 0.75rem;
+  z-index: 100;
+  background-color: white;
+  padding: 16px 0 8px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-/* 時間軸尺 */
+/* 時間刻度尺 */
 .time-scale-ruler {
-  display: flex;
-  height: 3rem;
   position: relative;
-  background-color: #f3f4f6;
+  height: 50px;
+  background-color: #f9fafb;
   border-bottom: 2px solid #1f2937;
-  min-width: 100%;
+  margin-top: 20px;
 }
 
 /* 時間標記 */
@@ -409,221 +415,95 @@
   position: absolute;
   height: 100%;
   width: 1px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
+  background-color: #e5e7eb;
 }
 
-/* 時間標記標籤 */
-.time-mark-label {
-  font-size: 0.75rem;
-  position: absolute;
-  bottom: 2rem;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-/* 起始時間標記 */
-.time-mark-start {
-  transform: none;
-}
-
-/* 小時標記 */
-.time-mark-hour::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 2px;
-  height: 30px;
-  background-color: #333;
-  transform-origin: bottom left;
-}
-
-/* 半小時標記 */
-.time-mark-half::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  height: 20px;
-  background-color: #666;
-  transform-origin: bottom left;
-}
-
-/* 15分鐘標記 */
-.time-mark-quarter::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  height: 15px;
-  background-color: #999;
-  transform-origin: bottom left;
-}
-
-/* 時間軸內容 */
-.time-wrapper-content {
-  margin-top: 0.75rem;
-  height: calc(100vh - 30px);
-  white-space: nowrap;
-}
-
-.item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding: 10px;
-  border: 2.5px solid #ccc;
-  border-radius: 15px;
-  box-sizing: border-box;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  position: absolute; /* 讓手術區塊可以自由移動 */
-  z-index: 1; /* 預設 z-index */
-}
-
-.item.green {
-  background-color: #19ec9f;
-}
-
-.item.green:hover {
-  background-color: #86db1779;
-}
-
-.item.yellow {
-  background-color: #ebeb0a;
-}
-
-.item.yellow:hover {
-  background-color: #e7e71a79;
-}
-
-.item.red {
-  background-color: #e63030;
-}
-
-.item.red:hover {
-  background-color: #e2969679;
-}
-
-.item.blue {
-  background-color: #362de9;
-  color: rgb(208, 194, 230);
-}
-
-.item:active {
-  transform: scale(1.1);  
-}
-
-.item.dragging {
-  background-color: orange !important;
-  opacity: 1;
-  z-index: 9999 !important; /* 提高層級，確保在最上方 */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-  cursor: grabbing;
-  position: relative !important; /* 確保拖曳時的位置正確 */
-}
-
-/* 添加新的樣式，確保拖曳中的元素始終在最上層 */
-.react-beautiful-dnd-dragging {
-  z-index: 9999 !important;
-}
-
-.scroll-container {
-  overflow: auto;
-}
-
-.time-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100vh; /* 使 wrapper 佔滿整個視窗高度*/
-  overflow-y: auto; /* 允許垂直滾動 */
-  overflow-x: hidden; /* 防止水平滾動條出現在外層 */
-}
-
-.time-scale-container {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  background-color: #f0f0f0;
-  z-index: 2; /* 確保時間刻度在其他元素上方 */
-  padding-left: 10px; 
-}
-
-.time-scale {
-  display: flex;
-  justify-content: flex-start;
-  height: 50px;
-  position: relative;
-  width: fit-content;
-  min-width: 100%;
-  background-color: #f0f0f0;
-  border-bottom: 2px solid #333;
-}
-
-.time-scale-mark {
-  position: relative;
-  width: 25px;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-/* 刻度線基礎樣式 */
-.time-scale-mark::after {
+.time-mark::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
-  background-color: #333;
   transform-origin: bottom left;
 }
 
-/* 不同類型的刻度線 */
-.time-scale-mark.hour::after {
+/* 時間刻度 */
+.time-mark.hour-mark::after {
   width: 2px;
   height: 30px;
-  background-color: #333;
+  background-color: #1f2937;
 }
 
-.time-scale-mark.half::after {
+.time-mark.half-mark::after {
   width: 1px;
   height: 20px;
-  background-color: #666;
+  background-color: #6b7280;
 }
 
-.time-scale-mark.quarter::after {
+.time-mark.quarter-mark::after {
   width: 1px;
   height: 15px;
-  background-color: #999;
+  background-color: #9ca3af;
 }
 
-/* 時間文字樣式 */
-.time-scale-hour-start {
-  font-size: 12px;
+/* 時間標籤 */
+.time-mark-label {
+  font-size: 0.7rem;
+  color: #6b7280;
   position: absolute;
-  bottom: 30px;
+  top: -1.5rem;
+  left: 50%;
   transform: translateX(-50%);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.time-mark-start {
+  transform: translateX(0);
+}
+
+.time-mark-24hour {
+  background-color: #dc2626;
+  width: 2px;
+}
+
+.time-mark-24hour-label {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* 內容區域 */
+.time-wrapper-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 滾動條樣式 */
+.scrollable-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* 移除重複的甘特圖相關樣式 */
+.gantt-chart {
+  margin-top: 10px;
+  height: calc(100vh - 30px);
   white-space: nowrap;
 }
 
-/* 8:30 特殊時間文字的樣式 */
-.time-scale-mark:first-child .time-scale-hour-start {
-  transform: none; /* 移除置中效果 */
-  left: 1px; /* 向右偏移 */
-}
-
-.gantt-chart {
-  margin-top: 10px; /* 調整甘特圖的上邊距，避免被時間刻度遮擋 */
-  height: calc(100vh - 30px); /* 調整甘特圖的高度 */
-  white-space: nowrap; /* 防止甘特圖換行 */
-}
 .gantt-container {
   position: relative;
   overflow: visible !important;
@@ -688,4 +568,24 @@
   height: 200px;
   color: #666;
   font-size: 16px;
+}
+
+/* 確保手術項目在拖曳時始終顯示在最上層 */
+.surgery-item {
+  position: relative;
+  z-index: 100;
+}
+
+.surgery-item.dragging {
+  z-index: 1000;
+}
+
+/* 確保每個行的內容都有正確的圖層順序 */
+.row:hover {
+  z-index: 2;
+}
+
+.row-content {
+  position: relative;
+  z-index: inherit;
 }
