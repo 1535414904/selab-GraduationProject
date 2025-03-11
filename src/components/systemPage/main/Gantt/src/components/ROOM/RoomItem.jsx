@@ -12,7 +12,13 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
   const [error, setError] = useState(null);
   const isOver24Hours = item.endTime > "24:00";
 
-  const handleClick = async () => {
+  const handleClick = async (e) => {
+    // 如果正在拖曳中，不顯示詳細視窗
+    if (isDragging) {
+      e.preventDefault();
+      return;
+    }
+    
     if (!item.isCleaningTime && item.applicationId) {
       setLoading(true);
       setError(null);
@@ -75,6 +81,14 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
 
   const width = calculateWidth(item.startTime, item.endTime).width;
 
+  const formatDisplayTime = (time) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    if (hours >= 24) {
+      return `${String(hours - 24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+    return time;
+  };
+
   return (
     <>
       <div
@@ -84,12 +98,16 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
         style={{
           width: width,
           height: fixedHeight,
-          opacity: isDragging || isOver24Hours ? 0.5 : 1,
+          opacity: isDragging || isOver24Hours ? 0.7 : 1,
           cursor: loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer")),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
-          zIndex: isDragging ? 9999 : 10,
+          zIndex: isDragging ? 10000 : (item.isCleaningTime ? 1 : 2),
+          pointerEvents: "auto",
+          transform: isDragging ? "scale(1.02)" : "none",
+          transformOrigin: "center",
+          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : "none",
         }}
         onClick={handleClick}
       >
@@ -102,7 +120,7 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
         <div>{item.doctor}</div>
         <div>{item.surgery}</div>
         <div>
-          {item.startTime} - {item.endTime}
+          {formatDisplayTime(item.startTime)} - {formatDisplayTime(item.endTime)}
         </div>
       </div>
 
