@@ -137,7 +137,7 @@
 .scroll-container {
   overflow-x: auto;
   width: 100%;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrollin: touch;
 }
 
 .gantt-timescale-container {
