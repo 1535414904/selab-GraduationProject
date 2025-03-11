@@ -1,4 +1,4 @@
-function surgeryHeaderWrapper() {
+function SurgeryHeaderWrapper() {
     return (
         <div className="header-wrapper">
             <div className="title">
@@ -8,4 +8,4 @@ function surgeryHeaderWrapper() {
     )
 }
 
-export default surgeryHeaderWrapper;
+export default SurgeryHeaderWrapper;

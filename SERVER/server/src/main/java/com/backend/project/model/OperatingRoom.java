@@ -34,7 +34,7 @@ public class OperatingRoom {
     public String getName() {
         return operatingRoomName;
     }
-
+    
     public void setName(String operatingRoomName) {
         this.operatingRoomName = operatingRoomName;
     }

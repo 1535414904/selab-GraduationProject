@@ -9,6 +9,7 @@ import { useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
+import SurgeryMgrWrapper from "./surgeryManagement/surgeryMgrWrapper";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
   const [rows, setRows] = useState([]);
@@ -62,7 +63,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
 
           {mainState === "surgeryMgr" && (
             <div className="transition-all duration-300 ease-in-out">
-              <ORMgrWrapper reloadKey={reloadKey} />
+              <SurgeryMgrWrapper reloadKey={reloadKey} />
             </div>
           )}
 

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
   useEffect(() => {
-      toggleMainPage("mainPage");
+    toggleMainPage("mainPage");
   }, [toggleMainPage]);
   return (
     <div className="w-full bg-gradient-to-r from-blue-700 to-blue-900 shadow-lg">
@@ -45,7 +45,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
             </button>
 
 
-            {user.role == 3 && (
+            {(user.role == 3 || user.role == 2) && (
               <div className="ml-4 relative group">
                 <button className="px- py-2 text-white text-2xl hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
                   管理功能
@@ -62,56 +62,65 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                     />
                   </svg>
                 </button>
-
                 <div className="dropdown-menu absolute text-2xl z-10 mt-1 w-48 bg-white rounded-md shadow-lg py-1">
-                <button
-                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    toggleMainPage("accountMgr");
-                    setReloadKey((prevKey) => prevKey + 1);
-                  }}
-                >
-                  帳號管理
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    toggleMainPage("departmentMgr");
-                    setReloadKey((prevKey) => prevKey + 1);
-                  }}
-                >
-                  科別管理
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    toggleMainPage("ORMgr");
-                    setReloadKey((prevKey) => prevKey + 1);
-                  }}
-                >
-                  手術房管理
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    toggleMainPage("surgeryMgr");
-                    setReloadKey((prevKey) => prevKey + 1);
-                  }}
-                >
-                  手術管理
-                </button>
-                <button
-                  className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    toggleMainPage("shiftMgr");
-                    setReloadKey((prevKey) => prevKey + 1);
-                  }}
-                >
-                  排班管理
-                </button>
+                  {user.role == 3 && (
+                    <button
+                      className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        toggleMainPage("accountMgr");
+                        setReloadKey((prevKey) => prevKey + 1);
+                      }}
+                    >
+                      帳號管理
+                    </button>
+                  )}
+
+                  {user.role == 3 && (
+                    <button
+                      className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        toggleMainPage("departmentMgr");
+                        setReloadKey((prevKey) => prevKey + 1);
+                      }}
+                    >
+                      科別管理
+                    </button>
+                  )}
+                  {user.role == 3 && (
+                    <button
+                      className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        toggleMainPage("ORMgr");
+                        setReloadKey((prevKey) => prevKey + 1);
+                      }}
+                    >
+                      手術房管理
+                    </button>
+                  )}
+                  <button
+                    className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      toggleMainPage("surgeryMgr");
+                      setReloadKey((prevKey) => prevKey + 1);
+                    }}
+                  >
+                    手術管理
+                  </button>
+                  {user.role == 3 && (
+                    <button
+                      className="block w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        toggleMainPage("shiftMgr");
+                        setReloadKey((prevKey) => prevKey + 1);
+                      }}
+                    >
+                      排班管理
+                    </button>
+                  )}
+
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
             {/* Quick Access Icons */}
             {/* <div className="hidden md:flex items-center ml-4 space-x-3">

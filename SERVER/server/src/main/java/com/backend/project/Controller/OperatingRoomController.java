@@ -1,6 +1,7 @@
 package com.backend.project.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Service.OperatingRoomService;
 import com.backend.project.model.OperatingRoom;
+import com.backend.project.model.Surgery;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,5 +63,19 @@ public class OperatingRoomController {
     public ResponseEntity<?> deleteOperatingRooms(@RequestBody List<String> ids) {
         operatingRoomService.deleteOperatingRooms(ids);
         return ResponseEntity.ok("OperatingRooms delete successfully");
+    }
+
+    // ----- Adout surgery -----//
+
+    @GetMapping("/system/operating-rooms/{id}/surgery")
+    public List<Surgery> getSurgeries(@PathVariable String id) {
+        return operatingRoomService.getSurgeryByOperatingRoomId(id);
+    }
+
+    @GetMapping("/system/operating-rooms/{id}/last-surgery-time")
+    public Map<String, String> getLastSurgeryTime(@PathVariable String id) {
+        String lastSurgeryEndTime = operatingRoomService.getLastSurgeryEndTime(id);
+        return Map.of("operatingRoomId", id,
+                "lastSurgeryEndTime", lastSurgeryEndTime);
     }
 }
