@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../config";
 
-/* eslint-disable react/prop-types */
 function UserProfile({ user, onUpdateUser }) {
   const [maskedPassword, setMaskedPassword] = useState("*".repeat(user.password.length));
   const [isChangingPassword, setChangingPassword] = useState(false);
@@ -17,9 +16,9 @@ function UserProfile({ user, onUpdateUser }) {
   });
 
   const roleMap = {
-    1: <p>管理者</p>,
-    2: <p>編輯者</p>,
-    3: <p>查看者</p>,
+    1: "管理者",
+    2: "編輯者",
+    3: "查看者",
   };
 
   const clearInputs = () => {
@@ -66,9 +65,9 @@ function UserProfile({ user, onUpdateUser }) {
 
   const changePasswordHandler = async () => {
     try {
-      const response = await axios.put(`${BASE_URL}/api/login/changePassword/${user.username}`, { 
-        password: newPassword }
-      );
+      const response = await axios.put(`${BASE_URL}/api/login/changePassword/${user.username}`, {
+        password: newPassword,
+      });
 
       if (response.data === "Change Password successfully") {
         setMaskedPassword("*".repeat(newPassword.length));
@@ -88,106 +87,75 @@ function UserProfile({ user, onUpdateUser }) {
     clearInputs();
   };
 
-  const handleKeyDown = (e, type) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if(type === "oldPassword") {
-        document.getElementById("newPasswordInput").focus();
-      } else if (type === "newPassword") {
-        document.getElementById("newPasswordAgainInput").focus();
-      } else if (type === "newPasswordAgain") {
-        confirmHandler();
-      } else if (type === "confirm") {
-        confirmHandler();
-      } else if (type === "cancel") {
-        cancelHandler();
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (isChangingPassword) {
-      document.getElementById("oldPasswordInput").focus();
-    }
-  }, [isChangingPassword]);
-
   return (
-    <div className="user-profile">
-      <h1>個人資料</h1>
-      <div className="user-info">帳號 : {user.username}</div>
-      <div className="user-info">姓名 : {user.name}</div>
-      <div className="user-info">單位 : {user.unit}</div>
-      <div className="user-info">權限 : {roleMap[user.role]}</div>
-      <div className="user-info">信箱 : {user.email}</div>
+    <div className="flex items-center justify-center w-full h-screen bg-gradient-to-br from-blue-700 via-blue-500 to-blue-300">
+      <div className="w-full max-w-md bg-white bg-opacity-95 p-8 rounded-lg shadow-2xl transform transition-all duration-500 hover:scale-105">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">個人資料</h1>
 
-      {!isChangingPassword && (
-        <>
-          <div className="user-info">
-            密碼 : {maskedPassword} {passwordChanged && " (已更新)"}
-          </div>
+        <div className="space-y-3">
+          <p className="text-lg font-medium text-gray-800">帳號：{user.username}</p>
+          <p className="text-lg font-medium text-gray-800">姓名：{user.name}</p>
+          <p className="text-lg font-medium text-gray-800">單位：{user.unit}</p>
+          <p className="text-lg font-medium text-gray-800">權限：{roleMap[user.role]}</p>
+          <p className="text-lg font-medium text-gray-800">信箱：{user.email}</p>
+          <p className="text-lg font-medium text-gray-800">密碼：{maskedPassword} {passwordChanged && "(已更新)"}</p>
+        </div>
+
+        {!isChangingPassword && (
           <button
-            className="user-profile-button"
-            onClick={() => {setChangingPassword(true);}}
+            className="mt-4 w-full bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md"
+            onClick={() => setChangingPassword(true)}
           >
             更改密碼
           </button>
-        </>
-      )}
+        )}
 
-      {isChangingPassword && (
-        <>
-          <input
-            id="oldPasswordInput"
-            className="user-password-input"
-            type="password"
-            placeholder="請輸入舊密碼"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, "oldPassword")}
-          />
-          {error.oldPassword && <p className="error">{error.oldPassword}</p>}
+        {isChangingPassword && (
+          <div className="mt-4 space-y-3">
+            <input
+              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
+              type="password"
+              placeholder="請輸入舊密碼"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
+            {error.oldPassword && <p className="text-red-600 text-sm">{error.oldPassword}</p>}
 
-          <input
-            id="newPasswordInput"
-            className="user-password-input"
-            type="password"
-            placeholder="請輸入新密碼"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, "newPassword")}
-          />
-          {error.newPassword && <p className="error">{error.newPassword}</p>}
+            <input
+              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
+              type="password"
+              placeholder="請輸入新密碼"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            {error.newPassword && <p className="text-red-600 text-sm">{error.newPassword}</p>}
 
-          <input
-            id="newPasswordAgainInput"
-            className="user-password-input"
-            type="password"
-            placeholder="請再次輸入新密碼"
-            value={newPasswordAgain}
-            onChange={(e) => setNewPasswordAgain(e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, "newPasswordAgain")}
-          />
-          {error.newPasswordAgain && (
-            <p className="error">{error.newPasswordAgain}</p>
-          )}
+            <input
+              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
+              type="password"
+              placeholder="請再次輸入新密碼"
+              value={newPasswordAgain}
+              onChange={(e) => setNewPasswordAgain(e.target.value)}
+            />
+            {error.newPasswordAgain && <p className="text-red-600 text-sm">{error.newPasswordAgain}</p>}
 
-          <div className="change-button">
-            <button
-              className="user-profile-button user-confirm"
-              onClick={confirmHandler}
-              onKeyDown={(e) => handleKeyDown(e, "newPassword")}
-            >
-              確認
-            </button>
-            <button
-              className="user-profile-button user-cancel"
-              onClick={cancelHandler}
-            >
-              取消
-            </button>
+            <div className="flex justify-between w-full mt-4">
+              <button
+                className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-110 shadow-md"
+                onClick={confirmHandler}
+              >
+                確認
+              </button>
+              <button
+                className="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-110 shadow-md"
+                onClick={cancelHandler}
+              >
+                取消
+              </button>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
