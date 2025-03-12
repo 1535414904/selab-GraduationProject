@@ -8,7 +8,7 @@ import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import AddRow from "./AddRow";
 
 function AccountListWrapper({ users, setUsers,
-    username, name, unit, role,
+    username, name, unit, role, filterUser,
     selectedUsers, setSelectedUsers, handleDelete, addUsers, setAddUsers, handleAdd, emptyError }) {
 
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -23,17 +23,19 @@ function AccountListWrapper({ users, setUsers,
     useEffect(() => {
         if (!users.length) return;
 
-        const roleMap = {
-            管理者: 3,
-            編輯者: 2,
-            查看者: 1,
-        };
-
         const newFilteredUsers = users.filter(user => {
-            const matchesUsername = username ? user.username.toLowerCase().includes(username.toLowerCase()) : true;
-            const matchesName = name ? user.name.toLowerCase().includes(name.toLowerCase()) : true;
-            const matchesUnit = unit ? user.unit.toLowerCase() === unit.toLowerCase() : true;
-            const matchesRole = role ? user.role === roleMap[role] : true;
+            const matchesUsername = filterUser.username
+                ? user.username.toLowerCase().includes(filterUser.username.toLowerCase())
+                : true;
+            const matchesName = filterUser.name
+                ? user.name.toLowerCase().includes(filterUser.name.toLowerCase())
+                : true;
+            const matchesUnit = filterUser.unit
+                ? user.unit.toLowerCase().includes(filterUser.unit.toLowerCase())
+                : true;
+            const matchesRole = filterUser.role
+                ? user.role == filterUser.role
+                : true;
 
             return matchesUsername && matchesName && matchesUnit && matchesRole;
         });
@@ -41,7 +43,7 @@ function AccountListWrapper({ users, setUsers,
         const sortedUsers = newFilteredUsers.sort((a, b) => b.role - a.role);
 
         setFilteredUsers(sortedUsers);
-    }, [username, name, unit, role, users]);
+    }, [filterUser.name, filterUser.role, filterUser.unit, filterUser.username, role, unit, users]);
 
     const handleEdit = (user) => {
         console.log("🔍 現在正在編輯的使用者：", user);

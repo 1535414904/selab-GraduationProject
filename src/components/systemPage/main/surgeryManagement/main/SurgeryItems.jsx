@@ -29,7 +29,7 @@ function SurgeryItems({ operatingRoomId }) {
         <div className="surgeries-list">
             {surgeries.map(surgery => (
                 <div key={surgery.applicationId} className="surgery-item" onClick={() => setSelectedSurgery(surgery)}>
-                    <div>{surgery.applicationId}</div>
+                    <div>{surgery.medicalRecordNumber}</div>
                     <div>{surgery.patientName}</div>
                 </div>
             ))}
