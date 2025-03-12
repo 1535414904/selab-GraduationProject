@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Select from "react-select";
 
 function AccountFilter({ users, filterUser, setFilterUser }) {
@@ -31,6 +31,10 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
         { value: "1", label: "查看者" },
     ];
 
+    useEffect(() => {
+        console.log(filterUser)
+    },[filterUser])
+
     return (
         <>
             <div
@@ -47,9 +51,10 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
                     <div className="filter-content">
                         <input
                             type="text"
+                            name="username"
                             className="filter-input"
                             placeholder="請輸入帳號..."
-                            value={filterUser.id}
+                            value={filterUser.username}
                             onChange={handleChange}
                         />
                     </div>
@@ -57,12 +62,14 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
                     <div className="filter-content">
                         <input
                             type="text"
+                            name="name"
                             className="filter-input"
                             placeholder="請輸入姓名..."
                             value={filterUser.name}
                             onChange={handleChange}
                         />
                     </div>
+
                     <div>
                         <Select
                             className="filter-select"
