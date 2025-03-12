@@ -51,7 +51,8 @@ const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomInd
       const updateData = {
         operatingRoomId: targetRoom.roomId || targetRoom.room, // 使用roomId屬性
         prioritySequence: i + 1, // 更新優先順序
-        estimatedSurgeryTime: surgery.duration // 更新預估手術時間
+        estimatedSurgeryTime: surgery.duration, // 更新預估手術時間
+        operatingRoomName: targetRoom.room // 添加手術室名稱
       };
       
       console.log(`更新手術 ${surgery.applicationId} 的資料:`, updateData);
@@ -67,10 +68,19 @@ const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomInd
       
       // 保存更新後的手術資料
       if (response.data) {
+        // 確保更新後的資料包含手術室名稱
+        const updatedSurgery = {
+          ...response.data,
+          operatingRoomName: targetRoom.room // 確保手術室名稱正確
+        };
+        
         updatedSurgeries.push({
           applicationId: surgery.applicationId,
-          updatedData: response.data
+          updatedData: updatedSurgery
         });
+        
+        // 同時更新本地資料
+        surgery.operatingRoomName = targetRoom.room;
       }
     }
     
@@ -84,7 +94,8 @@ const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomInd
         
         // 準備更新資料
         const updateData = {
-          prioritySequence: i + 1 // 只更新優先順序
+          prioritySequence: i + 1, // 只更新優先順序
+          operatingRoomName: sourceRoom.room // 確保手術室名稱正確
         };
         
         // 發送更新請求
@@ -98,10 +109,19 @@ const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomInd
         
         // 保存更新後的手術資料
         if (response.data) {
+          // 確保更新後的資料包含手術室名稱
+          const updatedSurgery = {
+            ...response.data,
+            operatingRoomName: sourceRoom.room // 確保手術室名稱正確
+          };
+          
           updatedSurgeries.push({
             applicationId: surgery.applicationId,
-            updatedData: response.data
+            updatedData: updatedSurgery
           });
+          
+          // 同時更新本地資料
+          surgery.operatingRoomName = sourceRoom.room;
         }
       }
     }
@@ -143,6 +163,10 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
   
   const movedItems = sourceRoomData.splice(sourceIndex, 2);
   const surgeryDuration = calculateDuration(movedItems[0].startTime, movedItems[0].endTime);
+
+  // 更新手術室名稱
+  movedItems[0].operatingRoomName = newRows[destRoomIndex].room;
+  movedItems[1].operatingRoomName = newRows[destRoomIndex].room;
 
   if (sourceRoomData.length > 0) {
     updateRoomTimes(sourceRoomData);

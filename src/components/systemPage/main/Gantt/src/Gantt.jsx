@@ -20,9 +20,6 @@ function Gantt({ rows, setRows }) {
   const [containerWidth, setContainerWidth] = useState(0);
   const [filteredRows, setFilteredRows] = useState(rows);
   const [timeScaleWidth, setTimeScaleWidth] = useState("100%");
-  const [lastUpdatedSurgery, setLastUpdatedSurgery] = useState(null);
-  const [showSurgeryModal, setShowSurgeryModal] = useState(false);
-  const [surgeryModalError, setSurgeryModalError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // 初始化數據
@@ -81,55 +78,9 @@ function Gantt({ rows, setRows }) {
     // 執行拖曳處理並獲取更新後的手術資料
     const updatedSurgeries = await handleDragEnd(result, filteredRows, setFilteredRows);
     
-    // 如果有更新的手術資料，顯示第一個手術的詳細資訊
+    // 不再自動顯示詳細視窗，讓用戶點擊手術時才顯示
     if (updatedSurgeries && updatedSurgeries.length > 0) {
-      try {
-        // 獲取第一個更新的手術的詳細資訊
-        const surgeryId = updatedSurgeries[0].applicationId;
-        const response = await axios.get(`${BASE_URL}/api/surgeries/${surgeryId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (response.data) {
-          // 找到對應的手術項目以獲取甘特圖中的時間資訊
-          let surgeryItem = null;
-          let currentRoom = null;
-          
-          // 在所有房間中查找被移動的手術
-          for (const room of filteredRows) {
-            const found = room.data.find(item => !item.isCleaningTime && item.applicationId === surgeryId);
-            if (found) {
-              surgeryItem = found;
-              currentRoom = room;
-              break;
-            }
-          }
-          
-          // 合併後端資料和甘特圖中的時間資訊
-          const mergedData = {
-            ...response.data,
-            // 保留甘特圖中的開始和結束時間
-            startTime: surgeryItem?.startTime,
-            endTime: surgeryItem?.endTime,
-            // 如果後端沒有這些欄位，則使用甘特圖中的資料
-            doctor: response.data.chiefSurgeonName || surgeryItem?.doctor,
-            surgery: response.data.surgeryName ? `${response.data.surgeryName} (${response.data.patientName || '未知病患'})` : surgeryItem?.surgery,
-            color: surgeryItem?.color,
-            // 更新手術室名稱為當前房間名稱
-            operatingRoomName: currentRoom ? currentRoom.room : response.data.operatingRoomName
-          };
-          
-          setLastUpdatedSurgery(mergedData);
-          setShowSurgeryModal(true);
-          setSurgeryModalError(null);
-        }
-      } catch (error) {
-        console.error('獲取更新後的手術詳細資料時發生錯誤:', error);
-        setSurgeryModalError(`獲取更新後的手術詳細資料失敗: ${error.message}`);
-        setShowSurgeryModal(true);
-      }
+      console.log('手術資料已更新，可以點擊手術查看詳細資訊');
     }
   };
 
@@ -280,14 +231,6 @@ function Gantt({ rows, setRows }) {
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
-      )}
-
-      {showSurgeryModal && lastUpdatedSurgery && (
-        <SurgeryModal 
-          surgery={lastUpdatedSurgery} 
-          onClose={() => setShowSurgeryModal(false)} 
-          error={surgeryModalError}
-        />
       )}
     </div>
   );

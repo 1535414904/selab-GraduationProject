@@ -75,7 +75,8 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
               doctor: '清潔時間',
               surgery: '整理中',
               duration: 45,
-              isCleaningTime: true
+              isCleaningTime: true,
+              operatingRoomName: room.name
             };
 
             roomWithSurgeries.data.push(surgeryItem, cleaningItem);

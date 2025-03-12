@@ -2,7 +2,7 @@ import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "../ROOM/RoomItem";
 
-function DroppableContainer({ room, roomIndex, isPinned }) {
+function DroppableContainer({ room, roomIndex, isPinned, roomName }) {
   const fixedHeight = "60px";
 
   return (
@@ -79,6 +79,7 @@ function DroppableContainer({ room, roomIndex, isPinned }) {
                       fixedHeight={fixedHeight}
                       isDragging={snapshot.isDragging}
                       isPinned={isPinned}
+                      roomName={roomName}
                     />
                     {cleaning && (
                       <RoomItem
@@ -88,6 +89,7 @@ function DroppableContainer({ room, roomIndex, isPinned }) {
                         fixedHeight={fixedHeight}
                         isDragging={snapshot.isDragging}
                         isPinned={isPinned}
+                        roomName={roomName}
                       />
                     )}
                   </div>

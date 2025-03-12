@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import DroppableContainer from "../DragDrop/DroppableContainer"; // Import DroppableContainer component
+import { Droppable, Draggable } from "react-beautiful-dnd";
+import RoomItem from "./RoomItem";
+import DroppableContainer from "../DragDrop/DroppableContainer";
 
 function RoomSection({ room, roomIndex, onPinStatusChange }) {
   const [isPinned, setIsPinned] = useState(room.isPinned || false);
@@ -45,6 +47,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange }) {
           room={room} 
           roomIndex={roomIndex} 
           isPinned={isPinned}
+          roomName={room.room} // 傳遞手術室名稱
         />
       </div>
     </div>
