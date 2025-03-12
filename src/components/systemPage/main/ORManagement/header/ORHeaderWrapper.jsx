@@ -33,7 +33,7 @@ function ORHeaderWrapper({
                 <input
                     type="text"
                     name="id"
-                    placeholder="請輸入科別編號"
+                    placeholder="請輸入房間編號"
                     value={filterOperatingRoom.id}
                     onChange={handleChange}
                 />
@@ -41,7 +41,7 @@ function ORHeaderWrapper({
                 <input
                     type="text"
                     name="name"
-                    placeholder="請輸入科別名稱"
+                    placeholder="請輸入房間名稱"
                     value={filterOperatingRoom.name}
                     onChange={handleChange}
                 />
