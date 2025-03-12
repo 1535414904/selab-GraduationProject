@@ -59,7 +59,7 @@ function ORMgrWrapper({ reloadKey }) {
 
     const handleDeleteAll = async (selectedOperatingRooms) => {
         if (selectedOperatingRooms.length === 0) {
-            alert("請選擇要刪除的帳戶");
+            alert("請選擇要刪除的手術房");
             return;
         }
         try {

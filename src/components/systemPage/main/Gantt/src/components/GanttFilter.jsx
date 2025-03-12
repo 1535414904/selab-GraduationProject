@@ -216,10 +216,10 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   };
 
   // 9) 「套用篩選」按鈕（若需要）
-  const handleApplyFilter = () => {
-    applyFilters();
-    setIsOpen(false);
-  };
+  //const handleApplyFilter = () => {
+   // applyFilters();
+   // setIsOpen(false);
+  //};
 
   return (
     <>

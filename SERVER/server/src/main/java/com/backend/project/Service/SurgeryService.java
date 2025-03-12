@@ -23,4 +23,8 @@ public class SurgeryService {
         Optional<Surgery> surgery = surgeryRepository.findById(applicationId);
         return surgery.orElse(null);
     }
+    
+    public Surgery updateSurgery(Surgery surgery) {
+        return surgeryRepository.save(surgery);
+    }
 }
