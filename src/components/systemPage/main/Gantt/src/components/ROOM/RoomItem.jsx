@@ -5,7 +5,7 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
+function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -42,20 +42,30 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned }) {
             doctor: response.data.chiefSurgeonName || item.doctor,
             surgery: response.data.surgeryName ? `${response.data.surgeryName} (${response.data.patientName || '未知病患'})` : item.surgery,
             color: item.color,
-            isPinned: isPinned // 傳遞釘選狀態
+            isPinned: isPinned, // 傳遞釘選狀態
+            // 使用從父組件傳入的手術室名稱
+            operatingRoomName: roomName || response.data.operatingRoomName || item.operatingRoomName
           };
           setSurgeryDetails(mergedData);
         } else {
           // 如果沒有獲取到資料，使用現有的項目資料
-          setSurgeryDetails({...item, isPinned});
+          setSurgeryDetails({
+            ...item, 
+            isPinned,
+            operatingRoomName: roomName || item.operatingRoomName
+          });
         }
         
         setIsModalOpen(true);
       } catch (error) {
         console.error('獲取手術詳細資料時發生錯誤:', error);
         setError(`獲取手術詳細資料失敗: ${error.message}`);
-        // 發生錯誤時，使用現有的項目資料
-        setSurgeryDetails({...item, isPinned});
+        // 發生錯誤時，使用現有的項目資料，但確保包含手術室名稱
+        setSurgeryDetails({
+          ...item, 
+          isPinned,
+          operatingRoomName: roomName || item.operatingRoomName
+        });
         setIsModalOpen(true);
       } finally {
         setLoading(false);

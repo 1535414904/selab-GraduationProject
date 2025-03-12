@@ -5,6 +5,11 @@ import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter"; // ✅ 加入篩選器
+import { DragDropContext } from "react-beautiful-dnd";
+import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
+import SurgeryModal from "./components/Modal/SurgeryModal";
+import axios from "axios";
+import { BASE_URL } from "/src/config";
 
 function Gantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
@@ -13,48 +18,102 @@ function Gantt({ rows, setRows }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [filteredRows, setFilteredRows] = useState([]); // 儲存篩選後的結果
+  const [filteredRows, setFilteredRows] = useState(rows);
+  const [timeScaleWidth, setTimeScaleWidth] = useState("100%");
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // 初始化數據
   useEffect(() => {
-    fetchSurgeryData(setRows, setLoading, setError);
-  }, []);
-
-  // 當原始數據變更時，更新篩選後的結果
-  useEffect(() => {
-    setFilteredRows(rows);
-  }, [rows]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (scrollContainerRef.current) {
-        setContainerWidth(scrollContainerRef.current.clientWidth);
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        await fetchSurgeryData(setRows, setLoading, setError);
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("初始化數據失敗:", error);
+        setError("初始化數據失敗");
+        setLoading(false);
       }
     };
+    
+    initializeData();
+  }, []);
 
+  // 當rows更新時，更新filteredRows
+  useEffect(() => {
+    if (rows && rows.length > 0) {
+      setFilteredRows(rows);
+      setIsInitialized(true);
+    }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [rows]);
+
+  const handleResize = () => {
+    if (timeScaleRef.current) {
+      setTimeScaleWidth(`${timeScaleRef.current.scrollWidth}px`);
+    }
+    if (scrollContainerRef.current) {
+      setContainerWidth(scrollContainerRef.current.clientWidth);
+    }
+  };
+
+  // 處理拖曳結束事件
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+    
+    // 檢查是否有釘選的手術房
+    const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
+    const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
+    
+    const sourceRoom = filteredRows[sourceRoomIndex];
+    const destRoom = filteredRows[destinationRoomIndex];
+    
+    if (sourceRoom.isPinned || destRoom.isPinned) {
+      console.warn("無法移動釘選的手術房中的手術");
+      return;
+    }
+    
+    // 執行拖曳處理並獲取更新後的手術資料
+    const updatedSurgeries = await handleDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 不再自動顯示詳細視窗，讓用戶點擊手術時才顯示
+    if (updatedSurgeries && updatedSurgeries.length > 0) {
+      console.log('手術資料已更新，可以點擊手術查看詳細資訊');
+    }
+  };
 
   // 處理手術房釘選狀態變更
   const handleRoomPinStatusChange = (roomIndex, isPinned) => {
-    setRows(prevRows => {
-      const newRows = [...prevRows];
-      if (newRows[roomIndex]) {
-        // 更新手術房的釘選狀態
-        newRows[roomIndex] = {
-          ...newRows[roomIndex],
-          isPinned: isPinned
-        };
-      }
-      return newRows;
-    });
+    const updatedRows = [...filteredRows];
+    updatedRows[roomIndex] = {
+      ...updatedRows[roomIndex],
+      isPinned: isPinned
+    };
+    setFilteredRows(updatedRows);
+    
+    // 同時更新原始數據
+    const originalRoomIndex = rows.findIndex(r => 
+      r.roomId === updatedRows[roomIndex].roomId || 
+      r.room === updatedRows[roomIndex].room
+    );
+    
+    if (originalRoomIndex !== -1) {
+      const newRows = [...rows];
+      newRows[originalRoomIndex] = {
+        ...newRows[originalRoomIndex],
+        isPinned: isPinned
+      };
+      setRows(newRows);
+    }
   };
 
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
+
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
@@ -69,6 +128,17 @@ function Gantt({ rows, setRows }) {
     
       setCurrentDate(formattedDate);
     }, []);
+
+  // 如果數據尚未初始化，顯示載入中
+  if (!isInitialized && loading) {
+    return (
+      <div className="gantt-main-container">
+        <div className="loading">
+          <p>載入中，請稍候...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gantt-main-container">
@@ -132,18 +202,22 @@ function Gantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  {filteredRows.map((room, roomIndex) => (
-                    <div 
-                      key={room.room || roomIndex} 
-                      className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                    >
-                      <RoomSection 
-                        room={room} 
-                        roomIndex={roomIndex} 
-                        onPinStatusChange={handleRoomPinStatusChange}
-                      />
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <div className="gantt-chart">
+                      {filteredRows.map((room, roomIndex) => (
+                        <div 
+                          key={room.room || roomIndex} 
+                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                        >
+                          <RoomSection 
+                            room={room} 
+                            roomIndex={roomIndex} 
+                            onPinStatusChange={handleRoomPinStatusChange}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </DragDropContext>
                 </div>
               </TimeWrapper>
             </div>
