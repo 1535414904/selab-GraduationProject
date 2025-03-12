@@ -385,6 +385,15 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
               </div>
             ))}
           </div>
+
+          {/* <div className="filter-footer">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
+              onClick={handleApplyFilter}
+            >
+              套用篩選
+            </button>
+          </div> */}
         </div>
 
         <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
