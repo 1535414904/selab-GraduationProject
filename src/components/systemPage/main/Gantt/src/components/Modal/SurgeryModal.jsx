@@ -41,6 +41,12 @@ function SurgeryModal({ surgery, onClose, error }) {
     }
   };
 
+  // 確保手術室名稱正確顯示
+  const getOperatingRoomName = () => {
+    // 優先使用最新的手術室名稱
+    return surgery.operatingRoomName || '未指定';
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -95,7 +101,7 @@ function SurgeryModal({ surgery, onClose, error }) {
               <strong>主刀醫師：</strong> {surgery.chiefSurgeonName || '未指定'}
             </p>
             <p>
-              <strong>手術室：</strong> {surgery.operatingRoomName || '未指定'}
+              <strong>手術室：</strong> {getOperatingRoomName()}
             </p>
             <p>
               <strong>預估時間：</strong> {surgery.estimatedSurgeryTime || '未指定'} {surgery.estimatedSurgeryTime ? '分鐘' : ''}

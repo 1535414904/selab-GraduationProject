@@ -5,6 +5,11 @@ import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter"; // ✅ 加入篩選器
+import { DragDropContext } from "react-beautiful-dnd";
+import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
+import SurgeryModal from "./components/Modal/SurgeryModal";
+import axios from "axios";
+import { BASE_URL } from "/src/config";
 
 function Gantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
@@ -13,48 +18,151 @@ function Gantt({ rows, setRows }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [filteredRows, setFilteredRows] = useState([]); // 儲存篩選後的結果
+  const [filteredRows, setFilteredRows] = useState(rows);
+  const [timeScaleWidth, setTimeScaleWidth] = useState("100%");
+  const [lastUpdatedSurgery, setLastUpdatedSurgery] = useState(null);
+  const [showSurgeryModal, setShowSurgeryModal] = useState(false);
+  const [surgeryModalError, setSurgeryModalError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // 初始化數據
   useEffect(() => {
-    fetchSurgeryData(setRows, setLoading, setError);
-  }, []);
-
-  // 當原始數據變更時，更新篩選後的結果
-  useEffect(() => {
-    setFilteredRows(rows);
-  }, [rows]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (scrollContainerRef.current) {
-        setContainerWidth(scrollContainerRef.current.clientWidth);
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        await fetchSurgeryData(setRows, setLoading, setError);
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("初始化數據失敗:", error);
+        setError("初始化數據失敗");
+        setLoading(false);
       }
     };
+    
+    initializeData();
+  }, []);
 
+  // 當rows更新時，更新filteredRows
+  useEffect(() => {
+    if (rows && rows.length > 0) {
+      setFilteredRows(rows);
+      setIsInitialized(true);
+    }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [rows]);
+
+  const handleResize = () => {
+    if (timeScaleRef.current) {
+      setTimeScaleWidth(`${timeScaleRef.current.scrollWidth}px`);
+    }
+    if (scrollContainerRef.current) {
+      setContainerWidth(scrollContainerRef.current.clientWidth);
+    }
+  };
+
+  // 處理拖曳結束事件
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+    
+    // 檢查是否有釘選的手術房
+    const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
+    const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
+    
+    const sourceRoom = filteredRows[sourceRoomIndex];
+    const destRoom = filteredRows[destinationRoomIndex];
+    
+    if (sourceRoom.isPinned || destRoom.isPinned) {
+      console.warn("無法移動釘選的手術房中的手術");
+      return;
+    }
+    
+    // 執行拖曳處理並獲取更新後的手術資料
+    const updatedSurgeries = await handleDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 如果有更新的手術資料，顯示第一個手術的詳細資訊
+    if (updatedSurgeries && updatedSurgeries.length > 0) {
+      try {
+        // 獲取第一個更新的手術的詳細資訊
+        const surgeryId = updatedSurgeries[0].applicationId;
+        const response = await axios.get(`${BASE_URL}/api/surgeries/${surgeryId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.data) {
+          // 找到對應的手術項目以獲取甘特圖中的時間資訊
+          let surgeryItem = null;
+          let currentRoom = null;
+          
+          // 在所有房間中查找被移動的手術
+          for (const room of filteredRows) {
+            const found = room.data.find(item => !item.isCleaningTime && item.applicationId === surgeryId);
+            if (found) {
+              surgeryItem = found;
+              currentRoom = room;
+              break;
+            }
+          }
+          
+          // 合併後端資料和甘特圖中的時間資訊
+          const mergedData = {
+            ...response.data,
+            // 保留甘特圖中的開始和結束時間
+            startTime: surgeryItem?.startTime,
+            endTime: surgeryItem?.endTime,
+            // 如果後端沒有這些欄位，則使用甘特圖中的資料
+            doctor: response.data.chiefSurgeonName || surgeryItem?.doctor,
+            surgery: response.data.surgeryName ? `${response.data.surgeryName} (${response.data.patientName || '未知病患'})` : surgeryItem?.surgery,
+            color: surgeryItem?.color,
+            // 更新手術室名稱為當前房間名稱
+            operatingRoomName: currentRoom ? currentRoom.room : response.data.operatingRoomName
+          };
+          
+          setLastUpdatedSurgery(mergedData);
+          setShowSurgeryModal(true);
+          setSurgeryModalError(null);
+        }
+      } catch (error) {
+        console.error('獲取更新後的手術詳細資料時發生錯誤:', error);
+        setSurgeryModalError(`獲取更新後的手術詳細資料失敗: ${error.message}`);
+        setShowSurgeryModal(true);
+      }
+    }
+  };
 
   // 處理手術房釘選狀態變更
   const handleRoomPinStatusChange = (roomIndex, isPinned) => {
-    setRows(prevRows => {
-      const newRows = [...prevRows];
-      if (newRows[roomIndex]) {
-        // 更新手術房的釘選狀態
-        newRows[roomIndex] = {
-          ...newRows[roomIndex],
-          isPinned: isPinned
-        };
-      }
-      return newRows;
-    });
+    const updatedRows = [...filteredRows];
+    updatedRows[roomIndex] = {
+      ...updatedRows[roomIndex],
+      isPinned: isPinned
+    };
+    setFilteredRows(updatedRows);
+    
+    // 同時更新原始數據
+    const originalRoomIndex = rows.findIndex(r => 
+      r.roomId === updatedRows[roomIndex].roomId || 
+      r.room === updatedRows[roomIndex].room
+    );
+    
+    if (originalRoomIndex !== -1) {
+      const newRows = [...rows];
+      newRows[originalRoomIndex] = {
+        ...newRows[originalRoomIndex],
+        isPinned: isPinned
+      };
+      setRows(newRows);
+    }
   };
 
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
+
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
@@ -69,6 +177,17 @@ function Gantt({ rows, setRows }) {
     
       setCurrentDate(formattedDate);
     }, []);
+
+  // 如果數據尚未初始化，顯示載入中
+  if (!isInitialized && loading) {
+    return (
+      <div className="gantt-main-container">
+        <div className="loading">
+          <p>載入中，請稍候...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gantt-main-container">
@@ -132,18 +251,22 @@ function Gantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  {filteredRows.map((room, roomIndex) => (
-                    <div 
-                      key={room.room || roomIndex} 
-                      className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                    >
-                      <RoomSection 
-                        room={room} 
-                        roomIndex={roomIndex} 
-                        onPinStatusChange={handleRoomPinStatusChange}
-                      />
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <div className="gantt-chart">
+                      {filteredRows.map((room, roomIndex) => (
+                        <div 
+                          key={room.room || roomIndex} 
+                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                        >
+                          <RoomSection 
+                            room={room} 
+                            roomIndex={roomIndex} 
+                            onPinStatusChange={handleRoomPinStatusChange}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </DragDropContext>
                 </div>
               </TimeWrapper>
             </div>
@@ -157,6 +280,14 @@ function Gantt({ rows, setRows }) {
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
+      )}
+
+      {showSurgeryModal && lastUpdatedSurgery && (
+        <SurgeryModal 
+          surgery={lastUpdatedSurgery} 
+          onClose={() => setShowSurgeryModal(false)} 
+          error={surgeryModalError}
+        />
       )}
     </div>
   );

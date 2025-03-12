@@ -102,10 +102,12 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
 
     setRows(formattedData);
     setLoading(false);
+    return formattedData; // 返回格式化後的數據，以便可以在Promise中使用
   } catch (error) {
     console.error('獲取數據時發生錯誤:', error);
     setError(`獲取數據失敗: ${error.message}`);
     setLoading(false);
+    throw error; // 拋出錯誤以便調用者處理
   }
 };
 

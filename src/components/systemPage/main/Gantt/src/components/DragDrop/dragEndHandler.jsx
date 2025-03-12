@@ -1,9 +1,11 @@
+import axios from 'axios';
 import { calculateDuration, addMinutesToTime } from '../Time/timeUtils';
-import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';        
+import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
+import { BASE_URL } from "/src/config";
 
-export const handleDragEnd = (result, rows, setRows) => {
+export const handleDragEnd = async (result, rows, setRows) => {
   const { source, destination } = result;
-  if (!destination) return;
+  if (!destination) return null;
 
   const sourceRoomIndex = parseInt(source.droppableId.split("-")[1], 10);
   const destinationRoomIndex = parseInt(destination.droppableId.split("-")[1], 10);
@@ -20,6 +22,96 @@ export const handleDragEnd = (result, rows, setRows) => {
   }
 
   setRows(newRows);
+  
+  // 將更新發送到後端並返回更新後的手術資料
+  try {
+    const updatedSurgeries = await updateSurgeryInDatabase(newRows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex);
+    return updatedSurgeries;
+  } catch (error) {
+    console.error('更新手術資料失敗:', error);
+    return null;
+  }
+};
+
+// 新增函數：將更新發送到後端
+const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex) => {
+  try {
+    // 確定要更新的手術資訊
+    const targetRoomIndex = sourceRoomIndex !== destinationRoomIndex ? destinationRoomIndex : sourceRoomIndex;
+    const targetRoom = rows[targetRoomIndex];
+    
+    // 遍歷目標房間的所有手術，更新它們的優先順序和時間
+    const surgeriesToUpdate = targetRoom.data.filter(item => !item.isCleaningTime);
+    const updatedSurgeries = [];
+    
+    for (let i = 0; i < surgeriesToUpdate.length; i++) {
+      const surgery = surgeriesToUpdate[i];
+      
+      // 準備更新資料
+      const updateData = {
+        operatingRoomId: targetRoom.roomId || targetRoom.room, // 使用roomId屬性
+        prioritySequence: i + 1, // 更新優先順序
+        estimatedSurgeryTime: surgery.duration // 更新預估手術時間
+      };
+      
+      console.log(`更新手術 ${surgery.applicationId} 的資料:`, updateData);
+      
+      // 發送更新請求
+      const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log(`已更新手術 ${surgery.applicationId} 的資訊`);
+      
+      // 保存更新後的手術資料
+      if (response.data) {
+        updatedSurgeries.push({
+          applicationId: surgery.applicationId,
+          updatedData: response.data
+        });
+      }
+    }
+    
+    // 如果是跨房間拖曳，還需要更新源房間的手術順序
+    if (sourceRoomIndex !== destinationRoomIndex) {
+      const sourceRoom = rows[sourceRoomIndex];
+      const sourceSurgeries = sourceRoom.data.filter(item => !item.isCleaningTime);
+      
+      for (let i = 0; i < sourceSurgeries.length; i++) {
+        const surgery = sourceSurgeries[i];
+        
+        // 準備更新資料
+        const updateData = {
+          prioritySequence: i + 1 // 只更新優先順序
+        };
+        
+        // 發送更新請求
+        const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        console.log(`已更新手術 ${surgery.applicationId} 的優先順序`);
+        
+        // 保存更新後的手術資料
+        if (response.data) {
+          updatedSurgeries.push({
+            applicationId: surgery.applicationId,
+            updatedData: response.data
+          });
+        }
+      }
+    }
+    
+    console.log('所有手術資訊已成功更新到資料庫');
+    return updatedSurgeries; // 返回更新後的手術資料
+  } catch (error) {
+    console.error('更新手術資訊到資料庫時發生錯誤:', error);
+    throw error; // 拋出錯誤以便調用者處理
+  }
 };
 
 const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) => {
