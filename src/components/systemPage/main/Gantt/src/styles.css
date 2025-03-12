@@ -309,7 +309,7 @@
 
 /* 篩選面板內容 */
 .filter-content {
-  padding: 1rem;
+  padding: 1rem 1rem 0 1rem;
 }
 
 /* 篩選項目 */
@@ -539,6 +539,24 @@
   cursor: pointer;
   z-index: 1000; /* 確保不被擋住 */
   box-shadow: 0px 2px 4px rgb(114, 156, 255);
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #93c5fd;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.filter-input:focus {
+  border-color: transparent;
+}
+
+.filter-select {
+  border-radius: 0.375rem;
+  padding: 1rem 1rem 0 1rem;
 }
 
 .loading {

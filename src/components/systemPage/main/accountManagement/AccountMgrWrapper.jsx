@@ -5,6 +5,7 @@ import AccountListWrapper from "./main/AccountListWrapper";
 import { BASE_URL } from "../../../../config";
 import axios from "axios";
 import AccountHeaderWrapper from "./header/AccountHeaderWrapper";
+import AccountFilter from "./AccountFilter";
 
 function AccountMgrWrapper({ reloadKey }) {
     const [users, setUsers] = useState([]);
@@ -12,6 +13,9 @@ function AccountMgrWrapper({ reloadKey }) {
     const [name, setName] = useState("");
     const [unit, setUnit] = useState("");
     const [role, setRole] = useState("");
+    const [filterUser, setFilterUser] = useState({
+        username: "", name: "", unit: "", role: null
+    })
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [addUsers, setAddUsers] = useState([]);
     const [emptyError, setEmptyError] = useState(null);
@@ -28,6 +32,10 @@ function AccountMgrWrapper({ reloadKey }) {
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        console.log(users);
+    },[users])
 
     /*const addHandleSubmit = async () => {
         const hasEmptyField = addUsers.some(user => !user.username.trim());
@@ -117,6 +125,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 name={name}
                 unit={unit}
                 role={role}
+                filterUser={filterUser}
                 selectedUsers={selectedUsers}
                 setSelectedUsers={setSelectedUsers}
                 handleDelete={handleDelete}
@@ -124,6 +133,11 @@ function AccountMgrWrapper({ reloadKey }) {
                 setAddUsers={setAddUsers}
                 handleAdd={handleAdd}
                 emptyError={emptyError}
+            />
+            <AccountFilter 
+                users={users}
+                filterUser={filterUser}
+                setFilterUser={setFilterUser}
             />
         </div>
     );
