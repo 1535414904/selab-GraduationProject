@@ -208,6 +208,10 @@
   font-size: 1.5em;
 }
 
+.system-table thead th {
+  padding: 0px 10px;
+}
+
 .system-table thead tr,
 .system-table tbody tr {
   transition: background-color 0.15s ease-in-out;
@@ -293,6 +297,21 @@ td {
   border-radius: 4px;
   border: 1px solid #d1d5db;
   accent-color: #2563eb;
+}
+
+.surgeries-list {
+  display: flex;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.surgery-item {
+  margin: 0.1em;
+  padding: 0.1em 1em;
+  height: 100%;
+  width: 20%;
+  background-color: #93c5fd;
+  flex: 0 0 auto;
 }
 
 /*----- for EditableRow -----*/

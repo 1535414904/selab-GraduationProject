@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
-import SurgerItems from "./SurgerItems";
+import SurgeryItems from "./SurgeryItems";
 
 /* eslint-disable react/prop-types */
 function SurgerListWrapper({ operatingRooms }) {
@@ -51,7 +51,7 @@ function SurgerListWrapper({ operatingRooms }) {
                                 <td>{operatingRoom.department.name}</td>
                                 <td>{lastSurgery ? lastSurgery.lastSurgeryEndTime : "載入中..."}</td>
                                 <td>
-                                    <SurgerItems operatingRoomId={operatingRoom.id} />
+                                    <SurgeryItems operatingRoomId={operatingRoom.id} />
                                 </td>
                             </tr>
                         )

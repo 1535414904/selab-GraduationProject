@@ -2,9 +2,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
+import SurgeryDetail from "./SurgeryDetail";
 
-function SurgerItems({ operatingRoomId }) {
+function SurgeryItems({ operatingRoomId }) {
     const [surgeries, setSurgeries] = useState([]);
+    const [selectedSurgery, setSelectedSurgery] = useState(null);
 
     useEffect(() => {
         const fetchSurgeries = async () => {
@@ -19,17 +21,21 @@ function SurgerItems({ operatingRoomId }) {
         fetchSurgeries();
     }, [operatingRoomId])
 
-    /*useEffect(() => {
-        console.log(surgeries);
-    },[surgeries])*/
+    /**/useEffect(() => {
+        console.log(selectedSurgery);
+    },[selectedSurgery])
 
     return (
-        <>
+        <div className="surgeries-list">
             {surgeries.map(surgery => (
-                <div key={surgery.applicationId}>{surgery.applicationId}</div>
+                <div key={surgery.applicationId} className="surgery-item" onClick={() => setSelectedSurgery(surgery)}>
+                    <div>{surgery.applicationId}</div>
+                    <div>{surgery.patientName}</div>
+                </div>
             ))}
-        </>
+            {selectedSurgery && <SurgeryDetail surgery={selectedSurgery} onClose={() => setSelectedSurgery(null)}/>}
+        </div>
     )
 }
 
-export default SurgerItems;
+export default SurgeryItems;
