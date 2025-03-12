@@ -62,7 +62,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
 
     const handleDeleteAll = async (selectedDepartments) => {
         if (selectedDepartments.length === 0) {
-            alert("請選擇要刪除的帳戶");
+            alert("請選擇要刪除的科別");
             return;
         }
         try {
