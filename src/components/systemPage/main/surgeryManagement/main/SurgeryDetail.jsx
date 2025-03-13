@@ -10,7 +10,8 @@ function SurgeryDetail({ surgery, onClose }) {
                 </div>
 
                 <div className="modal-body">
-                    <div className="info-group">
+                    {/* <div className="info-group" style={{ textAlign: "left", alignItems: "flex-start", display: "flex", flexDirection: "column" }}> */}
+                    <div className="info-group flex flex-col items-start text-left">
                         <h3>基本資訊</h3>
                         <p>
                             <strong>申請編號：</strong> {surgery.applicationId || '未指定'}
@@ -26,7 +27,7 @@ function SurgeryDetail({ surgery, onClose }) {
                         </p>
                     </div>
                     
-                    <div className="info-group green">
+                    <div className="info-group green"  style={{ textAlign: "left", alignItems: "flex-start", display: "flex", flexDirection: "column" }}>
                     <h3>手術資訊</h3>
                     <p>
                         <strong>手術名稱：</strong> {surgery.surgeryName || '未指定'}
@@ -41,7 +42,7 @@ function SurgeryDetail({ surgery, onClose }) {
                         <strong>預估時間：</strong> {surgery.estimatedSurgeryTime || '未指定'} {surgery.estimatedSurgeryTime ? '分鐘' : ''}
                     </p>
                 </div>
-                </div>
+               </div>
             </div>
         </div>
     )
