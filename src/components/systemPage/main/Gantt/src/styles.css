@@ -381,6 +381,18 @@
   scrollbar-width: thin;
   scrollbar-color: #9ca3af #f3f4f6;
 }
+/* 隱藏橫向捲動條 */
+::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
+/* 讓內容仍可垂直滾動，但不允許橫向滾動 */
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
 
 /* 時間軸容器 */
 .time-wrapper-container {
