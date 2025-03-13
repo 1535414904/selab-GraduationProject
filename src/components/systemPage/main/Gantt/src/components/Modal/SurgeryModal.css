@@ -101,6 +101,11 @@
   position: relative;
 }
 
+.info-group h3 {
+  position: relative;
+  display: inline-block;
+}
+
 .info-group h3::after {
   content: '';
   position: absolute;
@@ -108,12 +113,23 @@
   left: 0;
   width: 50px;
   height: 2px;
-  background-color: #3b82f6;
+  background-color: #3b82f6; /* 預設藍色 */
 }
+
+/* 綠色變體 */
+.info-group.green h3::after {
+  background-color: #22c55e;
+}
+
+/* 粉色變體 */
+.info-group.pink h3::after {
+  background-color: #ec4899;
+}
+
 
 .info-group p {
   margin: 12px 0;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #4b5563;
   line-height: 1.6;
   display: flex;

@@ -26,7 +26,7 @@ function SurgeryDetail({ surgery, onClose }) {
                         </p>
                     </div>
                     
-                    <div className="info-group">
+                    <div className="info-group green">
                     <h3>手術資訊</h3>
                     <p>
                         <strong>手術名稱：</strong> {surgery.surgeryName || '未指定'}

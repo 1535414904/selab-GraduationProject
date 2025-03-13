@@ -92,7 +92,7 @@ function SurgeryModal({ surgery, onClose, error }) {
             </p>
           </div>
 
-          <div className="info-group">
+          <div className="info-group green">
             <h3>手術資訊</h3>
             <p>
               <strong>手術名稱：</strong> {surgery.surgeryName || '未指定'}
@@ -125,7 +125,7 @@ function SurgeryModal({ surgery, onClose, error }) {
             </p>
           </div>
 
-          <div className="info-group">
+          <div className="info-group pink">
             <h3>其他資訊</h3>
             <p>
               <strong>特殊需求：</strong>{" "}
