@@ -47,7 +47,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
 
     const handleAdd = async (department) => {
         if (!department.id.trim()) {
-            setEmptyError("*帳號欄位不得為空");
+            setEmptyError("*科別編號欄位不得為空");
         } else {
             try {
                 await axios.post(`${BASE_URL}/api/system/department/add`, department);

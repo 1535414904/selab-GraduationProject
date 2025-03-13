@@ -37,23 +37,6 @@ function AccountMgrWrapper({ reloadKey }) {
         console.log(users);
     },[users])
 
-    /*const addHandleSubmit = async () => {
-        const hasEmptyField = addUsers.some(user => !user.username.trim());
-        if (hasEmptyField) {
-            setEmptyError("*帳號欄位不得為空");
-        } else {
-            try {
-                await axios.post(BASE_URL + "/api/system/users/add", addUsers);
-                const response = await axios.get(BASE_URL + "/api/system/users");
-                setUsers(response.data);
-                setEmptyError(null);
-                //setPageState("list");
-            } catch (error) {
-                console.log("Error add data: ", error);
-            }
-        }
-    }*/
-
     const handleAdd = async (user) => {
         if (!user.username.trim()) {
             setEmptyError("*帳號欄位不得為空");
