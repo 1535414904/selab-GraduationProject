@@ -35,7 +35,7 @@ function AccountMgrWrapper({ reloadKey }) {
 
     useEffect(() => {
         console.log(users);
-    },[users])
+    }, [users])
 
     const handleAdd = async (user) => {
         if (!user.username.trim()) {
@@ -58,6 +58,12 @@ function AccountMgrWrapper({ reloadKey }) {
             alert("請選擇要刪除的帳戶");
             return;
         }
+        const isConfirmed = window.confirm(`請確認是否刪除這 ${selectedUsers.length} 筆帳號`);
+        if (!isConfirmed) {
+            setSelectedUsers([]); // 取消勾選
+            return;
+        }
+
         try {
             await axios.delete(`${BASE_URL}/api/system/users/delete`, {
                 data: selectedUsers
@@ -71,6 +77,9 @@ function AccountMgrWrapper({ reloadKey }) {
     };
 
     const handleDelete = async (username) => {
+        const isConfirmed = window.confirm(`請確認是否刪除帳號 ${username} `);
+        if (!isConfirmed) return;
+
         try {
             await axios.delete(`${BASE_URL}/api/system/user/delete/${username}`);
             const response = await axios.get(BASE_URL + "/api/system/users");
@@ -117,7 +126,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 handleAdd={handleAdd}
                 emptyError={emptyError}
             />
-            <AccountFilter 
+            <AccountFilter
                 users={users}
                 filterUser={filterUser}
                 setFilterUser={setFilterUser}
