@@ -11,7 +11,7 @@ import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
 import SurgeryMgrWrapper from "./surgeryManagement/surgeryMgrWrapper";
 
-function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
+function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey }) {
   const [rows, setRows] = useState([]);
 
   const onDragEnd = (result) => {
@@ -63,7 +63,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey }) {
 
           {mainState === "surgeryMgr" && (
             <div className="transition-all duration-300 ease-in-out">
-              <SurgeryMgrWrapper reloadKey={reloadKey} />
+              <SurgeryMgrWrapper reloadKey={reloadKey} setReloadKey={setReloadKey}/>
             </div>
           )}
 

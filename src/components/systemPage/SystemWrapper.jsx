@@ -36,7 +36,7 @@ function SystemWrapper({fullTogglePage, nowUsername}) {
 
   return <div className="system-wrapper">
     <HeaderWrapper fullTogglePage={fullTogglePage} user={user} toggleMainPage={setMainState} setReloadKey={setReloadKey}/>
-    <MainWrapper user={user} mainState={mainState} onUpdateUser={setUser} reloadKey={reloadKey}/>
+    <MainWrapper user={user} mainState={mainState} onUpdateUser={setUser} reloadKey={reloadKey} setReloadKey={setReloadKey}/>
   </div>
 }
 

@@ -101,7 +101,7 @@ function SurgeryModal({ surgery, onClose, error }) {
               <strong>主刀醫師：</strong> {surgery.chiefSurgeonName || surgery.doctor || '未指定'}
             </p>
             <p>
-              <strong>手術室：</strong> {getOperatingRoomName()}
+              <strong>手術房：</strong> {getOperatingRoomName()}
             </p>
             <p>
               <strong>預估時間：</strong> {surgery.estimatedSurgeryTime || surgery.duration || '未指定'} {(surgery.estimatedSurgeryTime || surgery.duration) ? '分鐘' : ''}

@@ -143,22 +143,33 @@
   min-width: 100px;
 }
 
+
+
 /* 基本資訊區塊特殊樣式 */
-.info-group:first-child {
+.info-group.blue {
   background-color: #f8fafc;
   border-left: 4px solid #3b82f6;
 }
 
 /* 手術資訊區塊特殊樣式 */
-.info-group:nth-child(2) {
+.info-group.green {
   background-color: #f0fdf4;
   border-left: 4px solid #22c55e;
 }
 
 /* 其他資訊區塊特殊樣式 */
-.info-group:nth-child(3) {
+.info-group.pink {
   background-color: #fdf2f8;
   border-left: 4px solid #ec4899;
+}
+
+.info-group.action-group {
+  display: flex;
+  justify-content: space-around;
+  background-color: #ffffff;
+  border-left: 4px solid #9b9b9b;
+  font-size: 1.5em;
+  padding: 0.2em;
 }
 
 /* 時間顯示的特殊樣式 */

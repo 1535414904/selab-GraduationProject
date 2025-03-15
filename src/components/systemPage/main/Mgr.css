@@ -312,6 +312,13 @@ td {
   width: 20%;
   background-color: #93c5fd;
   flex: 0 0 auto;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.surgery-item:hover {
+  transform:scale(1.05);
+  filter: brightness(0.9);
 }
 
 /*----- for EditableRow -----*/
@@ -330,7 +337,9 @@ td {
 }
 
 .editable-row input,
-.editable-row select {
+.editable-row select,
+.info-group input,
+.info-group textarea {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #93c5fd;
@@ -340,6 +349,8 @@ td {
 }
 
 .editable-row input:focus,
-.editable-row select:focus {
+.editable-row select:focus,
+.info-group input:focus,
+.info-group textarea:focus {
   border-color: transparent;
 }

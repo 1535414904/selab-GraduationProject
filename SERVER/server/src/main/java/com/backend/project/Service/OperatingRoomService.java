@@ -73,7 +73,9 @@ public class OperatingRoomService {
     // ----- About surgery -----//
 
     public List<Surgery> getSurgeryByOperatingRoomId(String operatingRoomId) {
-        return surgeryRepository.findByOperatingRoomId(operatingRoomId);
+        OperatingRoom operatingRoom = operatingRoomRepository.findById(operatingRoomId)
+                .orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
+        return surgeryRepository.findByOperatingRoom(operatingRoom);
     }
 
     public String getLastSurgeryEndTime(String operatingRoomId) {

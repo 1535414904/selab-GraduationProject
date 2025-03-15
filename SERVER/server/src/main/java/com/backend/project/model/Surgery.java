@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "surgery")
@@ -160,6 +161,28 @@ public class Surgery {
 
     public void setOperatingRoom(OperatingRoom operatingRoom) {
         this.operatingRoom = operatingRoom;
+    }
+
+    @Transient
+    private String operatingRoomId;
+
+    public String getOperatingRoomId() {
+        return operatingRoomId;
+    }
+
+    public void setOperatingRoomId(String operatingRoomId) {
+        this.operatingRoomId = operatingRoomId;
+    }
+
+    @Transient
+    private String chiefSurgeonId;
+
+    public String getChiefSurgeonId() {
+        return chiefSurgeonId;
+    }
+
+    public void setChiefSurgeonId(String chiefSurgeonId) {
+        this.chiefSurgeonId = chiefSurgeonId;
     }
 
     public String getFormattedTime() {

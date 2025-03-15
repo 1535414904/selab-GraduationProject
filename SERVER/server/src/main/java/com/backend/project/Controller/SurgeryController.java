@@ -106,7 +106,7 @@ public class SurgeryController {
             }
             
             // 保存更新後的手術資料
-            Surgery updatedSurgery = surgeryService.updateSurgery(surgery);
+            Surgery updatedSurgery = surgeryService.updateSurgeryForHome(surgery);
             
             // 創建響應
             Map<String, Object> response = new HashMap<>();
@@ -120,5 +120,14 @@ public class SurgeryController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("更新手術資料失敗: " + e.getMessage());
         }
+    }
+
+    @PutMapping("system/surgery/{id}")
+    public ResponseEntity<?> updateSurgery(@PathVariable String id,
+    @RequestBody Surgery updatSurgery) {
+        System.out.println("收到的 Surgery：" + updatSurgery);
+
+        surgeryService.updateSurgery(id, updatSurgery);
+        return ResponseEntity.ok("Surgery update successfully");
     }
 }

@@ -2,9 +2,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import SurgeryItems from "./SurgeryItems";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 /* eslint-disable react/prop-types */
-function SurgerListWrapper({ operatingRooms }) {
+function SurgerListWrapper({ operatingRooms, setReloadKey }) {
     const [lastSurgeryTimes, setLastSurgeryTimes] = useState([]);
 
     useEffect(() => {
@@ -13,8 +15,8 @@ function SurgerListWrapper({ operatingRooms }) {
 
             try {
                 const responses = await Promise.all(
-                    operatingRooms.map(room =>
-                        axios.get(`${BASE_URL}/api/system/operating-rooms/${room.id}/last-surgery-time`)
+                    operatingRooms.map(operatingRoom =>
+                        axios.get(`${BASE_URL}/api/system/operating-rooms/${operatingRoom.id}/last-surgery-time`)
                     )
                 );
 
@@ -38,6 +40,7 @@ function SurgerListWrapper({ operatingRooms }) {
                         <th>所屬科別</th>
                         <th>預期可用時間點</th>
                         <th>預約狀況</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,7 +54,10 @@ function SurgerListWrapper({ operatingRooms }) {
                                 <td>{operatingRoom.department.name}</td>
                                 <td>{lastSurgery ? lastSurgery.lastSurgeryEndTime : "載入中..."}</td>
                                 <td>
-                                    <SurgeryItems operatingRoomId={operatingRoom.id} />
+                                    <SurgeryItems operatingRoom={operatingRoom} operatingRooms={operatingRooms} setReloadKey={setReloadKey} />
+                                </td>
+                                <td>
+                                    <FontAwesomeIcon className="add-button" icon={faPlus} />
                                 </td>
                             </tr>
                         )
