@@ -26,16 +26,26 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   //   如果 originalRows 已經是單純的陣列，每筆就是一個手術，則可直接使用 originalRows
   //   如果是「以房間分組」的資料結構，則要用 flatMap 攤平
   const flattenedRows = Array.isArray(originalRows)
-    ? originalRows.flatMap((row) => (row.data ? row.data : row))
+    ? originalRows.flatMap((row) => {
+        // 檢查是否有 data 屬性（表示是房間）
+        if (row.data && Array.isArray(row.data)) {
+          // 將房間內的手術資料攤平，並為每個手術加上 operatingRoomName
+          return row.data.map(surgery => ({
+            ...surgery,
+            operatingRoomName: surgery.operatingRoomName || row.name // 如果手術沒有房間名稱，使用 row.name
+          }));
+        }
+        // 如果已經是單個手術，直接返回
+        return row;
+      })
     : [];
 
   // 2) 從 flattenedRows 裡動態蒐集各欄位可供選擇的值
-
   const availableSurgeryNames = Array.from(
     new Set(flattenedRows.map((s) => s.surgeryName).filter(Boolean))
   );
   const availableChiefSurgeonNames = Array.from(
-    new Set(flattenedRows.map((s) => s.chiefSurgeonName).filter(Boolean))
+    new Set(flattenedRows.map((s) => s.chiefSurgeonName || s.doctor).filter(Boolean))
   );
   const availableOperatingRoomNames = Array.from(
     new Set(flattenedRows.map((s) => s.operatingRoomName).filter(Boolean))
@@ -76,38 +86,53 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  // 依手術室分組
+  const groupByRoom = (surgeries) => {
+    const roomGroups = {};
+    const result = [];
+    
+    // 先確保每個手術都有 operatingRoomName
+    surgeries.forEach(surgery => {
+      const roomName = surgery.operatingRoomName || '未指定手術室';
+      
+      // 如果這個手術室尚未建立，則新增一個群組
+      if (!roomGroups[roomName]) {
+        const newRoom = {
+          id: `room-${roomName}`,
+          name: roomName,
+          data: []
+        };
+        roomGroups[roomName] = newRoom;
+        result.push(newRoom);
+      }
+      
+      // 將手術資料加入該手術室的 data 陣列
+      // 確保每個手術有必要的屬性供 RoomItem 使用
+      const surgeryData = {
+        ...surgery,
+        surgery: surgery.surgeryName || surgery.surgery || '未指定手術',
+        doctor: surgery.chiefSurgeonName || surgery.doctor || '未指定醫生',
+        color: surgery.color || 'green',
+        startTime: surgery.startTime || '08:00',
+        endTime: surgery.endTime || '09:00',
+        // 確保有 applicationId 以便點擊時顯示 modal
+        applicationId: surgery.applicationId || `temp-${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      roomGroups[roomName].data.push(surgeryData);
+    });
+    
+    return result;
+  };
+
   // 5) 篩選邏輯：根據 filterValues 過濾 flattenedRows
   const applyFilters = () => {
     if (!flattenedRows || flattenedRows.length === 0) {
       onFilteredDataChange([]);
       return;
     }
+    
     const filteredData = flattenedRows.filter((s) => {
-      // applicationId
-      if (
-        filterValues.applicationId?.length > 0 &&
-        !filterValues.applicationId.includes(s.applicationId)
-      ) {
-        return false;
-      }
-      // medicalRecordNumber
-      if (
-        filterValues.medicalRecordNumber?.length > 0 &&
-        !filterValues.medicalRecordNumber.includes(s.medicalRecordNumber)
-      ) {
-        return false;
-      }
-      // patientName
-      if (
-        filterValues.patientName?.length > 0 &&
-        !filterValues.patientName.includes(s.patientName)
-      ) {
-        return false;
-      }
-      // date
-      if (filterValues.date?.length > 0 && !filterValues.date.includes(s.date)) {
-        return false;
-      }
       // surgeryName
       if (
         filterValues.surgeryName?.length > 0 &&
@@ -115,13 +140,16 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
-      // chiefSurgeonName
+      
+      // chiefSurgeonName (使用 doctor 欄位作為替代)
       if (
         filterValues.chiefSurgeonName?.length > 0 &&
-        !filterValues.chiefSurgeonName.includes(s.chiefSurgeonName)
+        !filterValues.chiefSurgeonName.includes(s.chiefSurgeonName) &&
+        !filterValues.chiefSurgeonName.includes(s.doctor)
       ) {
         return false;
       }
+      
       // operatingRoomName
       if (
         filterValues.operatingRoomName?.length > 0 &&
@@ -129,6 +157,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
+      
       // estimatedSurgeryTime
       if (
         filterValues.estimatedSurgeryTime?.length > 0 &&
@@ -136,20 +165,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
-      // startTime
-      if (
-        filterValues.startTime?.length > 0 &&
-        !filterValues.startTime.includes(s.startTime)
-      ) {
-        return false;
-      }
-      // endTime
-      if (
-        filterValues.endTime?.length > 0 &&
-        !filterValues.endTime.includes(s.endTime)
-      ) {
-        return false;
-      }
+      
       // anesthesiaMethod
       if (
         filterValues.anesthesiaMethod?.length > 0 &&
@@ -157,6 +173,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
+      
       // surgeryReason
       if (
         filterValues.surgeryReason?.length > 0 &&
@@ -164,6 +181,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
+      
       // specialOrRequirements
       if (
         filterValues.specialOrRequirements?.length > 0 &&
@@ -171,6 +189,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         return false;
       }
+      
       // userName
       if (
         filterValues.userName?.length > 0 &&
@@ -182,13 +201,11 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       return true;
     });
 
-    // 如果需要再依房間分組顯示，可以在這裡重組
-    // 例如:
-    // const grouped = groupByRoom(filteredData);
-    // onFilteredDataChange(grouped);
-
-    // 若只需要回傳平的陣列，直接回傳 filteredData
-    onFilteredDataChange(filteredData);
+    // 將過濾後的資料依房間分組
+    const groupedData = groupByRoom(filteredData);
+    
+    // 將分組後的資料傳回給父組件
+    onFilteredDataChange(groupedData);
   };
 
   // 6) 新增篩選條件
@@ -214,12 +231,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     delete updatedValues[filterKey];
     setFilterValues(updatedValues);
   };
-
-  // 9) 「套用篩選」按鈕（若需要）
-  //const handleApplyFilter = () => {
-   // applyFilters();
-   // setIsOpen(false);
-  //};
 
   return (
     <>
@@ -257,42 +268,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                 </div>
 
                 {/* 依不同欄位顯示不同的多選下拉 */}
-                {filter.value === "applicationId" && (
-                  <Select
-                    isMulti
-                    options={availableApplicationIds.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("applicationId", selected)}
-                    placeholder="選擇申請編號..."
-                  />
-                )}
-
-                {filter.value === "medicalRecordNumber" && (
-                  <Select
-                    isMulti
-                    options={availableMedicalRecordNumbers.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("medicalRecordNumber", selected)}
-                    placeholder="選擇病歷號碼..."
-                  />
-                )}
-
-                {filter.value === "patientName" && (
-                  <Select
-                    isMulti
-                    options={availablePatientNames.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("patientName", selected)}
-                    placeholder="選擇病患姓名..."
-                  />
-                )}
-
-                {filter.value === "date" && (
-                  <Select
-                    isMulti
-                    options={availableDates.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("date", selected)}
-                    placeholder="選擇手術日期..."
-                  />
-                )}
-
                 {filter.value === "surgeryName" && (
                   <Select
                     isMulti
@@ -326,24 +301,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     options={availableEstimatedTimes.map((v) => ({ value: v, label: String(v) }))}
                     onChange={(selected) => handleFilterChange("estimatedSurgeryTime", selected)}
                     placeholder="選擇預估時間..."
-                  />
-                )}
-
-                {filter.value === "startTime" && (
-                  <Select
-                    isMulti
-                    options={availableStartTimes.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("startTime", selected)}
-                    placeholder="選擇開始時間..."
-                  />
-                )}
-
-                {filter.value === "endTime" && (
-                  <Select
-                    isMulti
-                    options={availableEndTimes.map((v) => ({ value: v, label: v }))}
-                    onChange={(selected) => handleFilterChange("endTime", selected)}
-                    placeholder="選擇結束時間..."
                   />
                 )}
 
@@ -385,15 +342,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
               </div>
             ))}
           </div>
-
-          {/* <div className="filter-footer">
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
-              onClick={handleApplyFilter}
-            >
-              套用篩選
-            </button>
-          </div> */}
         </div>
 
         <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
