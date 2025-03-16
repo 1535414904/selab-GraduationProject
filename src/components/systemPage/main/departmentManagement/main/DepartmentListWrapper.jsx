@@ -25,6 +25,7 @@ function DepartmentListWrapper({
   const [editingDepartment, setEditingDepartment] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
   const [addChiefSurgeons, setAddChiefSurgeons] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!departments.length) return;
@@ -99,6 +100,7 @@ function DepartmentListWrapper({
                   key={department.id}
                   department={department}
                   handleSave={handleSave}
+                  setIsEditing={setEditingDepartment} // 傳遞 setEditingUser 來控制編輯模式
                 />
               ) : (
                 <>
@@ -149,7 +151,7 @@ function DepartmentListWrapper({
                         </button>
 
                         {/* 刪除按鈕 */}
-                        <button onClick={() => handleDelete(department.id)} className="action-button delete-button">
+                        <button onClick={() => handleDelete(department.id, department.name)} className="action-button delete-button">
                           <FontAwesomeIcon icon={faTrash} className="action-icon" />
                         </button>
 
@@ -180,6 +182,7 @@ function DepartmentListWrapper({
                       addChiefSurgeons={addChiefSurgeons}
                       setAddChiefSurgeons={setAddChiefSurgeons}
                       setDepartments={setDepartments}
+                      setIsEditing={setIsEditing} // ✅ 傳入 setIsEditing
                     />}
                 </>
               )

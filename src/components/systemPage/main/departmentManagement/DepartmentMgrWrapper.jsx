@@ -65,15 +65,26 @@ function DepartmentMgrWrapper({ reloadKey }) {
             alert("請選擇要刪除的科別");
             return;
         }
+
+        const isConfirmed = window.confirm(`請確認是否刪除這 ${selectedDepartments.length} 筆科別？`);
+        if (!isConfirmed) {
+            setSelectedDepartments([]); // 取消勾選
+            return;
+        }
+
         try {
             await axios.delete(`${BASE_URL}/api/system/departments/delete`, {
                 data: selectedDepartments
             });
-            const response = await axios.get(BASE_URL + "/api/system/departments");
+
+
+            // 重新獲取所有科別資料
+            const response = await axios.get(`${BASE_URL}/api/system/departments`);
             setDepartments(response.data);
             setSelectedDepartments([]);
+
         } catch (error) {
-            console.error("Delete fail：", error);
+            console.error("刪除失敗：", error);
         }
     };
 

@@ -35,7 +35,7 @@ function EditableRow({ key, chiefSurgeon, handleSave }) {
                     onChange={handleChange}
                 />
             </td>
-            <td><FontAwesomeIcon icon={faFloppyDisk} className="edit-button" onClick={() => handleSave(editedChiefSurgeon)}/></td>
+            <td><FontAwesomeIcon icon={faFloppyDisk} className="edit-button" onClick={() => handleSave(editedChiefSurgeon)} /></td>
         </tr>
     )
 }

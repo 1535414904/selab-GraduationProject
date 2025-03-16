@@ -94,25 +94,25 @@ function ChiefSurgeonListWrapper({ chiefSurgeons, setChiefSurgeons,
                 <tbody ref={tbodyRef}>
                     {filteredChiefSurgeons.length > 0 ? (
                         filteredChiefSurgeons.map(chiefSurgeon => (
-                                editingChiefSurgeon?.id === chiefSurgeon.id ? (
-                                    <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
-                                ) : (
-                                    <tr key={chiefSurgeon.id}>
-                                        <td>{chiefSurgeon.id}</td>
-                                        <td>{chiefSurgeon.name}</td>
-                                        <td>
-                                            {deleteMode ? (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectChiefSurgeons.includes(chiefSurgeon.id)}
-                                                    onChange={() => handleCheckboxChange(chiefSurgeon.id)}
-                                                />
-                                            ) : (
-                                                <FontAwesomeIcon className="edit-button" icon={faPenSquare} size="lg" onClick={() => handleEdit(chiefSurgeon)} />
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
+                            editingChiefSurgeon?.id === chiefSurgeon.id ? (
+                                <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
+                            ) : (
+                                <tr key={chiefSurgeon.id}>
+                                    <td>{chiefSurgeon.id}</td>
+                                    <td>{chiefSurgeon.name}</td>
+                                    <td>
+                                        {deleteMode ? (
+                                            <input
+                                                type="checkbox"
+                                                checked={selectChiefSurgeons.includes(chiefSurgeon.id)}
+                                                onChange={() => handleCheckboxChange(chiefSurgeon.id)}
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon className="edit-button" icon={faPenSquare} size="lg" onClick={() => handleEdit(chiefSurgeon)} />
+                                        )}
+                                    </td>
+                                </tr>
+                            )
                         ))
                     ) : (
                         <tr>

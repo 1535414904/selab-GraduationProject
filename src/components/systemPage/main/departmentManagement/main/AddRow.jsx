@@ -41,13 +41,28 @@ function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError }) {
                     </td>
                     <td>0</td>
                     <td>
-                        <div className="action-buttons">
+                        {/* <div className="action-buttons">
                             <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {
                                 handleAdd(department);
                                 if (department.id.trim()) { handleDelete(index); }
                             }} />
                             <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(index)} />
+                        </div> */}
+                        <div className="action-buttons">
+                            {/* 儲存按鈕 */}
+                            <button className="action-button edit-button" onClick={() => {
+                                handleAdd(department);
+                                if (department.id.trim()) { handleDelete(index); }
+                            }}>
+                                <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                            </button>
+
+                            {/* 刪除按鈕 */}
+                            <button className="action-button delete-button" onClick={() => handleDelete(index)}>
+                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                            </button>
                         </div>
+
                     </td>
                 </tr>
             ))}

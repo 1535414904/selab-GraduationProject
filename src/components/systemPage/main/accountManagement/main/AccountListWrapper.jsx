@@ -8,9 +8,22 @@ import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import AddRow from "./AddRow";
 import "../../Mgr.css";
 
-function AccountListWrapper({ users, setUsers,
-    username, name, unit, role, filterUser,
-    selectedUsers, setSelectedUsers, handleDelete, addUsers, setAddUsers, handleAdd, emptyError }) {
+function AccountListWrapper({
+    users,
+    setUsers,
+    username,
+    name,
+    unit,
+    role,
+    filterUser,
+    selectedUsers,
+    setSelectedUsers,
+    handleDelete,
+    addUsers,
+    setAddUsers,
+    handleAdd,
+    emptyError
+}) {
 
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);

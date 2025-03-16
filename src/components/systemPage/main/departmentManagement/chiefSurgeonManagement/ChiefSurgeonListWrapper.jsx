@@ -57,17 +57,36 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
         }
     };
 
-    const handleDelete = async (id) => {
+    // const handleDelete = async (id) => {
+    //     try {
+    //         await axios.delete(`${BASE_URL}/api/system/chief-surgeon/delete/${id}`);
+    //         const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
+    //         setChiefSurgeons(response.data);
+    //         const responseDpartments = await axios.get(BASE_URL + "/api/system/departments");
+    //         setDepartments(responseDpartments.data);
+    //     } catch (error) {
+    //         console.error("刪除失敗：", error);
+    //     }
+    // }
+    const handleDelete = async (id, name) => {
+        const isConfirmed = window.confirm(`請確認是否刪除該主治醫師 ${name} （ID: ${id}）？`);
+        if (!isConfirmed) return;
+
         try {
             await axios.delete(`${BASE_URL}/api/system/chief-surgeon/delete/${id}`);
+
+            // 重新獲取該科別的主治醫師資料
             const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
             setChiefSurgeons(response.data);
-            const responseDpartments = await axios.get(BASE_URL + "/api/system/departments");
-            setDepartments(responseDpartments.data);
+
+            // 重新獲取所有科別的資料
+            const responseDepartments = await axios.get(`${BASE_URL}/api/system/departments`);
+            setDepartments(responseDepartments.data);
+
         } catch (error) {
             console.error("刪除失敗：", error);
         }
-    }
+    };
 
     return (
         <td colSpan={5}>
@@ -101,11 +120,17 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                                 <td>{chiefSurgeon.name}</td>
                                 <td>
                                     <div className="action-buttons">
-                                        <FontAwesomeIcon className="edit-button" icon={faPenSquare}
-                                            onClick={() => handleEdit(chiefSurgeon)} />
-                                        <FontAwesomeIcon className="delete-button" icon={faTrash}
-                                            onClick={() => handleDelete(chiefSurgeon.id)} />
+                                        {/* 編輯按鈕 */}
+                                        <button onClick={() => handleEdit(chiefSurgeon)} className="action-button edit-button">
+                                            <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                                        </button>
+
+                                        {/* 刪除按鈕 */}
+                                        <button onClick={() => handleDelete(chiefSurgeon.id, chiefSurgeon.name)} className="action-button delete-button">
+                                            <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                        </button>
                                     </div>
+
                                 </td>
                             </tr>
                         )
