@@ -41,6 +41,24 @@ function SurgeryModal({ surgery, onClose, error }) {
     }
   };
 
+  // 格式化時間顯示，處理超過24:00的情況
+  const formatTime = (time) => {
+    if (!time) return '未指定';
+    
+    try {
+      const [hours, minutes] = time.split(":").map(Number);
+      if (hours >= 24) {
+        // 如果小時數大於等於24，轉換為凌晨時間
+        const adjustedHours = hours - 24;
+        return `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      }
+      return time;
+    } catch (error) {
+      console.error('時間格式化錯誤:', error);
+      return time;
+    }
+  };
+
   // 確保手術室名稱正確顯示
   const getOperatingRoomName = () => {
     // 優先使用最新的手術室名稱
@@ -76,8 +94,8 @@ function SurgeryModal({ surgery, onClose, error }) {
         )}
 
         <div className="modal-body">
-          <div className="info-group">
-            <h3>基本資訊</h3>
+          <div className="info-group blue">
+            <h3 className="text-blue-600">基本資訊</h3>
             <p>
               <strong>申請編號：</strong> {surgery.applicationId || '未指定'}
             </p>
@@ -101,20 +119,20 @@ function SurgeryModal({ surgery, onClose, error }) {
               <strong>主刀醫師：</strong> {surgery.chiefSurgeonName || surgery.doctor || '未指定'}
             </p>
             <p>
-              <strong>手術房：</strong> {getOperatingRoomName()}
+              <strong>手術室：</strong> {getOperatingRoomName()}
             </p>
             <p>
               <strong>預估時間：</strong> {surgery.estimatedSurgeryTime || surgery.duration || '未指定'} {(surgery.estimatedSurgeryTime || surgery.duration) ? '分鐘' : ''}
             </p>
-            {/* 只有在甘特圖項目中才會有開始和結束時間 */}
+            {/* 使用新的時間格式化函數 */}
             {surgery.startTime && (
               <p>
-                <strong>開始時間：</strong> {surgery.startTime}
+                <strong>開始時間：</strong> {formatTime(surgery.startTime)}
               </p>
             )}
             {surgery.endTime && (
               <p>
-                <strong>結束時間：</strong> {surgery.endTime}
+                <strong>結束時間：</strong> {formatTime(surgery.endTime)}
               </p>
             )}
             <p>
