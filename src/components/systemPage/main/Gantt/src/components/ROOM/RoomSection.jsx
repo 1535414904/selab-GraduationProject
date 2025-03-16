@@ -3,7 +3,7 @@ import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "./RoomItem";
 import DroppableContainer from "../DragDrop/DroppableContainer";
 
-function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false }) {
+function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onSurgeryClick }) {
   const [isPinned, setIsPinned] = useState(room.isPinned || false);
 
   // 處理釘選按鈕點擊
@@ -51,6 +51,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false }) {
           isPinned={isPinned}
           roomName={room.room}
           readOnly={readOnly}
+          onSurgeryClick={onSurgeryClick}
         />
       </div>
     </div>

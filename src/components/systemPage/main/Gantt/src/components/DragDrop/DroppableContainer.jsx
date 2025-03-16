@@ -2,7 +2,7 @@ import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "../ROOM/RoomItem";
 
-function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = false }) {
+function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = false, onSurgeryClick }) {
   const fixedHeight = "60px";
 
   // 如果是只讀模式，直接渲染不可拖動的內容
@@ -50,6 +50,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                 isPinned={false}
                 roomName={roomName}
                 readOnly={true}
+                onSurgeryClick={onSurgeryClick}
               />
               {cleaning && (
                 <RoomItem
@@ -61,6 +62,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                   isPinned={false}
                   roomName={roomName}
                   readOnly={true}
+                  onSurgeryClick={onSurgeryClick}
                 />
               )}
             </div>
@@ -146,6 +148,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                       isDragging={snapshot.isDragging}
                       isPinned={isPinned}
                       roomName={roomName}
+                      onSurgeryClick={onSurgeryClick}
                     />
                     {cleaning && (
                       <RoomItem
@@ -156,6 +159,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                         isDragging={snapshot.isDragging}
                         isPinned={isPinned}
                         roomName={roomName}
+                        onSurgeryClick={onSurgeryClick}
                       />
                     )}
                   </div>
