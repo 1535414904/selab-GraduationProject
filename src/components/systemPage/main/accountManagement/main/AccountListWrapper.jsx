@@ -6,6 +6,7 @@ import EditableRow from "./EditableRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import AddRow from "./AddRow";
+import "../../Mgr.css";
 
 function AccountListWrapper({ users, setUsers,
     username, name, unit, role, filterUser,
@@ -73,7 +74,7 @@ function AccountListWrapper({ users, setUsers,
             <table className="system-table">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>選取</th>
                         <th>帳號</th>
                         <th>姓名</th>
                         <th>單位</th>
@@ -92,7 +93,12 @@ function AccountListWrapper({ users, setUsers,
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
                             editingUser?.username === user.username ? (
-                                <EditableRow key={user.username} user={user} handleSave={handleSave} />
+                                <EditableRow
+                                    key={user.username}
+                                    user={user}
+                                    handleSave={handleSave}
+                                    setIsEditing={setEditingUser} // 傳遞 setEditingUser 來控制編輯模式
+                                />
                             ) : (
                                 // <tr key={user.username}>
                                 //     <td>
@@ -116,11 +122,9 @@ function AccountListWrapper({ users, setUsers,
                                 // </tr>
                                 <tr
                                     key={user.username}
-                                    style={{
-                                        backgroundColor: selectedUsers.includes(user.username) ? "#EBF5FF" : "transparent",
-                                        transition: "background-color 0.2s ease-in-out"
-                                    }}
+                                    className={selectedUsers.includes(user.username) ? "selected" : "unselected"}
                                 >
+
                                     {/* <td>
                                         <input
                                             type="checkbox"
@@ -130,34 +134,14 @@ function AccountListWrapper({ users, setUsers,
                                     </td> */}
                                     <td
                                         onClick={() => handleCheckboxChange(user.username)}
-                                        style={{
-                                            cursor: "pointer",
-                                            padding: "10px",
-                                            transition: "background-color 0.3s ease-in-out, transform 0.2s ease-in-out",
-                                            backgroundColor: selectedUsers.includes(user.username) ? "#EBF5FF" : "transparent",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = "scale(1.02)";
-                                            e.currentTarget.style.backgroundColor = "#E0ECFF";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = "scale(1)";
-                                            e.currentTarget.style.backgroundColor = selectedUsers.includes(user.username) ? "#EBF5FF" : "transparent";
-                                        }}
+                                        className={`selectable-cell ${selectedUsers.includes(user.username) ? "selected" : ""}`}
                                     >
                                         <input
                                             type="checkbox"
                                             checked={selectedUsers.includes(user.username)}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={() => handleCheckboxChange(user.username)}
-                                            style={{
-                                                width: "18px",
-                                                height: "18px",
-                                                transition: "transform 0.1s ease-in-out",
-                                                cursor: "pointer"
-                                            }}
-                                            onMouseEnter={(e) => e.target.style.transform = "scale(1.1)"}
-                                            onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+                                            className="checkbox"
                                         />
                                     </td>
                                     <td>{user.username}</td>
@@ -170,59 +154,15 @@ function AccountListWrapper({ users, setUsers,
                                             <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(user)} />
                                             <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => { handleDelete(user.username); }} />
                                         </div> */}
-                                        <div className="action-buttons" style={{ display: "flex", gap: "8px" }}>
+                                        <div className="action-buttons">
                                             {/* 編輯按鈕 */}
-                                            <button
-                                                onClick={() => handleEdit(user)}
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    width: "36px",
-                                                    height: "36px",
-                                                    borderRadius: "6px",
-                                                    backgroundColor: "#3F83F8",
-                                                    border: "none",
-                                                    cursor: "pointer",
-                                                    transition: "all 0.3s ease-in-out",
-                                                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)"
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#2C6EE8"}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#3F83F8"}
-                                            >
-                                                <FontAwesomeIcon
-                                                    icon={faPenSquare}
-                                                    style={{
-                                                        fontSize: "18px",
-                                                        color: "#fff"
-                                                    }}
-                                                />
+                                            <button onClick={() => handleEdit(user)} className="action-button edit-button">
+                                                <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
                                             </button>
-                                            <button
-                                                onClick={() => handleDelete(user.username)}
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    width: "36px",
-                                                    height: "36px",
-                                                    borderRadius: "6px",
-                                                    backgroundColor: "#F05252",
-                                                    border: "none",
-                                                    cursor: "pointer",
-                                                    transition: "all 0.3s ease-in-out",
-                                                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)"
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#D83B3B"}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#F05252"}
-                                            >
-                                                <FontAwesomeIcon
-                                                    icon={faTrash}
-                                                    style={{
-                                                        fontSize: "18px",
-                                                        color: "#fff"
-                                                    }}
-                                                />
+
+                                            {/* 刪除按鈕 */}
+                                            <button onClick={() => handleDelete(user.username)} className="action-button delete-button">
+                                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
                                             </button>
                                         </div>
                                     </td>

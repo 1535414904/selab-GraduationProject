@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function AddRow({ addUsers, setAddUsers, handleAdd, emptyError }) {
@@ -12,7 +12,7 @@ function AddRow({ addUsers, setAddUsers, handleAdd, emptyError }) {
     };
 
     const handleDelete = (index) => {
-        const updated = addUsers.filter((user, idx) => idx !== index); 
+        const updated = addUsers.filter((user, idx) => idx !== index);
         setAddUsers(updated);
     };
 
@@ -67,12 +67,19 @@ function AddRow({ addUsers, setAddUsers, handleAdd, emptyError }) {
                     </td>
                     <td>
                         <div className="action-buttons">
-                            <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {
+                            <button className="action-button edit-button" onClick={() => {
                                 handleAdd(user);
                                 if (user.username.trim()) { handleDelete(index); }
-                            }} />
-                            <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(index)} />
-                        </div></td>
+                            }}>
+                                <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                            </button>
+
+                            <button className="action-button delete-button" onClick={() =>
+                                handleDelete(index)}>
+                                <FontAwesomeIcon icon={faTimes} className="action-icon" />
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             ))}
         </>

@@ -7,6 +7,7 @@ import axios from "axios";
 import EditableRow from "./EditableRow";
 import AddRow from "./AddRow";
 import ChiefSurgeonListWrapper from "../chiefSurgeonManagement/ChiefSurgeonListWrapper";
+import "../../Mgr.css";
 
 function DepartmentListWrapper({
   departments,
@@ -77,7 +78,7 @@ function DepartmentListWrapper({
       <table className="system-table">
         <thead>
           <tr>
-            <th></th>
+            <th>選取</th>
             <th>科別編號</th>
             <th>科別名稱</th>
             <th>醫師人數</th>
@@ -101,18 +102,35 @@ function DepartmentListWrapper({
                 />
               ) : (
                 <>
-                  <tr key={department.id}>
-                    <td>
+                  {/* <tr key={department.id}> */}
+                  <tr
+                    key={department.id}
+                    className={selectedDepartments.includes(department.id) ? "selected" : "unselected"}
+                  >
+                    {/* <td>
                       <input
                         type="checkbox"
                         checked={selectedDepartments.includes(department.id)}
                         onChange={() => handleCheckboxChange(department.id)}
                       />
+                    </td> */}
+                    <td
+                      onClick={() => handleCheckboxChange(department.id)}
+                      className={`selectable-cell ${selectedDepartments.includes(department.id) ? "selected" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDepartments.includes(department.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => handleCheckboxChange(department.id)}
+                        className="checkbox"
+                      />
                     </td>
+
                     <td>{department.id}</td>
                     <td>{department.name}</td>
                     <td>{department.chiefSurgeonsCount}</td>
-                    <td>
+                    {/* <td>
                       <div className="action-buttons">
                         <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(department)} />
                         <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(department.id)} />
@@ -122,7 +140,39 @@ function DepartmentListWrapper({
                         }} />
                         {expandedRow === index && <FontAwesomeIcon className="add-button" icon={faPlus} onClick={addRow} />}
                       </div>
+                    </td> */}
+                    <td>
+                      <div className="action-buttons">
+                        {/* 編輯按鈕 */}
+                        <button onClick={() => handleEdit(department)} className="action-button edit-button">
+                          <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                        </button>
+
+                        {/* 刪除按鈕 */}
+                        <button onClick={() => handleDelete(department.id)} className="action-button delete-button">
+                          <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                        </button>
+
+                        {/* 查看按鈕 */}
+                        <button
+                          onClick={() => {
+                            toggleRow(index);
+                            setAddChiefSurgeons([]);
+                          }}
+                          className="action-button view-button"
+                        >
+                          <FontAwesomeIcon icon={faUsers} className="action-icon" />
+                        </button>
+
+                        {/* 新增按鈕 (僅當 row 展開時顯示) */}
+                        {expandedRow === index && (
+                          <button onClick={addRow} className="action-button add-button">
+                            <FontAwesomeIcon icon={faPlus} className="action-icon" />
+                          </button>
+                        )}
+                      </div>
                     </td>
+
                   </tr>
                   {expandedRow === index &&
                     <ChiefSurgeonListWrapper
@@ -141,7 +191,7 @@ function DepartmentListWrapper({
               </td>
             </tr>
           )}
-        </tbody>
+        </tbody >
       </table>
     </div>
   );

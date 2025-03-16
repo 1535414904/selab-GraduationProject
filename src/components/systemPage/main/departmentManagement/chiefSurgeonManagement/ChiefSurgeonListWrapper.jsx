@@ -74,7 +74,7 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
             <table className="system-table chief-surgeon-list">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>選取</th>
                         <th>員工編號</th>
                         <th>醫師姓名</th>
                         <th>動作</th>

@@ -354,3 +354,144 @@ td {
 .info-group textarea:focus {
   border-color: transparent;
 }
+/* 用於被選到的用戶會變色 */
+.selected {
+  background-color: #EBF5FF;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.unselected {
+  background-color: transparent;
+  transition: background-color 0.2s ease-in-out;
+}
+/* styles.css */
+
+/* 主要 <td> 樣式 */
+.selectable-cell {
+  cursor: pointer;
+  padding: 10px;
+  transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* 當該行被選取時 */
+.selected {
+  background-color: #EBF5FF;
+}
+
+/* 滑鼠懸停時的效果 */
+.selectable-cell:hover {
+  background-color: #E0ECFF !important;
+  transform: scale(1.02);
+}
+
+/* Checkbox 樣式 */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.1s ease-in-out;
+  cursor: pointer;
+}
+
+/* Checkbox 滑鼠懸停效果 */
+.checkbox:hover {
+  transform: scale(1.1);
+}
+
+/* 按鈕容器 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 按鈕基礎樣式 */
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 編輯按鈕樣式 */
+.edit-button {
+  background-color: #2563EB;
+}
+
+.edit-button:hover {
+  background-color: #2C6EE8;
+}
+
+/* 刪除按鈕樣式 */
+.delete-button {
+  background-color: #A52A2A;
+}
+
+.delete-button:hover {
+  background-color: #D83B3B;
+}
+
+/* 查看按鈕樣式 */
+.view-button {
+  background-color: #057A55;
+}
+
+.view-button:hover {
+  background-color: #046C4E;
+}
+
+.add-button {
+  background-color: #D61F69;
+}
+
+.add-button:hover {
+  background-color: #BF125D;
+}
+
+
+
+/* FontAwesome Icon 樣式 */
+.action-icon {
+  font-size: 18px;
+  color: #fff;
+}
+
+/* 確保表格內的元素不會變形 */
+table {
+  table-layout: fixed;
+  width: 100%;
+  min-height: 50px; /* 防止表格行高過低 */
+}
+
+/* 讓 input/select 高度與表格內其他字體一致 */
+.editable-row input,
+.editable-row select {
+  width: 185px;
+  /* height: 40px; */
+  padding: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+    text-align: center; /* 讓文字置中 */
+
+}
+
+/* 確保按鈕大小一致 */
+.action-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 確保「動作」欄位的高度不會變形 */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
