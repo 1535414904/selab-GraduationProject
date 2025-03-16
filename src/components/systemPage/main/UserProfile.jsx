@@ -90,7 +90,44 @@ function UserProfile({ user, onUpdateUser }) {
   return (
     <div className="flex items-center justify-center w-full h-screen bg-gradient-to-br from-blue-700 via-blue-500 to-blue-300">
       <div className="w-full max-w-md bg-white bg-opacity-95 p-8 rounded-lg shadow-2xl transform transition-all duration-500 hover:scale-105">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">個人資料</h1>
+        {/* <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-6 h-6 mr-2" // ✅ 設定大小 & 右邊留空間
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
+            />
+          </svg>
+
+          個人資料</h1> */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
+          {/* 圖示部分 */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-6 h-6 mr-2" // ✅ 設定大小 & 右邊留空間
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
+            />
+          </svg>
+
+          {/* 文字部分 */}
+          個人資料
+        </h1>
 
         <div className="space-y-3">
           <p className="text-lg font-medium text-gray-800">帳號：{user.username}</p>

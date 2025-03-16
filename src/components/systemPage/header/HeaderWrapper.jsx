@@ -47,7 +47,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
 
             {(user.role == 3 || user.role == 2) && (
               <div className="ml-4 relative group">
-                <button className="px- py-2 text-white text-2xl hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
+                <button className="px-4 py-2 bg-transparent text-white text-2xl hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
                   管理功能
                   <svg
                     className="ml-1 h-4 w-4"
