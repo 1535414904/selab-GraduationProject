@@ -5,20 +5,32 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly = false }) {
+function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly = false, onSurgeryClick }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
   const isOver24Hours = item.endTime > "24:00";
 
   const handleClick = async (e) => {
-    // 如果是只讀模式或正在拖曳中，不顯示詳細視窗
-    if (readOnly || isDragging) {
+    // 如果是正在拖曳中，不處理點擊
+    if (isDragging) {
       e.preventDefault();
       return;
     }
     
+    // 如果有外部點擊處理函數，則使用它
+    if (onSurgeryClick && !item.isCleaningTime && item.applicationId) {
+      onSurgeryClick({
+        ...item,
+        isPinned,
+        operatingRoomName: roomName || item.operatingRoomName
+      });
+      return;
+    }
+    
+    // 否則使用內部模態視窗邏輯（用於舊版本兼容）
     if (!item.isCleaningTime && item.applicationId) {
       setLoading(true);
       setError(null);
@@ -77,15 +89,25 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   const colorClass = () => {
     switch (item.color) {
       case "green":
-        return readOnly ? "bg-green-400" : "bg-green-400 hover:bg-green-300";
+        return isHovered 
+          ? "bg-green-300 hover:bg-green-300" 
+          : (readOnly ? "bg-green-400 hover:bg-green-300" : "bg-green-400 hover:bg-green-300");
       case "yellow":
-        return readOnly ? "bg-yellow-300" : "bg-yellow-300 hover:bg-yellow-200";
+        return isHovered 
+          ? "bg-yellow-200 hover:bg-yellow-200" 
+          : (readOnly ? "bg-yellow-300 hover:bg-yellow-200" : "bg-yellow-300 hover:bg-yellow-200");
       case "red":
-        return readOnly ? "bg-red-500 text-white" : "bg-red-500 hover:bg-red-400 text-white";
+        return isHovered 
+          ? "bg-red-400 text-white hover:bg-red-400" 
+          : (readOnly ? "bg-red-500 text-white hover:bg-red-400" : "bg-red-500 text-white hover:bg-red-400");
       case "blue":
-        return readOnly ? "bg-blue-600 text-purple-200" : "bg-blue-600 hover:bg-blue-500 text-purple-200";
+        return isHovered 
+          ? "bg-blue-500 text-purple-200 hover:bg-blue-500" 
+          : (readOnly ? "bg-blue-600 text-purple-200 hover:bg-blue-500" : "bg-blue-600 text-purple-200 hover:bg-blue-500");
       default:
-        return readOnly ? "bg-gray-200" : "bg-gray-200 hover:bg-gray-100";
+        return isHovered 
+          ? "bg-gray-100 hover:bg-gray-100" 
+          : (readOnly ? "bg-gray-200 hover:bg-gray-100" : "bg-gray-200 hover:bg-gray-100");
     }
   };
 
@@ -102,24 +124,27 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : 'border-gray-300'} rounded-2xl ${colorClass()} ${
+        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : (isHovered ? 'border-blue-400' : 'border-gray-300')} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
+        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-pointer' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
         style={{
           width: width,
           height: fixedHeight,
           opacity: isDragging || isOver24Hours ? 0.7 : 1,
-          cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
+          cursor: loading ? 'wait' : (isPinned && !readOnly ? "not-allowed" : (item.isCleaningTime && !readOnly ? "move" : "pointer")),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
           zIndex: isDragging ? 10000 : (item.isCleaningTime ? 1 : 2),
-          pointerEvents: readOnly ? "none" : "auto",
-          transform: isDragging ? "scale(1.02)" : "none",
+          pointerEvents: "auto", // 允許點擊，即使在唯讀模式下
+          transform: isDragging ? "scale(1.02)" : (isHovered ? "scale(1.05)" : "none"),
           transformOrigin: "center",
-          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : "none",
+          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : (isHovered ? "0 2px 4px rgba(0, 0, 0, 0.15)" : "none"),
+          transition: "all 0.2s ease"
         }}
         onClick={handleClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {isPinned && !readOnly && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
@@ -134,7 +159,8 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
         </div>
       </div>
 
-      {isModalOpen && 
+      {/* 只有在沒有外部點擊處理函數時才使用內部模態視窗 */}
+      {isModalOpen && !onSurgeryClick && 
         createPortal(
           <SurgeryModal surgery={{...surgeryDetails || item, isPinned}} onClose={() => setIsModalOpen(false)} error={error} />,
           document.body

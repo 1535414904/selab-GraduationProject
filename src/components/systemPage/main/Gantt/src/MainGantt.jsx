@@ -5,8 +5,11 @@ import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter";
+import { DragDropContext } from "react-beautiful-dnd";
+import { handleDragEnd, updateSurgeryInDatabase } from "./components/DragDrop/dragEndHandler";
+import SurgeryModal from "./components/Modal/SurgeryModal";
 
-// 主頁專用的甘特圖組件，只能查看，不能編輯
+// 主頁專用的甘特圖組件，預設只能查看，但可以切換到編輯模式
 function MainGantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
@@ -15,6 +18,12 @@ function MainGantt({ rows, setRows }) {
   const [error, setError] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [filteredRows, setFilteredRows] = useState([]); // 儲存篩選後的結果
+  const [readOnly, setReadOnly] = useState(true); // 預設為唯讀模式
+  const [selectedSurgery, setSelectedSurgery] = useState(null); // 選中的手術
+  const [modalError, setModalError] = useState(null); // 模態視窗錯誤
+  const [hasChanges, setHasChanges] = useState(false); // 是否有未保存的變更
+  const [isSaving, setIsSaving] = useState(false); // 是否正在保存
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false); // 是否顯示確認對話框
 
   // 初始化數據
   useEffect(() => {
@@ -54,6 +63,144 @@ function MainGantt({ rows, setRows }) {
     setFilteredRows(filteredData);
   };
   
+  // 處理拖曳結束事件
+  const onDragEnd = async (result) => {
+    if (!result.destination || readOnly) return;
+    
+    // 檢查是否有釘選的手術房
+    const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
+    const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
+    
+    const sourceRoom = filteredRows[sourceRoomIndex];
+    const destRoom = filteredRows[destinationRoomIndex];
+    
+    if (sourceRoom.isPinned || destRoom.isPinned) {
+      console.warn("無法移動釘選的手術房中的手術");
+      return;
+    }
+    
+    // 執行拖曳處理 - 只更新前端界面，不發送後端請求
+    await handleDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 標記有未保存的變更
+    setHasChanges(true);
+    
+    console.log('手術位置已在界面上更新，但未保存到後端');
+  };
+
+  // 切換編輯模式
+  const toggleEditMode = () => {
+    // 如果要從編輯模式切換到唯讀模式，且有未保存的變更，則顯示確認對話框
+    if (!readOnly && hasChanges) {
+      setShowConfirmDialog(true);
+    } else {
+      // 否則直接切換模式
+      setReadOnly(!readOnly);
+    }
+  };
+  
+  // 確認保存變更
+  const confirmSaveChanges = async () => {
+    setIsSaving(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    try {
+      // 遍歷所有手術房，更新每個手術的資料
+      for (const roomIndex in filteredRows) {
+        const room = filteredRows[roomIndex];
+        if (room.data && room.data.length > 0) {
+          // 計算每個手術室中的手術優先順序
+          let priorityCounter = 1;
+          
+          // 只處理實際手術項目（跳過清潔時間）
+          const surgeries = room.data.filter(item => !item.isCleaningTime);
+          
+          for (let i = 0; i < surgeries.length; i++) {
+            const surgery = surgeries[i];
+            if (surgery.applicationId) {
+              try {
+                // 設置優先順序
+                surgery.prioritySequence = priorityCounter++;
+                
+                // 更新到資料庫
+                await updateSurgeryInDatabase(surgery, room.room);
+                successCount++;
+              } catch (error) {
+                console.error(`更新手術 ${surgery.applicationId} 失敗:`, error);
+                errorCount++;
+              }
+            }
+          }
+        }
+      }
+      
+      // 更新成功後，重置狀態
+      setHasChanges(false);
+      setShowConfirmDialog(false);
+      setReadOnly(true);
+      
+      // 顯示成功訊息
+      if (errorCount === 0) {
+        alert(`所有變更已成功保存到資料庫！共更新了 ${successCount} 個手術。`);
+      } else {
+        alert(`部分變更已保存到資料庫。成功: ${successCount} 個，失敗: ${errorCount} 個。`);
+      }
+      
+      // 重新載入資料以確保顯示最新狀態
+      await fetchSurgeryData(setRows, setLoading, setError);
+      
+    } catch (error) {
+      console.error('保存變更時發生錯誤:', error);
+      alert(`保存變更失敗: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  // 取消保存變更，重新載入原始資料
+  const cancelSaveChanges = async () => {
+    setShowConfirmDialog(false);
+    
+    // 詢問用戶是否要放棄變更
+    if (window.confirm('確定要放棄所有未保存的變更嗎？這將重新載入原始資料。')) {
+      setLoading(true);
+      try {
+        // 重新載入原始資料
+        await fetchSurgeryData(setRows, setLoading, setError);
+        setHasChanges(false);
+        setReadOnly(true);
+      } catch (error) {
+        console.error('重新載入資料失敗:', error);
+        setError('重新載入資料失敗');
+      }
+    }
+  };
+
+  // 處理手術房釘選狀態變更
+  const handleRoomPinStatusChange = (roomIndex, isPinned) => {
+    if (readOnly) return; // 唯讀模式下不允許釘選
+    
+    const updatedRows = [...filteredRows];
+    updatedRows[roomIndex] = {
+      ...updatedRows[roomIndex],
+      isPinned: isPinned
+    };
+    setFilteredRows(updatedRows);
+    setHasChanges(true);
+  };
+  
+  // 處理手術點擊事件，顯示詳細資訊
+  const handleSurgeryClick = (surgery) => {
+    setSelectedSurgery(surgery);
+    setModalError(null);
+  };
+  
+  // 關閉模態視窗
+  const handleCloseModal = () => {
+    setSelectedSurgery(null);
+  };
+  
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
@@ -88,7 +235,7 @@ function MainGantt({ rows, setRows }) {
         </div>
       </div>
 
-        {/* ✅ 手術室數量 & PDF 按鈕 */}
+        {/* ✅ 手術室數量、編輯模式按鈕 & PDF 按鈕 */}
         <div className="gantt-actions">
           <div className="gantt-room-count">
             <svg className="gantt-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -97,7 +244,16 @@ function MainGantt({ rows, setRows }) {
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
           
-          <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
+          <div className="gantt-buttons">
+            <button 
+              className={`edit-mode-button ${!readOnly ? 'active' : ''}`} 
+              onClick={toggleEditMode}
+              disabled={isSaving}
+            >
+              {readOnly ? '啟用移動修改' : '關閉移動修改'}
+            </button>
+            <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
+          </div>
         </div>
       </div>
 
@@ -120,11 +276,45 @@ function MainGantt({ rows, setRows }) {
         <ul className="gantt-tips-list">
           <li>可以橫向滾動查看不同時間段的排程</li>
           <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
-          <li>此甘特圖僅供查看，若要調整排程請前往排班管理頁面</li>
+          <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
+          <li>點擊手術項目可查看詳細資訊</li>
+          {!readOnly && <li>完成修改後，點擊「關閉移動修改」按鈕時可選擇保存變更</li>}
         </ul>
       </div>
     </div>
 
+      {/* 確認對話框 */}
+      {showConfirmDialog && (
+        <div className="confirm-dialog-overlay">
+          <div className="confirm-dialog">
+            <h3 className="confirm-dialog-title">保存變更</h3>
+            <p className="confirm-dialog-message">您有未保存的變更，是否要保存到資料庫？</p>
+            <div className="confirm-dialog-buttons">
+              <button 
+                className="confirm-dialog-button confirm-dialog-save" 
+                onClick={confirmSaveChanges}
+                disabled={isSaving}
+              >
+                {isSaving ? '保存中...' : '保存變更'}
+              </button>
+              <button 
+                className="confirm-dialog-button confirm-dialog-discard" 
+                onClick={cancelSaveChanges}
+                disabled={isSaving}
+              >
+                放棄變更
+              </button>
+              <button 
+                className="confirm-dialog-button confirm-dialog-cancel" 
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isSaving}
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ✅ 篩選器放在提示下方 */}
       <GanttFilter 
@@ -139,20 +329,24 @@ function MainGantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  <div className="gantt-chart">
-                    {filteredRows.map((room, roomIndex) => (
-                      <div 
-                        key={room.room || roomIndex} 
-                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                      >
-                        <RoomSection 
-                          room={room} 
-                          roomIndex={roomIndex} 
-                          readOnly={true}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <div className="gantt-chart">
+                      {filteredRows.map((room, roomIndex) => (
+                        <div 
+                          key={room.room || roomIndex} 
+                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                        >
+                          <RoomSection 
+                            room={room} 
+                            roomIndex={roomIndex} 
+                            readOnly={readOnly}
+                            onPinStatusChange={handleRoomPinStatusChange}
+                            onSurgeryClick={handleSurgeryClick}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </DragDropContext>
                 </div>
               </TimeWrapper>
             </div>
@@ -166,6 +360,15 @@ function MainGantt({ rows, setRows }) {
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
+      )}
+      
+      {/* 手術詳細資訊模態視窗 */}
+      {selectedSurgery && (
+        <SurgeryModal 
+          surgery={selectedSurgery} 
+          onClose={handleCloseModal} 
+          error={modalError}
+        />
       )}
     </div>
   );
