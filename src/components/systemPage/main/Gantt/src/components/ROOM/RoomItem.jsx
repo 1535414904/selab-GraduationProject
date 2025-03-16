@@ -5,7 +5,7 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName }) {
+function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly = false }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -13,8 +13,8 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName }) {
   const isOver24Hours = item.endTime > "24:00";
 
   const handleClick = async (e) => {
-    // 如果正在拖曳中，不顯示詳細視窗
-    if (isDragging) {
+    // 如果是只讀模式或正在拖曳中，不顯示詳細視窗
+    if (readOnly || isDragging) {
       e.preventDefault();
       return;
     }
@@ -77,15 +77,15 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName }) {
   const colorClass = () => {
     switch (item.color) {
       case "green":
-        return "bg-green-400 hover:bg-green-300";
+        return readOnly ? "bg-green-400" : "bg-green-400 hover:bg-green-300";
       case "yellow":
-        return "bg-yellow-300 hover:bg-yellow-200";
+        return readOnly ? "bg-yellow-300" : "bg-yellow-300 hover:bg-yellow-200";
       case "red":
-        return "bg-red-500 hover:bg-red-400 text-white";
+        return readOnly ? "bg-red-500 text-white" : "bg-red-500 hover:bg-red-400 text-white";
       case "blue":
-        return "bg-blue-600 hover:bg-blue-500 text-purple-200";
+        return readOnly ? "bg-blue-600 text-purple-200" : "bg-blue-600 hover:bg-blue-500 text-purple-200";
       default:
-        return "bg-gray-200 hover:bg-gray-100";
+        return readOnly ? "bg-gray-200" : "bg-gray-200 hover:bg-gray-100";
     }
   };
 
@@ -104,24 +104,24 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName }) {
       <div
         className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : 'border-gray-300'} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${isPinned ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'} relative`}
+        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
         style={{
           width: width,
           height: fixedHeight,
           opacity: isDragging || isOver24Hours ? 0.7 : 1,
-          cursor: loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer")),
+          cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
           zIndex: isDragging ? 10000 : (item.isCleaningTime ? 1 : 2),
-          pointerEvents: "auto",
+          pointerEvents: readOnly ? "none" : "auto",
           transform: isDragging ? "scale(1.02)" : "none",
           transformOrigin: "center",
           boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : "none",
         }}
         onClick={handleClick}
       >
-        {isPinned && (
+        {isPinned && !readOnly && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-10 rounded-xl"></div>
           </div>
