@@ -174,7 +174,7 @@ function AccountListWrapper({
                                             </button>
 
                                             {/* 刪除按鈕 */}
-                                            <button onClick={() => handleDelete(user.username)} className="action-button delete-button">
+                                            <button onClick={() => handleDelete(user.username, user.name)} className="action-button delete-button">
                                                 <FontAwesomeIcon icon={faTrash} className="action-icon" />
                                             </button>
                                         </div>

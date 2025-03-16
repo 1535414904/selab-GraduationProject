@@ -62,7 +62,6 @@ function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError }) {
                                 <FontAwesomeIcon icon={faTrash} className="action-icon" />
                             </button>
                         </div>
-
                     </td>
                 </tr>
             ))}

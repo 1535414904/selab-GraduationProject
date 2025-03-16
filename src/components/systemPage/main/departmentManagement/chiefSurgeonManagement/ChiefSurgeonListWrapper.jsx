@@ -108,7 +108,11 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                     />
                     {chiefSurgeons.map((chiefSurgeon) => (
                         editingChiefSurgeon?.id === chiefSurgeon.id ? (
-                            <EditableRow key={chiefSurgeon.id} chiefSurgeon={chiefSurgeon} handleSave={handleSave} />
+                            <EditableRow
+                                key={chiefSurgeon.id}
+                                chiefSurgeon={chiefSurgeon}
+                                handleSave={handleSave}
+                            />
                         ) : (
                             <tr key={chiefSurgeon.id}>
                                 <td>

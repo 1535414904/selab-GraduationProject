@@ -88,14 +88,29 @@ function DepartmentMgrWrapper({ reloadKey }) {
         }
     };
 
-    const handleDelete = async (id) => {
+    // const handleDelete = async (id) => {
+    //     try {
+    //         await axios.delete(`${BASE_URL}/api/system/department/delete/${id}`);
+    //         const response = await axios.get(BASE_URL + "/api/system/departments");
+    //         setDepartments(response.data);
+    //         setSelectedDepartments([]);
+    //     } catch (error) {
+    //         console.error("Delete fail：", error);
+    //     }
+    // };
+    const handleDelete = async (id, name) => {
+        const isConfirmed = window.confirm(`請確認是否刪除科別 ${id} ( 名稱: ${name} )？`);
+        if (!isConfirmed) return;
+
         try {
             await axios.delete(`${BASE_URL}/api/system/department/delete/${id}`);
+
+            // 重新獲取最新的科別資料
             const response = await axios.get(BASE_URL + "/api/system/departments");
             setDepartments(response.data);
             setSelectedDepartments([]);
         } catch (error) {
-            console.error("Delete fail：", error);
+            console.error("刪除失敗：", error);
         }
     };
 

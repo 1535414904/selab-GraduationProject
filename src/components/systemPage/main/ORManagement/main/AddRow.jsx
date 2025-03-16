@@ -86,7 +86,7 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             <option value={0}>關閉</option>
                         </select>
                     </td>
-                    <td>
+                    {/* <td>
                         <div className="action-buttons">
                             <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={() => {
                                 handleAdd(operatingRoom);
@@ -94,7 +94,24 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             }} />
                             <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(index)} />
                         </div>
+                    </td> */}
+                    <td>
+                        <div className="action-buttons">
+                            {/* 儲存按鈕 */}
+                            <button className="action-button edit-button" onClick={() => {
+                                handleAdd(operatingRoom);
+                                if (operatingRoom.id.trim()) { handleDelete(index); }
+                            }}>
+                                <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                            </button>
+
+                            {/* 刪除按鈕 */}
+                            <button className="action-button delete-button" onClick={() => handleDelete(index)}>
+                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                            </button>
+                        </div>
                     </td>
+
                 </tr>
             ))}
         </>

@@ -22,14 +22,16 @@ function EditableRow({ key, department, handleSave, setIsEditing }) {
   return (
     <tr key={key} className="editable-row">
       <td></td>
-      <td>
+      {/* <td>
         <input
           type="text"
           name="id"
           value={editedDepartment.id}
           onChange={handleChange}
         />
-      </td>
+      </td> */}
+      <td>{editedDepartment.id}</td>
+
       <td>
         <input
           type="text"

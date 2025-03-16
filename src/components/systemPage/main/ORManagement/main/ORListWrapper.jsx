@@ -13,7 +13,7 @@ function ORListWrapper({
     filterOperatingRoom, selectedOperatingRooms,
     setSelectedOperatingRooms, handleDelete,
     addOperatingRooms, setAddOperatingRooms,
-    handleAdd, emptyError }) {
+    handleAdd, emptyError, setEditingUser }) {
 
     const [filteredOperatingRooms, setFilteredOperatingRooms] = useState([]);
     const [editingOperatingRoom, setEditingOperatingRoom] = useState(null);
@@ -81,7 +81,7 @@ function ORListWrapper({
             <table className="system-table">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>選取</th>
                         <th>手術房編號</th>
                         <th>手術房名稱</th>
                         <th>所屬科別</th>
@@ -91,7 +91,7 @@ function ORListWrapper({
                     </tr>
                 </thead>
                 <tbody>
-                    <AddRow 
+                    <AddRow
                         addOperatingRooms={addOperatingRooms}
                         setAddOperatingRooms={setAddOperatingRooms}
                         handleAdd={handleAdd}
@@ -104,27 +104,55 @@ function ORListWrapper({
                                     key={operatingRoom.id}
                                     operatingRoom={operatingRoom}
                                     handleSave={handleSave}
+                                    setIsEditing={setEditingOperatingRoom} // 傳遞 setEditingUser 來控制編輯模式
                                 />
                             ) : (
                                 <tr key={operatingRoom.id}>
-                                    <td>
-                                        <input 
+                                    {/* <td>
+                                        <input
                                             type="checkbox"
                                             checked={selectedOperatingRooms.includes(operatingRoom.id)}
                                             onChange={() => handleCheckboxChange(operatingRoom.id)}
                                         />
+                                    </td> */}
+                                    <td
+                                        onClick={() => handleCheckboxChange(operatingRoom.id)}
+                                        className={`selectable-cell ${selectedOperatingRooms.includes(operatingRoom.id) ? "selected" : ""}`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedOperatingRooms.includes(operatingRoom.id)}
+                                            onClick={(e) => e.stopPropagation()} // 防止 `td` 的 `onClick` 影響 `input`
+                                            onChange={() => handleCheckboxChange(operatingRoom.id)}
+                                            className="checkbox"
+                                        />
                                     </td>
+
                                     <td>{operatingRoom.id}</td>
                                     <td>{operatingRoom.name}</td>
                                     <td>{operatingRoom.department.name}</td>
                                     <td>{operatingRoom.roomType}</td>
                                     {statusDisplayMap[operatingRoom.status]}
-                                    <td>
+                                    {/* <td>
                                         <div className="action-buttons">
                                             <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(operatingRoom)} />
                                             <FontAwesomeIcon className="delete-button" icon={faTrash} onClick={() => handleDelete(operatingRoom.id)} />
                                         </div>
+                                    </td> */}
+                                    <td>
+                                        <div className="action-buttons">
+                                            {/* 編輯按鈕 */}
+                                            <button onClick={() => handleEdit(operatingRoom)} className="action-button edit-button">
+                                                <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                                            </button>
+
+                                            {/* 刪除按鈕 */}
+                                            <button onClick={() => handleDelete(operatingRoom.name, operatingRoom.id)} className="action-button delete-button">
+                                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                            </button>
+                                        </div>
                                     </td>
+
                                 </tr>
                             )
                         ))

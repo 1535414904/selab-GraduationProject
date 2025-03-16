@@ -76,8 +76,8 @@ function AccountMgrWrapper({ reloadKey }) {
         }
     };
 
-    const handleDelete = async (username) => {
-        const isConfirmed = window.confirm(`請確認是否刪除帳號 ${username} `);
+    const handleDelete = async (username, name) => {
+        const isConfirmed = window.confirm(`請確認是否刪除帳號 ${username} ( 姓名: ${name} ) `);
         if (!isConfirmed) return;
 
         try {
