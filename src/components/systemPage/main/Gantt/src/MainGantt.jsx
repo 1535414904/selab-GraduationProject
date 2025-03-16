@@ -4,8 +4,9 @@ import TimeWrapper from "./components/Time/timeWrapper";
 import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
-import GanttFilter from "../src/components/GanttFilter"; // ✅ 加入篩選器
+import GanttFilter from "./components/GanttFilter";
 
+// 主頁專用的甘特圖組件，只能查看，不能編輯
 function MainGantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
@@ -15,8 +16,20 @@ function MainGantt({ rows, setRows }) {
   const [containerWidth, setContainerWidth] = useState(0);
   const [filteredRows, setFilteredRows] = useState([]); // 儲存篩選後的結果
 
+  // 初始化數據
   useEffect(() => {
-    fetchSurgeryData(setRows, setLoading, setError);
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        await fetchSurgeryData(setRows, setLoading, setError);
+      } catch (error) {
+        console.error("初始化數據失敗:", error);
+        setError("初始化數據失敗");
+        setLoading(false);
+      }
+    };
+    
+    initializeData();
   }, []);
 
   // 當原始數據變更時，更新篩選後的結果
@@ -36,37 +49,33 @@ function MainGantt({ rows, setRows }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 處理手術房釘選狀態變更
-  // const handleRoomPinStatusChange = (roomIndex, isPinned) => {
-  //   setRows(prevRows => {
-  //     const newRows = [...prevRows];
-  //     if (newRows[roomIndex]) {
-  //       // 更新手術房的釘選狀態
-  //       newRows[roomIndex] = {
-  //         ...newRows[roomIndex],
-  //         isPinned: isPinned
-  //       };
-  //     }
-  //     return newRows;
-  //   });
-  // };
-
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
+  
   const [currentDate, setCurrentDate] = useState("");
 
-    useEffect(() => {
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString("zh-TW", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      setCurrentDate(formattedDate);
-    }, []);
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    setCurrentDate(formattedDate);
+  }, []);
   
+  // 如果數據尚未載入，顯示載入中
+  if (loading) {
+    return (
+      <div className="gantt-main-container">
+        <div className="loading">
+          <p>載入中，請稍候...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gantt-main-container">
@@ -111,6 +120,7 @@ function MainGantt({ rows, setRows }) {
         <ul className="gantt-tips-list">
           <li>可以橫向滾動查看不同時間段的排程</li>
           <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
+          <li>此甘特圖僅供查看，若要調整排程請前往排班管理頁面</li>
         </ul>
       </div>
     </div>
@@ -129,18 +139,20 @@ function MainGantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  {filteredRows.map((room, roomIndex) => (
-                    <div 
-                      key={room.room || roomIndex} 
-                      className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                    >
-                      <RoomSection 
-                        room={room} 
-                        roomIndex={roomIndex} 
-                        // onPinStatusChange={handleRoomPinStatusChange}
-                      />
-                    </div>
-                  ))}
+                  <div className="gantt-chart">
+                    {filteredRows.map((room, roomIndex) => (
+                      <div 
+                        key={room.room || roomIndex} 
+                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                      >
+                        <RoomSection 
+                          room={room} 
+                          roomIndex={roomIndex} 
+                          readOnly={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </TimeWrapper>
             </div>

@@ -1,16 +1,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
-import GeneratePDFButton from "./components/Time/GeneratePDFButton";
+import ConfirmScheduleButton from "./components/Time/ConfirmScheduleButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
-import GanttFilter from "./components/GanttFilter"; // ✅ 加入篩選器
+import GanttFilter from "./components/GanttFilter";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
 
+// 排班管理專用的甘特圖組件
 function Gantt({ rows, setRows }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
@@ -75,13 +76,11 @@ function Gantt({ rows, setRows }) {
       return;
     }
     
-    // 執行拖曳處理並獲取更新後的手術資料
-    const updatedSurgeries = await handleDragEnd(result, filteredRows, setFilteredRows);
+    // 執行拖曳處理 - 只更新前端界面，不發送後端請求
+    await handleDragEnd(result, filteredRows, setFilteredRows);
     
-    // 不再自動顯示詳細視窗，讓用戶點擊手術時才顯示
-    if (updatedSurgeries && updatedSurgeries.length > 0) {
-      console.log('手術資料已更新，可以點擊手術查看詳細資訊');
-    }
+    // 不再依賴後端更新的數據
+    console.log('手術位置已在界面上更新，點擊確認修改按鈕將保存變更');
   };
 
   // 處理手術房釘選狀態變更
@@ -151,7 +150,7 @@ function Gantt({ rows, setRows }) {
         </div>
       </div>
 
-        {/* ✅ 手術室數量 & PDF 按鈕 */}
+        {/* ✅ 手術室數量 & 確認修改按鈕 */}
         <div className="gantt-actions">
           <div className="gantt-room-count">
             <svg className="gantt-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,7 +159,7 @@ function Gantt({ rows, setRows }) {
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
           
-          <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
+          <ConfirmScheduleButton rows={filteredRows} />
         </div>
       </div>
 
@@ -182,12 +181,11 @@ function Gantt({ rows, setRows }) {
         <p className="gantt-tips-title">使用提示</p>
         <ul className="gantt-tips-list">
           <li>可以橫向滾動查看不同時間段的排程</li>
-          <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
+          <li>點擊「確認修改」按鈕可將當前排程更新到系統中</li>
           <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
         </ul>
       </div>
     </div>
-
 
       {/* ✅ 篩選器放在提示下方 */}
       <GanttFilter 

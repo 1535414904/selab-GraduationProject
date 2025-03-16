@@ -2,9 +2,75 @@ import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "../ROOM/RoomItem";
 
-function DroppableContainer({ room, roomIndex, isPinned, roomName }) {
+function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = false }) {
   const fixedHeight = "60px";
 
+  // 如果是只讀模式，直接渲染不可拖動的內容
+  if (readOnly) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          minHeight: fixedHeight,
+          minWidth: "100px",
+          position: "relative",
+          background: isPinned ? "rgba(254, 226, 226, 0.4)" : "transparent",
+        }}
+      >
+        {(room.data && room.data.length > 0
+          ? Array.from({ length: Math.ceil(room.data.length / 2) })
+          : [null]
+        ).map((_, index) => {
+          const itemIndex = index * 2;
+          const surgery = room.data?.[itemIndex];
+          const cleaning = room.data?.[itemIndex + 1];
+
+          if (!surgery && index === 0) {
+            return <div key="empty" style={{ height: fixedHeight, minWidth: "50px" }} />;
+          }
+
+          if (!surgery) return null;
+
+          return (
+            <div
+              key={`${surgery.id}-${itemIndex}`}
+              style={{
+                display: "flex",
+                height: fixedHeight,
+                position: "relative",
+              }}
+            >
+              <RoomItem
+                item={surgery}
+                itemIndex={itemIndex}
+                roomIndex={roomIndex}
+                fixedHeight={fixedHeight}
+                isDragging={false}
+                isPinned={false}
+                roomName={roomName}
+                readOnly={true}
+              />
+              {cleaning && (
+                <RoomItem
+                  item={cleaning}
+                  itemIndex={itemIndex + 1}
+                  roomIndex={roomIndex}
+                  fixedHeight={fixedHeight}
+                  isDragging={false}
+                  isPinned={false}
+                  roomName={roomName}
+                  readOnly={true}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 否則，使用拖放功能
   return (
     <Droppable
       droppableId={`droppable-${roomIndex}`}

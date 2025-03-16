@@ -3,6 +3,7 @@ import { calculateDuration, addMinutesToTime } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 
+// 修改：移除立即更新後端的邏輯，只更新前端界面
 export const handleDragEnd = async (result, rows, setRows) => {
   const { source, destination } = result;
   if (!destination) return null;
@@ -21,19 +22,15 @@ export const handleDragEnd = async (result, rows, setRows) => {
     handleCrossRoomDrag(newRows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex);
   }
 
+  // 只更新前端界面，不發送後端請求
   setRows(newRows);
   
-  // 將更新發送到後端並返回更新後的手術資料
-  try {
-    const updatedSurgeries = await updateSurgeryInDatabase(newRows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex);
-    return updatedSurgeries;
-  } catch (error) {
-    console.error('更新手術資料失敗:', error);
-    return null;
-  }
+  // 返回更新後的行數據，但不發送到後端
+  return { updatedRows: newRows };
 };
 
-// 新增函數：將更新發送到後端
+// 這個函數現在僅供 ConfirmScheduleButton 組件使用
+// 保留此函數供確認修改按鈕使用
 const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex) => {
   try {
     // 確定要更新的手術資訊
@@ -214,3 +211,6 @@ const updateRoomTimes = (roomData) => {
     }
   }
 };
+
+// 導出 updateSurgeryInDatabase 函數供確認修改按鈕使用
+export { updateSurgeryInDatabase };
