@@ -159,7 +159,7 @@ function Gantt({ rows, setRows }) {
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
           
-          <ConfirmScheduleButton rows={filteredRows} />
+          <ConfirmScheduleButton rows={filteredRows} setRows={setRows} />
         </div>
       </div>
 

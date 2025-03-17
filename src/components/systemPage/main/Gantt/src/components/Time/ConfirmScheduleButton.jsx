@@ -3,8 +3,8 @@ import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { updateSurgeryInDatabase } from "../DragDrop/dragEndHandler";
 
-const ConfirmScheduleButton = ({ rows }) => {
-  const confirmChanges = async () => {
+const ConfirmScheduleButton = ({ rows, setRows }) => {
+  const confirmSaveChanges = async () => {
     try {
       // 開始確認修改
       console.log('開始確認修改排班...');
@@ -13,25 +13,30 @@ const ConfirmScheduleButton = ({ rows }) => {
       
       // 遍歷每個手術房
       for (const roomIndex in rows) {
-        const room = rows[roomIndex];
-        if (room.data && room.data.length > 0) {
-          // 使用 updateSurgeryInDatabase 函數更新每個手術房的數據
-          // 參數傳遞: rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex
-          // 因為是確認操作，這裡源和目標都是同一個房間
-          const updatePromise = updateSurgeryInDatabase(
-            rows, 
-            parseInt(roomIndex), 
-            parseInt(roomIndex), 
-            0, 
-            0
-          );
-          
+        if (rows[roomIndex].data && rows[roomIndex].data.length > 0) {
+          // 使用更新後的 updateSurgeryInDatabase 函數更新每個手術房的數據
+          const updatePromise = updateSurgeryInDatabase(rows, parseInt(roomIndex));
           updatePromises.push(updatePromise);
         }
       }
       
       // 等待所有更新完成
       await Promise.all(updatePromises);
+      
+      // 重新載入最新數據以確保顯示正確的狀態
+      try {
+        const response = await axios.get(`${BASE_URL}/api/surgeries/scheduled`);
+        if (response.data) {
+          // 更新前端狀態以反映最新的數據
+          console.log('重新載入最新數據');
+          // 處理數據格式轉換並更新狀態
+          if (setRows && typeof setRows === 'function') {
+            setRows(response.data);
+          }
+        }
+      } catch (loadError) {
+        console.error('重新載入數據時發生錯誤:', loadError);
+      }
       
       // 通知用戶更新成功
       alert('排班已成功更新！');
@@ -45,7 +50,7 @@ const ConfirmScheduleButton = ({ rows }) => {
   return (
     <button
       className="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
-      onClick={confirmChanges}
+      onClick={confirmSaveChanges}
     >
       <svg
         className="h-4 w-4 mr-2"
