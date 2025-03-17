@@ -4,10 +4,12 @@ import { BASE_URL } from "../../../../../config";
 import SurgeryItems from "./SurgeryItems";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import AddSurgery from "./AddSurgery";
 
 /* eslint-disable react/prop-types */
-function SurgerListWrapper({ operatingRooms, setReloadKey }) {
+function SurgerListWrapper({ operatingRooms, setReloadKey, nowUsername }) {
     const [lastSurgeryTimes, setLastSurgeryTimes] = useState([]);
+    const [addingSurgery, setAddingSurgery] = useState(null);
 
     useEffect(() => {
         const fetchAllLastSurgeryTimes = async () => {
@@ -57,13 +59,24 @@ function SurgerListWrapper({ operatingRooms, setReloadKey }) {
                                     <SurgeryItems operatingRoom={operatingRoom} operatingRooms={operatingRooms} setReloadKey={setReloadKey} />
                                 </td>
                                 <td>
-                                    <FontAwesomeIcon className="add-button" icon={faPlus} />
+                                    <button className="action-button add-button" onClick={() => setAddingSurgery(operatingRoom.id)}>
+                                        <FontAwesomeIcon icon={faPlus} className="action-icon" />
+                                    </button>
                                 </td>
                             </tr>
                         )
                     })}
                 </tbody>
             </table>
+            {addingSurgery &&
+                <AddSurgery
+                    onClose={() => setAddingSurgery(null)}
+                    operatingRooms={operatingRooms}
+                    nowUsername={nowUsername}
+                    addingSurgery={addingSurgery}
+                    setReloadKey={setReloadKey}
+                />}
+
         </div>
     )
 }

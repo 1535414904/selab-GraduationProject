@@ -5,7 +5,7 @@ import SurgerListWrapper from "./main/SurgerListWrapper";
 import axios from "axios";
 import { BASE_URL } from "../../../../config";
 
-function SurgeryMgrWrapper({ reloadKey, setReloadKey }){
+function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }){
     const [operatingRooms, setOperatingRooms] = useState([]);
 
     useEffect(() => {
@@ -28,6 +28,7 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey }){
             <SurgerListWrapper 
                 operatingRooms={operatingRooms}
                 setReloadKey={setReloadKey}
+                nowUsername={nowUsername}
             />
         </div>
     )

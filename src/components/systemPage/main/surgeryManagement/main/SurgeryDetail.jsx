@@ -23,11 +23,15 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave }) {
 
                 <div className="modal-body">
                     {/* <div className="info-group" style={{ textAlign: "left", alignItems: "flex-start", display: "flex", flexDirection: "column" }}> */}
-                    {editingSurgery ? (<EditableDetail surgery={surgery} setEditingSurgery={setEditingSurgery} operatingRooms={operatingRooms} handleSave={handleSave}/>) : (
+                    {editingSurgery ? (<EditableDetail surgery={surgery} setEditingSurgery={setEditingSurgery} operatingRooms={operatingRooms} handleSave={handleSave} />) : (
                         <>
                             <div className="info-group action-group">
-                                <FontAwesomeIcon className="edit-button" icon={faPenSquare} onClick={() => handleEdit(surgery)} />
-                                <FontAwesomeIcon className="delete-button" icon={faTrash} />
+                                <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
+                                    <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                                </button>
+                                <button className="action-button delete-button">
+                                    <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                </button>
                             </div>
 
                             <div className="info-group blue flex flex-col items-start text-left">
