@@ -8,6 +8,8 @@ import GanttFilter from "./components/GanttFilter";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd, updateSurgeryInDatabase } from "./components/DragDrop/dragEndHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
+import axios from "axios";
+import { BASE_URL } from "/src/config";
 
 // 主頁專用的甘特圖組件，預設只能查看，但可以切換到編輯模式
 function MainGantt({ rows, setRows }) {
@@ -96,6 +98,10 @@ function MainGantt({ rows, setRows }) {
     } else {
       // 否則直接切換模式
       setReadOnly(!readOnly);
+      // 如果是從唯讀模式切換到編輯模式，重置變更狀態
+      if (readOnly) {
+        setHasChanges(false);
+      }
     }
   };
   
@@ -107,33 +113,30 @@ function MainGantt({ rows, setRows }) {
     
     try {
       // 遍歷所有手術房，更新每個手術的資料
+      const updatePromises = [];
+      
       for (const roomIndex in filteredRows) {
-        const room = filteredRows[roomIndex];
-        if (room.data && room.data.length > 0) {
-          // 計算每個手術室中的手術優先順序
-          let priorityCounter = 1;
-          
-          // 只處理實際手術項目（跳過清潔時間）
-          const surgeries = room.data.filter(item => !item.isCleaningTime);
-          
-          for (let i = 0; i < surgeries.length; i++) {
-            const surgery = surgeries[i];
-            if (surgery.applicationId) {
-              try {
-                // 設置優先順序
-                surgery.prioritySequence = priorityCounter++;
-                
-                // 更新到資料庫
-                await updateSurgeryInDatabase(surgery, room.room);
-                successCount++;
-              } catch (error) {
-                console.error(`更新手術 ${surgery.applicationId} 失敗:`, error);
-                errorCount++;
+        if (filteredRows[roomIndex].data && filteredRows[roomIndex].data.length > 0) {
+          // 使用更新後的 updateSurgeryInDatabase 函數更新每個手術房的數據
+          const updatePromise = updateSurgeryInDatabase(filteredRows, parseInt(roomIndex))
+            .then(results => {
+              if (results) {
+                successCount += results.length;
               }
-            }
-          }
+              return results;
+            })
+            .catch(error => {
+              console.error(`更新手術室 ${roomIndex} 失敗:`, error);
+              errorCount++;
+              return null;
+            });
+          
+          updatePromises.push(updatePromise);
         }
       }
+      
+      // 等待所有更新完成
+      await Promise.all(updatePromises);
       
       // 更新成功後，重置狀態
       setHasChanges(false);
@@ -163,7 +166,9 @@ function MainGantt({ rows, setRows }) {
     setShowConfirmDialog(false);
     
     // 詢問用戶是否要放棄變更
-    if (window.confirm('確定要放棄所有未保存的變更嗎？這將重新載入原始資料。')) {
+    const confirmDiscard = window.confirm('確定要放棄所有未保存的變更嗎？這將重新載入原始資料。');
+    
+    if (confirmDiscard) {
       setLoading(true);
       try {
         // 重新載入原始資料
@@ -173,6 +178,8 @@ function MainGantt({ rows, setRows }) {
       } catch (error) {
         console.error('重新載入資料失敗:', error);
         setError('重新載入資料失敗');
+      } finally {
+        setLoading(false);
       }
     }
   };

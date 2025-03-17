@@ -667,3 +667,83 @@ body {
 .edit-mode-button.active:hover {
   background-color: #dc2626;
 }
+
+/* 確認對話框樣式 */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.confirm-dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.confirm-dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #1f2937;
+}
+
+.confirm-dialog-message {
+  margin-bottom: 20px;
+  color: #4b5563;
+}
+
+.confirm-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-dialog-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-dialog-save {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+}
+
+.confirm-dialog-save:hover {
+  background-color: #1d4ed8;
+}
+
+.confirm-dialog-discard {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.confirm-dialog-discard:hover {
+  background-color: #dc2626;
+}
+
+.confirm-dialog-cancel {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.confirm-dialog-cancel:hover {
+  background-color: #e5e7eb;
+}
