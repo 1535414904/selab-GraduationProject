@@ -24,7 +24,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const [filterValues, setFilterValues] = useState({});
   const filterRef = useRef(null);
 
-  // 1) 攤平原始資料，過濾掉在原始結構就標記 isCleaningTime 的項目（避免重複）
+  // 1) 攤平原始資料，過濾掉已標記 isCleaningTime 的項目（避免重複）
+  // 修改處：若手術資料中未指定手術室，則嘗試使用 row.name 或 row.room，再無則預設「未指定手術室」
   const flattenedRows = Array.isArray(originalRows)
     ? originalRows.flatMap((row) => {
         if (row.data && Array.isArray(row.data)) {
@@ -32,7 +33,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
             .filter((surgery) => !surgery.isCleaningTime)
             .map((surgery) => ({
               ...surgery,
-              operatingRoomName: surgery.operatingRoomName || row.name,
+              operatingRoomName:
+                surgery.operatingRoomName || row.name || row.room || "未指定手術室",
             }));
         }
         return row.isCleaningTime ? [] : row;
@@ -88,7 +90,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   // 計算清潔結束時間的輔助函式
   const calculateCleaningEndTime = (surgeryEndTime, cleaningDurationMinutes = 45) => {
     if (!surgeryEndTime) return "10:00";
-
     const [hours, minutes] = surgeryEndTime.split(":").map(Number);
     const endTimeDate = new Date();
     endTimeDate.setHours(hours, minutes + cleaningDurationMinutes, 0, 0);
@@ -113,11 +114,11 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 
     sortedSurgeries.forEach((surgery) => {
       const roomName = surgery.operatingRoomName || "未指定手術室";
-
       if (!roomGroups[roomName]) {
         const newRoom = {
           id: `room-${roomName}`,
           name: roomName,
+          room: roomName, // 保持與 name 一致
           data: [],
         };
         roomGroups[roomName] = newRoom;
@@ -134,6 +135,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         ...surgery,
         surgery: surgery.surgeryName || surgery.surgery || "未指定手術",
         doctor: surgery.chiefSurgeonName || surgery.doctor || "未指定醫生",
+        operatingRoomName: roomName,
         color: surgeryColor,
         startTime: surgery.startTime || "08:00",
         endTime: surgery.endTime || "09:00",
@@ -143,7 +145,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       };
 
       roomGroups[roomName].data.push(surgeryData);
-
       // 為每個手術添加清潔時間區塊
       const cleaningColor = surgery.isFilteredOut
         ? "rgba(0, 0, 255, 0.3)" // 半透明藍
@@ -166,6 +167,23 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       roomGroups[roomName].data.push(cleaningData);
     });
 
+    // 補上原始資料中存在但可能因篩選而無手術資料的手術室
+    if (Array.isArray(originalRows)) {
+      originalRows.forEach((row) => {
+        // 修改處：若 row 中有 room 屬性則以該屬性為主，否則使用 row.name，再無則預設「未指定手術室」
+        const roomName = row.room || row.name || "未指定手術室";
+        if (!roomGroups[roomName]) {
+          const newRoom = {
+            id: `room-${roomName}`,
+            name: roomName,
+            room: roomName,
+            data: [],
+          };
+          roomGroups[roomName] = newRoom;
+          result.push(newRoom);
+        }
+      });
+    }
     return result;
   };
 
@@ -176,23 +194,15 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       return;
     }
 
-    // 先對所有手術進行標記
+    // 對所有手術進行標記
     flattenedRows.forEach((s) => {
-      // 如果需要排除清潔時間的篩選，可在此自行處理
-      // 但本例保留清潔時間以便後續 groupByRoom 自動加上
-
-      // 預設先認為符合篩選
       let meetsFilter = true;
-
-      // surgeryName
       if (
         filterValues.surgeryName?.length > 0 &&
         !filterValues.surgeryName.includes(s.surgeryName)
       ) {
         meetsFilter = false;
       }
-
-      // chiefSurgeonName
       if (
         filterValues.chiefSurgeonName?.length > 0 &&
         !filterValues.chiefSurgeonName.includes(s.chiefSurgeonName) &&
@@ -200,60 +210,45 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         meetsFilter = false;
       }
-
-      // operatingRoomName
       if (
         filterValues.operatingRoomName?.length > 0 &&
         !filterValues.operatingRoomName.includes(s.operatingRoomName)
       ) {
         meetsFilter = false;
       }
-
-      // estimatedSurgeryTime
       if (
         filterValues.estimatedSurgeryTime?.length > 0 &&
         !filterValues.estimatedSurgeryTime.includes(s.estimatedSurgeryTime)
       ) {
         meetsFilter = false;
       }
-
-      // anesthesiaMethod
       if (
         filterValues.anesthesiaMethod?.length > 0 &&
         !filterValues.anesthesiaMethod.includes(s.anesthesiaMethod)
       ) {
         meetsFilter = false;
       }
-
-      // surgeryReason
       if (
         filterValues.surgeryReason?.length > 0 &&
         !filterValues.surgeryReason.includes(s.surgeryReason)
       ) {
         meetsFilter = false;
       }
-
-      // specialOrRequirements
       if (
         filterValues.specialOrRequirements?.length > 0 &&
         !filterValues.specialOrRequirements.includes(s.specialOrRequirements)
       ) {
         meetsFilter = false;
       }
-
-      // userName
       if (
         filterValues.userName?.length > 0 &&
         !filterValues.userName.includes(s.user?.name)
       ) {
         meetsFilter = false;
       }
-
-      // 如果不符合篩選，標記為 isFilteredOut
       s.isFilteredOut = !meetsFilter;
     });
 
-    // 將所有手術(含標記)依房間分組並回傳
     const groupedData = groupByRoom(flattenedRows);
     onFilteredDataChange(groupedData);
   };
@@ -287,7 +282,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     setSelectedFilters([]);
     setFilterValues({});
   };
-  
+
   return (
     <>
       <div
@@ -303,16 +298,12 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
               ✕
             </button>
           </div>
-
           <div className="filter-content">
-            {/* 新增篩選下拉 */}
             <Select
               options={filterOptions}
               onChange={handleAddFilter}
               placeholder="新增篩選條件..."
             />
-
-            {/* 已選篩選項 */}
             {selectedFilters.map((filter) => (
               <div key={filter.value} className="filter-item">
                 <div className="filter-item-header">
@@ -324,8 +315,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     ✕
                   </button>
                 </div>
-
-                {/* 依不同欄位顯示不同的多選下拉 */}
                 {filter.value === "surgeryName" && (
                   <Select
                     isMulti
@@ -337,7 +326,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇手術名稱..."
                   />
                 )}
-
                 {filter.value === "chiefSurgeonName" && (
                   <Select
                     isMulti
@@ -351,7 +339,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇主刀醫師..."
                   />
                 )}
-
                 {filter.value === "operatingRoomName" && (
                   <Select
                     isMulti
@@ -365,7 +352,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇手術室..."
                   />
                 )}
-
                 {filter.value === "estimatedSurgeryTime" && (
                   <Select
                     isMulti
@@ -379,7 +365,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇預估時間..."
                   />
                 )}
-
                 {filter.value === "anesthesiaMethod" && (
                   <Select
                     isMulti
@@ -393,7 +378,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇麻醉方式..."
                   />
                 )}
-
                 {filter.value === "surgeryReason" && (
                   <Select
                     isMulti
@@ -407,7 +391,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇手術原因..."
                   />
                 )}
-
                 {filter.value === "specialOrRequirements" && (
                   <Select
                     isMulti
@@ -421,7 +404,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     placeholder="選擇特殊需求..."
                   />
                 )}
-
                 {filter.value === "userName" && (
                   <Select
                     isMulti
@@ -435,21 +417,20 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                 )}
               </div>
             ))}
-            {/* 新增清除所有篩選條件的按鈕 */}
             {selectedFilters.length > 0 && (
-              <button 
-                onClick={handleClearAllFilters} 
+              <button
+                onClick={handleClearAllFilters}
                 className="clear-filters-btn"
                 style={{
-                  backgroundColor: "#3498db", // 藍色背景
-                  color: "white",            // 白色文字
-                  padding: "8px 16px",       // 內間距
-                  border: "none",            // 無邊框
-                  borderRadius: "4px",       // 邊角圓弧
-                  cursor: "pointer",         // 滑鼠指標變成手指
-                  marginTop: "12px",         // 頂部間距
-                  fontWeight: "500",         // 稍微加粗文字
-                  width: "100%"              // 占滿寬度
+                  backgroundColor: "#3498db",
+                  color: "white",
+                  padding: "8px 16px",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginTop: "12px",
+                  fontWeight: "500",
+                  width: "100%",
                 }}
               >
                 清除所有篩選條件
