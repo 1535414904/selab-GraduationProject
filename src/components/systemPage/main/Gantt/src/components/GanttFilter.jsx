@@ -282,6 +282,12 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     setFilterValues(updatedValues);
   };
 
+  // 9) 清除所有篩選條件
+  const handleClearAllFilters = () => {
+    setSelectedFilters([]);
+    setFilterValues({});
+  };
+  
   return (
     <>
       <div
@@ -429,9 +435,28 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                 )}
               </div>
             ))}
+            {/* 新增清除所有篩選條件的按鈕 */}
+            {selectedFilters.length > 0 && (
+              <button 
+                onClick={handleClearAllFilters} 
+                className="clear-filters-btn"
+                style={{
+                  backgroundColor: "#3498db", // 藍色背景
+                  color: "white",            // 白色文字
+                  padding: "8px 16px",       // 內間距
+                  border: "none",            // 無邊框
+                  borderRadius: "4px",       // 邊角圓弧
+                  cursor: "pointer",         // 滑鼠指標變成手指
+                  marginTop: "12px",         // 頂部間距
+                  fontWeight: "500",         // 稍微加粗文字
+                  width: "100%"              // 占滿寬度
+                }}
+              >
+                清除所有篩選條件
+              </button>
+            )}
           </div>
         </div>
-
         <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
           篩選
         </button>

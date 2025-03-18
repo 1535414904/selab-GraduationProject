@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Select from "react-select";
 
 function AccountFilter({ users, filterUser, setFilterUser }) {
     const [isOpen, setIsOpen] = useState(false);
+    const filterRef = useRef(null); // 1️⃣ 定義 useRef 綁定篩選面板
 
     const handleChange = (e) => {
         setFilterUser(prevState => ({
@@ -33,11 +34,29 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
 
     useEffect(() => {
         console.log(filterUser)
-    },[filterUser])
+    }, [filterUser])
+
+    // 2️⃣ 監聽點擊外部事件
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen]);
 
     return (
         <>
             <div
+                ref={filterRef} // 3️⃣ 綁定 ref 到篩選面板
                 className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"}`}
             >
                 <div className="filter-panel">

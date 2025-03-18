@@ -10,7 +10,6 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
   const isOver24Hours = item.endTime > "24:00";
 
   const handleClick = async (e) => {
@@ -89,25 +88,15 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   const colorClass = () => {
     switch (item.color) {
       case "green":
-        return isHovered 
-          ? "bg-green-300 hover:bg-green-300" 
-          : (readOnly ? "bg-green-400 hover:bg-green-300" : "bg-green-400 hover:bg-green-300");
+        return readOnly ? "bg-green-400" : "bg-green-400 hover:bg-green-300";
       case "yellow":
-        return isHovered 
-          ? "bg-yellow-200 hover:bg-yellow-200" 
-          : (readOnly ? "bg-yellow-300 hover:bg-yellow-200" : "bg-yellow-300 hover:bg-yellow-200");
+        return readOnly ? "bg-yellow-300" : "bg-yellow-300 hover:bg-yellow-200";
       case "red":
-        return isHovered 
-          ? "bg-red-400 text-white hover:bg-red-400" 
-          : (readOnly ? "bg-red-500 text-white hover:bg-red-400" : "bg-red-500 text-white hover:bg-red-400");
+        return readOnly ? "bg-red-500 text-white" : "bg-red-500 hover:bg-red-400 text-white";
       case "blue":
-        return isHovered 
-          ? "bg-blue-500 text-purple-200 hover:bg-blue-500" 
-          : (readOnly ? "bg-blue-600 text-purple-200 hover:bg-blue-500" : "bg-blue-600 text-purple-200 hover:bg-blue-500");
+        return readOnly ? "bg-blue-600 text-purple-200" : "bg-blue-600 hover:bg-blue-500 text-purple-200";
       default:
-        return isHovered 
-          ? "bg-gray-100 hover:bg-gray-100" 
-          : (readOnly ? "bg-gray-200 hover:bg-gray-100" : "bg-gray-200 hover:bg-gray-100");
+        return readOnly ? "bg-gray-200" : "bg-gray-200 hover:bg-gray-100";
     }
   };
 
@@ -124,27 +113,24 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : (isHovered ? 'border-blue-400' : 'border-gray-300')} rounded-2xl ${colorClass()} ${
+        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : 'border-gray-300'} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-pointer' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
+        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
         style={{
           width: width,
           height: fixedHeight,
           opacity: isDragging || isOver24Hours ? 0.7 : 1,
-          cursor: loading ? 'wait' : (isPinned && !readOnly ? "not-allowed" : (item.isCleaningTime && !readOnly ? "move" : "pointer")),
+          cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
           zIndex: isDragging ? 10000 : (item.isCleaningTime ? 1 : 2),
           pointerEvents: "auto", // 允許點擊，即使在唯讀模式下
-          transform: isDragging ? "scale(1.02)" : (isHovered ? "scale(1.05)" : "none"),
+          transform: isDragging ? "scale(1.02)" : "none",
           transformOrigin: "center",
-          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : (isHovered ? "0 2px 4px rgba(0, 0, 0, 0.15)" : "none"),
-          transition: "all 0.2s ease"
+          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : "none",
         }}
         onClick={handleClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         {isPinned && !readOnly && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">

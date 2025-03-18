@@ -29,43 +29,67 @@ export const handleDragEnd = async (result, rows, setRows) => {
   return { updatedRows: newRows };
 };
 
-// 修改為直接更新單個手術的資料
-export const updateSurgeryInDatabase = async (surgery, roomName) => {
+// 修改為更新手術室中的所有手術項目
+export const updateSurgeryInDatabase = async (rows, roomIndex) => {
   try {
-    if (!surgery || !surgery.applicationId || surgery.isCleaningTime) {
-      console.log('跳過清潔時間或無效手術項目');
+    if (!rows || !rows[roomIndex] || !rows[roomIndex].data) {
+      console.log('無效的手術室數據');
       return null;
     }
     
-    // 計算手術持續時間（分鐘）
-    const durationMinutes = surgery.duration || calculateDuration(surgery.startTime, surgery.endTime);
+    const roomData = rows[roomIndex].data;
+    const roomName = rows[roomIndex].room;
+    const roomId = rows[roomIndex].roomId || roomName;
+    const updatePromises = [];
     
-    // 準備更新資料 - 確保格式與後端 API 期望的一致
-    const updateData = {
-      operatingRoomId: surgery.operatingRoomId || roomName, // 使用 operatingRoomId 或 roomName
-      operatingRoomName: roomName,
-      prioritySequence: surgery.prioritySequence || 1, // 添加優先順序
-      estimatedSurgeryTime: parseInt(durationMinutes, 10), // 確保是整數
-      startTime: surgery.startTime,
-      endTime: surgery.endTime
-    };
-    
-    console.log(`準備更新手術 ${surgery.applicationId} 的資料:`, updateData);
-    console.log(`API 端點: ${BASE_URL}/api/surgeries/${surgery.applicationId}`);
-    
-    // 發送更新請求
-    const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData, {
-      headers: {
-        'Content-Type': 'application/json',
+    // 遍歷手術室中的所有項目
+    for (let i = 0; i < roomData.length; i += 2) {
+      const surgery = roomData[i];
+      
+      // 跳過清潔時間或無效手術項目
+      if (!surgery || !surgery.applicationId || surgery.isCleaningTime) {
+        continue;
       }
-    });
+      
+      // 計算手術持續時間（分鐘）
+      const durationMinutes = surgery.duration || calculateDuration(surgery.startTime, surgery.endTime);
+      
+      // 設置優先順序（根據在房間中的位置）
+      const prioritySequence = (i / 2) + 1;
+      
+      // 準備更新資料 - 確保格式與後端 API 期望的一致
+      const updateData = {
+        operatingRoomId: roomId,
+        operatingRoomName: roomName,
+        prioritySequence: prioritySequence,
+        estimatedSurgeryTime: parseInt(durationMinutes, 10), // 確保是整數
+        startTime: surgery.startTime,
+        endTime: surgery.endTime
+      };
+      
+      console.log(`準備更新手術 ${surgery.applicationId} 的資料:`, updateData);
+      console.log(`API 端點: ${BASE_URL}/api/surgeries/${surgery.applicationId}`);
+      
+      // 發送更新請求
+      const updatePromise = axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }).then(response => {
+        console.log(`已更新手術 ${surgery.applicationId} 的資訊，狀態碼:`, response.status);
+        return response.data;
+      });
+      
+      updatePromises.push(updatePromise);
+    }
     
-    console.log(`已更新手術 ${surgery.applicationId} 的資訊，狀態碼:`, response.status);
-    console.log(`響應數據:`, response.data);
+    // 等待所有更新完成
+    const results = await Promise.all(updatePromises);
+    console.log('所有手術更新完成:', results);
+    return results;
     
-    return response.data;
   } catch (error) {
-    console.error(`更新手術 ${surgery?.applicationId} 資訊到資料庫時發生錯誤:`, error);
+    console.error(`更新手術資訊到資料庫時發生錯誤:`, error);
     console.error(`錯誤詳情:`, error.response ? error.response.data : '無響應數據');
     throw error;
   }
@@ -101,11 +125,19 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
   const movedItems = sourceRoomData.splice(sourceIndex, 2);
   const surgeryDuration = calculateDuration(movedItems[0].startTime, movedItems[0].endTime);
 
-  // 更新手術室名稱和ID
-  movedItems[0].operatingRoomName = newRows[destRoomIndex].room;
-  movedItems[0].operatingRoomId = newRows[destRoomIndex].roomId || newRows[destRoomIndex].room;
-  movedItems[1].operatingRoomName = newRows[destRoomIndex].room;
-  movedItems[1].operatingRoomId = newRows[destRoomIndex].roomId || newRows[destRoomIndex].room;
+  // 更新手術室名稱和ID - 確保使用正確的 roomId
+  const destRoomId = newRows[destRoomIndex].roomId || newRows[destRoomIndex].room;
+  const destRoomName = newRows[destRoomIndex].room;
+  
+  // 更新手術項目的手術室信息
+  movedItems[0].operatingRoomName = destRoomName;
+  movedItems[0].operatingRoomId = destRoomId;
+  
+  // 更新清潔時間項目的手術室信息
+  if (movedItems.length > 1) {
+    movedItems[1].operatingRoomName = destRoomName;
+    movedItems[1].operatingRoomId = destRoomId;
+  }
 
   if (sourceRoomData.length > 0) {
     updateRoomTimes(sourceRoomData);
@@ -120,9 +152,12 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
   movedItems[0].startTime = prevEndTime;
   movedItems[0].endTime = addMinutesToTime(prevEndTime, surgeryDuration);
   movedItems[0].color = getColorByEndTime(movedItems[0].endTime, false);
-  movedItems[1].startTime = movedItems[0].endTime;
-  movedItems[1].endTime = addMinutesToTime(movedItems[0].endTime, 45);
-  movedItems[1].color = getColorByEndTime(movedItems[1].endTime, true);
+  
+  if (movedItems.length > 1) {
+    movedItems[1].startTime = movedItems[0].endTime;
+    movedItems[1].endTime = addMinutesToTime(movedItems[0].endTime, 45);
+    movedItems[1].color = getColorByEndTime(movedItems[1].endTime, true);
+  }
 
   if (targetIndex >= destRoomData.length) {
     destRoomData.push(...movedItems);
