@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import Select from "react-select";
@@ -23,11 +23,11 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
     const [error, setError] = useState(null);
     const [chiefSurgeons, setChiefSurgeons] = useState([]);
 
-    useEffect (() => {
+    useEffect(() => {
         //console.log("編輯中的手術",editedSurgery);
         console.log("編輯中的手術詳情", surgery);
         console.log("此科別的主刀醫師", chiefSurgeons);
-    },[chiefSurgeons, editedSurgery, surgery])
+    }, [chiefSurgeons, editedSurgery, surgery])
 
     const handleChange = (e) => {
         setEditedSurgery({
@@ -36,7 +36,7 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
         });
     };
 
-    const handleDepartmentChange = (selectedOption) => {
+    const handleOperatingRoomsChange = (selectedOption) => {
         setEditedSurgery({
             ...editedSurgery,
             operatingRoomId: selectedOption ? selectedOption.value : null
@@ -53,11 +53,11 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
     useEffect(() => {
         const fetchChiefSurgeons = async () => {
             if (!editedSurgery.operatingRoomId) return;
-            
+
             const selectedDepartmentId = operatingRooms.find(room => room.id === editedSurgery.operatingRoomId)?.department.id;
-    
+
             if (!selectedDepartmentId) return;
-    
+
             try {
                 const response = await axios.get(`${BASE_URL}/api/system/department/${selectedDepartmentId}/chief-surgeons`);
                 setChiefSurgeons(response.data);
@@ -65,7 +65,7 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
                 console.error("Error fetching chief surgeons: ", error);
             }
         };
-    
+
         fetchChiefSurgeons();
     }, [editedSurgery.operatingRoomId, operatingRooms]);
 
@@ -82,7 +82,20 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
     return (
         <>
             <div className="info-group action-group">
-                <FontAwesomeIcon className="edit-button" icon={faFloppyDisk} onClick={handleSaveClick}/>
+                <button
+                    className="action-button edit-button"
+                    onClick={handleSaveClick}>
+                    <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                </button>
+                <button
+                    className="action-button delete-button"
+                    onClick={() => {
+                        setError(null);
+                        setEditingSurgery(null);
+                    }}
+                >
+                    <FontAwesomeIcon icon={faTimes} className="action-icon" />
+                </button>
             </div>
 
             <div className="info-group blue flex flex-col items-start text-left">
@@ -116,11 +129,11 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
                 </p>
                 <p>
                     <strong>主刀醫師：</strong>
-                    <Select 
+                    <Select
                         className=""
-                        options={chiefSurgeons.map((chiefSurgeon) => ({ value: chiefSurgeon.id, label: chiefSurgeon.name}))}
+                        options={chiefSurgeons.map((chiefSurgeon) => ({ value: chiefSurgeon.id, label: chiefSurgeon.name }))}
                         onChange={handleChiefSurgeonChange}
-                        defaultValue={chiefSurgeons.find(chiefSurgeon => chiefSurgeon.id === surgery.chiefSurgeon.id) ? 
+                        defaultValue={chiefSurgeons.find(chiefSurgeon => chiefSurgeon.id === surgery.chiefSurgeon.id) ?
                             { value: surgery.chiefSurgeon.id, label: surgery.chiefSurgeon.name } : null}
                     />
                 </p>
@@ -129,7 +142,7 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
                     <Select
                         className=""
                         options={operatingRooms.map((operatingRoom) => ({ value: operatingRoom.id, label: operatingRoom.name }))}
-                        onChange={handleDepartmentChange}
+                        onChange={handleOperatingRoomsChange}
                         defaultValue={operatingRooms.find(room => room.id === surgery.operatingRoom.id) ?
                             { value: surgery.operatingRoom.id, label: surgery.operatingRoom.name } : null}
                     />

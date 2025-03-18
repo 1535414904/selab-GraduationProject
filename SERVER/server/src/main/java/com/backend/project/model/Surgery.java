@@ -150,6 +150,17 @@ public class Surgery {
     public void setUser(User user) {
         this.user = user;
     }
+
+    @Transient
+    private String username;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "operating_room_id")
