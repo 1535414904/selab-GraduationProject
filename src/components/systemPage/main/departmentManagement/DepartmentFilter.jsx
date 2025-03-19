@@ -69,7 +69,6 @@ function DepartmentFilter({ filterDepartment, setFilterDepartment }) {
             onChange={handleChange}
           />
         </div>
-        {hasFilters && (
           <div className="filter-content">
             <button
               onClick={clearFilters}
@@ -89,7 +88,6 @@ function DepartmentFilter({ filterDepartment, setFilterDepartment }) {
               清除所有篩選條件
             </button>
           </div>
-        )}
       </div>
       <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
         篩選
