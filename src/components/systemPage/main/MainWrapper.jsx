@@ -5,7 +5,7 @@ import DepartmentMgrWrapper from "./departmentManagement/DepartmentMgrWrapper";
 import UserProfile from "./UserProfile";
 import Gantt from "./Gantt/src/Gantt";
 import MainGantt from "./Gantt/src/MainGantt";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
@@ -13,8 +13,101 @@ import SurgeryMgrWrapper from "./surgeryManagement/surgeryMgrWrapper";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, nowUsername }) {
   const [rows, setRows] = useState([]);
+  // 添加用於存儲MainGantt狀態更新函數的引用
+  const mainGanttRef = useRef({
+    setHasChanges: null,
+    filteredRows: null,
+    setFilteredRows: null,
+    readOnly: true
+  });
 
   const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    // 檢查是否為MainGantt並且處於唯讀模式
+    if (mainState === "mainPage" && mainGanttRef.current) {
+      // 每次拖曳時獲取最新的狀態
+      const { setHasChanges, filteredRows, setFilteredRows, readOnly } = mainGanttRef.current;
+      
+      // 每次拖曳前重新檢查最新的 readOnly 狀態
+      console.log("拖曳操作檢查 - readOnly 狀態:", readOnly);
+      
+      // 如果是唯讀模式，阻止拖曳操作
+      if (readOnly === true) {
+        console.warn("唯讀模式下無法拖曳");
+        return;
+      }
+      
+      // 檢查拖曳來源和目標是否為有效的房間
+      try {
+        const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
+        const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
+        
+        // 如果有 filteredRows (MainGantt使用)，則使用它
+        if (filteredRows && setFilteredRows) {
+          const sourceRoom = filteredRows[sourceRoomIndex];
+          const destRoom = filteredRows[destinationRoomIndex];
+          
+          // 檢查是否有釘選的手術房
+          if (sourceRoom && destRoom && (sourceRoom.isPinned || destRoom.isPinned)) {
+            console.warn("無法移動釘選的手術房中的手術");
+            return;
+          }
+          
+          // 執行拖曳處理 - 使用 MainGantt 的過濾後的行
+          console.log("開始處理拖曳操作...");
+          const updatedResult = handleDragEnd(result, filteredRows, setFilteredRows);
+          
+          // 確保原始的rows也被更新，以保持同步
+          if (updatedResult && updatedResult.updatedRows) {
+            const newRows = updatedResult.updatedRows;
+            setRows(newRows);
+            setFilteredRows(newRows);
+            console.log("已更新rows和filteredRows");
+            
+            // 更新 mainGanttRef 中的所有相關狀態
+            if (mainGanttRef.current) {
+              mainGanttRef.current = {
+                ...mainGanttRef.current,
+                filteredRows: newRows,
+                hasChanges: true
+              };
+            }
+            
+            // 標記有未保存的變更
+            if (setHasChanges) {
+              setHasChanges(true);
+              console.log("已標記有未保存的變更");
+            }
+          }
+          
+          return;
+        }
+      } catch (error) {
+        console.error("處理拖曳時發生錯誤:", error);
+      }
+    }
+    // 處理 Gantt (排班管理) 的拖曳
+    else if (mainState === "shiftMgr") {
+      // 首先嘗試解析拖曳源和目標索引
+      try {
+        const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
+        const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
+        
+        // 檢查是否有釘選的手術房
+        const sourceRoom = rows[sourceRoomIndex];
+        const destRoom = rows[destinationRoomIndex];
+        
+        if (sourceRoom && destRoom && (sourceRoom.isPinned || destRoom.isPinned)) {
+          console.warn("無法移動釘選的手術房中的手術");
+          return;
+        }
+      } catch (error) {
+        console.error("解析拖曳索引時出錯:", error);
+      }
+    }
+    
+    // 預設行為 - 用於 Gantt 組件或其他情況
     handleDragEnd(result, rows, setRows);
   };
 
@@ -29,7 +122,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
         <div className="flex-grow p-4 md:p-6">
           {mainState === "mainPage" && (
             <div className="transition-all duration-300 ease-in-out">
-              <MainGantt rows={rows} setRows={setRows} />
+              <MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} />
             </div>
           )}
 
