@@ -4,7 +4,6 @@ import "./SurgeryModal.css";
 function SurgeryModal({ surgery, onClose, error }) {
   if (!surgery) return null;
 
-  // 添加按ESC鍵關閉模態視窗的功能
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
@@ -12,27 +11,22 @@ function SurgeryModal({ surgery, onClose, error }) {
       }
     };
 
-    // 防止背景滾動
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleEscKey);
 
     return () => {
-      // 恢復背景滾動
       document.body.style.overflow = "auto";
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [onClose]);
 
-  // 格式化日期顯示
   const formatDate = (dateValue) => {
     if (!dateValue) return '未指定';
     
     try {
       if (typeof dateValue === 'string') {
-        // 如果是字符串，直接返回
         return dateValue;
       } else {
-        // 如果是日期對象，格式化為本地日期字符串
         return new Date(dateValue).toLocaleDateString();
       }
     } catch (error) {
@@ -41,14 +35,12 @@ function SurgeryModal({ surgery, onClose, error }) {
     }
   };
 
-  // 格式化時間顯示，處理超過24:00的情況
   const formatTime = (time) => {
     if (!time) return '未指定';
     
     try {
       const [hours, minutes] = time.split(":").map(Number);
       if (hours >= 24) {
-        // 如果小時數大於等於24，轉換為凌晨時間
         const adjustedHours = hours - 24;
         return `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
       }
@@ -59,9 +51,7 @@ function SurgeryModal({ surgery, onClose, error }) {
     }
   };
 
-  // 確保手術室名稱正確顯示
   const getOperatingRoomName = () => {
-    // 優先使用最新的手術室名稱
     return surgery.operatingRoomName || '未指定';
   };
 
@@ -113,6 +103,9 @@ function SurgeryModal({ surgery, onClose, error }) {
           <div className="info-group green">
             <h3>手術資訊</h3>
             <p>
+              <strong>科別：</strong> {surgery.specialty || '未指定'}
+            </p>
+            <p>
               <strong>手術名稱：</strong> {surgery.surgeryName || '未指定'}
             </p>
             <p>
@@ -124,7 +117,6 @@ function SurgeryModal({ surgery, onClose, error }) {
             <p>
               <strong>預估時間：</strong> {surgery.estimatedSurgeryTime || surgery.duration || '未指定'} {(surgery.estimatedSurgeryTime || surgery.duration) ? '分鐘' : ''}
             </p>
-            {/* 使用新的時間格式化函數 */}
             {surgery.startTime && (
               <p>
                 <strong>開始時間：</strong> {formatTime(surgery.startTime)}
@@ -142,7 +134,6 @@ function SurgeryModal({ surgery, onClose, error }) {
               <strong>手術原因：</strong> {surgery.surgeryReason || '未指定'}
             </p>
           </div>
-
           <div className="info-group pink">
             <h3>其他資訊</h3>
             <p>

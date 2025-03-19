@@ -46,7 +46,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
         // 處理該手術房的手術
         if (surgeriesResponse.data && surgeriesResponse.data.length > 0) {
           surgeriesResponse.data.forEach(surgery => {
-            // 手術項目
+            // 手術項目，加入科別 specialty
             const surgeryItem = {
               id: surgery.applicationId,
               doctor: surgery.chiefSurgeonName || '未指定醫師',
@@ -66,9 +66,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
               anesthesiaMethod: surgery.anesthesiaMethod,
               surgeryReason: surgery.surgeryReason,
               specialOrRequirements: surgery.specialOrRequirements,
-              user: surgery.user
+              user: surgery.user,
+              specialty: surgery.specialty || "未指定科別", // 加入科別
             };
-
+            console.log('手術項目:', surgeryItem);
             // 清潔時間項目
             const cleaningItem = {
               id: `cleaning-${surgery.applicationId}`,
@@ -103,7 +104,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
 
     setRows(formattedData);
     setLoading(false);
-    return formattedData; // 返回格式化後的數據，以便可以在Promise中使用
+    return formattedData; // 返回格式化後的數據，以便在Promise中使用
   } catch (error) {
     console.error('獲取數據時發生錯誤:', error);
     setError(`獲取數據失敗: ${error.message}`);
@@ -124,9 +125,9 @@ export const formatRoomData = (roomsWithSurgeries) => {
           item.startTime = currentTime;
           item.endTime = addMinutesToTime(currentTime, item.duration);
           
-          item.color = item.isCleaningTime ? 
-            getCleaningColor() : 
-            getColorByEndTime(item.endTime, false);
+          item.color = item.isCleaningTime 
+            ? getCleaningColor() 
+            : getColorByEndTime(item.endTime, false);
           
           currentTime = item.endTime;
         });
@@ -138,4 +139,4 @@ export const formatRoomData = (roomsWithSurgeries) => {
     console.error('數據格式化錯誤:', error);
     return [];
   }
-}; 
+};

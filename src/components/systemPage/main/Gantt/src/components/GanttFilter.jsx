@@ -8,8 +8,9 @@ export const getCleaningColor = () => "blue";
 const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // 定義可選的篩選條件（與 Modal 顯示欄位對應）
+  // 修改篩選條件順序，將科別移到最前面
   const filterOptions = [
+    { value: "specialty", label: "科別" },
     { value: "surgeryName", label: "手術名稱" },
     { value: "chiefSurgeonName", label: "主刀醫師" },
     { value: "operatingRoomName", label: "手術室" },
@@ -22,6 +23,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [filterValues, setFilterValues] = useState({});
+  // 新增預估時間範圍的狀態
+  const [timeRange, setTimeRange] = useState({ min: "", max: "" });
   const filterRef = useRef(null);
 
   // 1) 攤平原始資料，過濾掉已標記 isCleaningTime 的項目（避免重複）
@@ -41,36 +44,54 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       })
     : [];
 
-  // 2) 動態蒐集各欄位可供選擇的值
+  // 2) 動態蒐集各欄位可供選擇的值，並按照字母順序 (A→Z) 排序
   const availableSurgeryNames = Array.from(
     new Set(flattenedRows.map((s) => s.surgeryName).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
   const availableChiefSurgeonNames = Array.from(
     new Set(flattenedRows.map((s) => s.chiefSurgeonName || s.doctor).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
   const availableOperatingRoomNames = Array.from(
     new Set(flattenedRows.map((s) => s.operatingRoomName).filter(Boolean))
-  );
-  const availableEstimatedTimes = Array.from(
-    new Set(flattenedRows.map((s) => s.estimatedSurgeryTime).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
+  // 獲取預估時間的最小值和最大值，用於範圍選擇器
+  const estimatedTimes = flattenedRows
+    .map((s) => s.estimatedSurgeryTime)
+    .filter(Boolean)
+    .map(Number);
+  
+  const minEstimatedTime = estimatedTimes.length > 0 ? Math.min(...estimatedTimes) : 0;
+  const maxEstimatedTime = estimatedTimes.length > 0 ? Math.max(...estimatedTimes) : 100;
+
   const availableAnesthesiaMethods = Array.from(
     new Set(flattenedRows.map((s) => s.anesthesiaMethod).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
   const availableSurgeryReasons = Array.from(
     new Set(flattenedRows.map((s) => s.surgeryReason).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
   const availableSpecialOrRequirements = Array.from(
     new Set(flattenedRows.map((s) => s.specialOrRequirements).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
+
   const availableUserNames = Array.from(
     new Set(flattenedRows.map((s) => s.user?.name).filter(Boolean))
-  );
+  ).sort((a, b) => a.localeCompare(b));
 
-  // 3) 每次 originalRows 或 filterValues 改變時，執行篩選（但不移除，只標記）
+  // 新增科別，同樣按照字母順序排
+  const availableSpecialties = Array.from(
+    new Set(flattenedRows.map((s) => s.specialty).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
+
+  // 3) 每次 originalRows、filterValues 或 timeRange 改變時，執行篩選（但不移除，只標記）
   useEffect(() => {
     applyFilters();
-  }, [filterValues, originalRows]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValues, originalRows, timeRange]);
 
   // 4) 點擊篩選器外部時關閉抽屜
   useEffect(() => {
@@ -88,7 +109,10 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   }, [isOpen]);
 
   // 計算清潔結束時間的輔助函式
-  const calculateCleaningEndTime = (surgeryEndTime, cleaningDurationMinutes = 45) => {
+  const calculateCleaningEndTime = (
+    surgeryEndTime,
+    cleaningDurationMinutes = 45
+  ) => {
     if (!surgeryEndTime) return "10:00";
     const [hours, minutes] = surgeryEndTime.split(":").map(Number);
     const endTimeDate = new Date();
@@ -133,8 +157,11 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       // 建立手術資料
       const surgeryData = {
         ...surgery,
-        surgery: surgery.surgeryName || surgery.surgery || "未指定手術",
+        surgery: surgery.surgeryName 
+        ? `${surgery.surgeryName} (${surgery.patientName || '未知病患'})`
+        : surgery.surgery || "未指定手術",
         doctor: surgery.chiefSurgeonName || surgery.doctor || "未指定醫生",
+        patientName: surgery.patientName || "未知病患",
         operatingRoomName: roomName,
         color: surgeryColor,
         startTime: surgery.startTime || "08:00",
@@ -145,6 +172,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       };
 
       roomGroups[roomName].data.push(surgeryData);
+
       // 為每個手術添加清潔時間區塊
       const cleaningColor = surgery.isFilteredOut
         ? "rgba(0, 0, 255, 0.3)" // 半透明藍
@@ -216,12 +244,21 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         meetsFilter = false;
       }
+      
+      // 使用預估時間範圍進行篩選，而不是多選值
       if (
-        filterValues.estimatedSurgeryTime?.length > 0 &&
-        !filterValues.estimatedSurgeryTime.includes(s.estimatedSurgeryTime)
+        (timeRange.min !== "" || timeRange.max !== "") &&
+        s.estimatedSurgeryTime !== undefined
       ) {
-        meetsFilter = false;
+        const estimatedTime = Number(s.estimatedSurgeryTime);
+        if (
+          (timeRange.min !== "" && estimatedTime < Number(timeRange.min)) ||
+          (timeRange.max !== "" && estimatedTime > Number(timeRange.max))
+        ) {
+          meetsFilter = false;
+        }
       }
+      
       if (
         filterValues.anesthesiaMethod?.length > 0 &&
         !filterValues.anesthesiaMethod.includes(s.anesthesiaMethod)
@@ -246,6 +283,14 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         meetsFilter = false;
       }
+      // 新增科別的篩選
+      if (
+        filterValues.specialty?.length > 0 &&
+        !filterValues.specialty.includes(s.specialty)
+      ) {
+        meetsFilter = false;
+      }
+
       s.isFilteredOut = !meetsFilter;
     });
 
@@ -257,7 +302,13 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const handleAddFilter = (selected) => {
     if (selected && !selectedFilters.find((f) => f.value === selected.value)) {
       setSelectedFilters([...selectedFilters, selected]);
-      setFilterValues({ ...filterValues, [selected.value]: [] });
+      
+      // 如果選擇了預估時間，初始化時間範圍
+      if (selected.value === "estimatedSurgeryTime") {
+        setTimeRange({ min: String(minEstimatedTime), max: String(maxEstimatedTime) });
+      } else {
+        setFilterValues({ ...filterValues, [selected.value]: [] });
+      }
     }
   };
 
@@ -269,18 +320,32 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     });
   };
 
+  // 處理時間範圍變更
+  const handleTimeRangeChange = (type, value) => {
+    setTimeRange(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
   // 8) 移除某個篩選條件
   const handleRemoveFilter = (filterKey) => {
     setSelectedFilters(selectedFilters.filter((f) => f.value !== filterKey));
     const updatedValues = { ...filterValues };
     delete updatedValues[filterKey];
     setFilterValues(updatedValues);
+    
+    // 如果移除的是預估時間，重置時間範圍
+    if (filterKey === "estimatedSurgeryTime") {
+      setTimeRange({ min: "", max: "" });
+    }
   };
 
   // 9) 清除所有篩選條件
   const handleClearAllFilters = () => {
     setSelectedFilters([]);
     setFilterValues({});
+    setTimeRange({ min: "", max: "" });
   };
 
   return (
@@ -315,6 +380,76 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     ✕
                   </button>
                 </div>
+                {/* 使用範圍選擇器替代多選下拉選單 */}
+                {filter.value === "estimatedSurgeryTime" && (
+                  <div className="range-selector" style={{ marginTop: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                      <label style={{ marginRight: "10px", width: "60px" }}>最小值:</label>
+                      <input
+                        type="number"
+                        value={timeRange.min}
+                        onChange={(e) => handleTimeRangeChange("min", e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: "8px",
+                          border: "1px solid #ccc",
+                          borderRadius: "4px"
+                        }}
+                        min={minEstimatedTime}
+                        max={maxEstimatedTime}
+                      />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <label style={{ marginRight: "10px", width: "60px" }}>最大值:</label>
+                      <input
+                        type="number"
+                        value={timeRange.max}
+                        onChange={(e) => handleTimeRangeChange("max", e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: "8px",
+                          border: "1px solid #ccc",
+                          borderRadius: "4px"
+                        }}
+                        min={minEstimatedTime}
+                        max={maxEstimatedTime}
+                      />
+                    </div>
+                    <div style={{ marginTop: "8px" }}>
+                      <input
+                        type="range"
+                        min={minEstimatedTime}
+                        max={maxEstimatedTime}
+                        value={timeRange.min}
+                        onChange={(e) => handleTimeRangeChange("min", e.target.value)}
+                        style={{ width: "100%" }}
+                      />
+                      <input
+                        type="range"
+                        min={minEstimatedTime}
+                        max={maxEstimatedTime}
+                        value={timeRange.max}
+                        onChange={(e) => handleTimeRangeChange("max", e.target.value)}
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
+                      <span>{minEstimatedTime}</span>
+                      <span>{maxEstimatedTime}</span>
+                    </div>
+                  </div>
+                )}
+                {filter.value === "specialty" && (
+                  <Select
+                    isMulti
+                    options={availableSpecialties.map((v) => ({
+                      value: v,
+                      label: v,
+                    }))}
+                    onChange={(selected) => handleFilterChange("specialty", selected)}
+                    placeholder="選擇科別..."
+                  />
+                )}
                 {filter.value === "surgeryName" && (
                   <Select
                     isMulti
@@ -350,19 +485,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                       handleFilterChange("operatingRoomName", selected)
                     }
                     placeholder="選擇手術室..."
-                  />
-                )}
-                {filter.value === "estimatedSurgeryTime" && (
-                  <Select
-                    isMulti
-                    options={availableEstimatedTimes.map((v) => ({
-                      value: v,
-                      label: String(v),
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("estimatedSurgeryTime", selected)
-                    }
-                    placeholder="選擇預估時間..."
                   />
                 )}
                 {filter.value === "anesthesiaMethod" && (
