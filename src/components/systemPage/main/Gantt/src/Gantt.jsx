@@ -5,7 +5,6 @@ import ConfirmScheduleButton from "./components/Time/ConfirmScheduleButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter";
-import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
@@ -22,6 +21,7 @@ function Gantt({ rows, setRows }) {
   const [filteredRows, setFilteredRows] = useState(rows);
   const [timeScaleWidth, setTimeScaleWidth] = useState("100%");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
 
   // 初始化數據
   useEffect(() => {
@@ -58,29 +58,6 @@ function Gantt({ rows, setRows }) {
     if (scrollContainerRef.current) {
       setContainerWidth(scrollContainerRef.current.clientWidth);
     }
-  };
-
-  // 處理拖曳結束事件
-  const onDragEnd = async (result) => {
-    if (!result.destination) return;
-    
-    // 檢查是否有釘選的手術房
-    const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
-    const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
-    
-    const sourceRoom = filteredRows[sourceRoomIndex];
-    const destRoom = filteredRows[destinationRoomIndex];
-    
-    if (sourceRoom.isPinned || destRoom.isPinned) {
-      console.warn("無法移動釘選的手術房中的手術");
-      return;
-    }
-    
-    // 執行拖曳處理 - 只更新前端界面，不發送後端請求
-    await handleDragEnd(result, filteredRows, setFilteredRows);
-    
-    // 不再依賴後端更新的數據
-    console.log('手術位置已在界面上更新，點擊確認修改按鈕將保存變更');
   };
 
   // 處理手術房釘選狀態變更
@@ -200,22 +177,21 @@ function Gantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="gantt-chart">
-                      {filteredRows.map((room, roomIndex) => (
-                        <div 
-                          key={room.room || roomIndex} 
-                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                        >
-                          <RoomSection 
-                            room={room} 
-                            roomIndex={roomIndex} 
-                            onPinStatusChange={handleRoomPinStatusChange}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </DragDropContext>
+                  <div className="gantt-chart">
+                    {filteredRows.map((room, roomIndex) => (
+                      <div 
+                        key={room.room || roomIndex} 
+                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                      >
+                        <RoomSection 
+                          room={room} 
+                          roomIndex={roomIndex} 
+                          onPinStatusChange={handleRoomPinStatusChange}
+                          readOnly={readOnly}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </TimeWrapper>
             </div>

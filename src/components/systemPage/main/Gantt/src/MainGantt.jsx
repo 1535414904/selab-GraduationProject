@@ -5,14 +5,13 @@ import GeneratePDFButton from "./components/Time/GeneratePDFButton";
 import { fetchSurgeryData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter";
-import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd, updateSurgeryInDatabase } from "./components/DragDrop/dragEndHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
 
 // 主頁專用的甘特圖組件，預設只能查看，但可以切換到編輯模式
-function MainGantt({ rows, setRows }) {
+function MainGantt({ rows, setRows, mainGanttRef }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -46,7 +45,16 @@ function MainGantt({ rows, setRows }) {
   // 當原始數據變更時，更新篩選後的結果
   useEffect(() => {
     setFilteredRows(rows);
-  }, [rows]);
+    
+    // 同時更新 mainGanttRef
+    if (mainGanttRef && mainGanttRef.current) {
+      mainGanttRef.current = {
+        ...mainGanttRef.current,
+        filteredRows: rows,
+        setFilteredRows
+      };
+    }
+  }, [rows, mainGanttRef]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,47 +68,46 @@ function MainGantt({ rows, setRows }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 更新 mainGanttRef 以供 MainWrapper 訪問
+  useEffect(() => {
+    if (mainGanttRef && mainGanttRef.current) {
+      mainGanttRef.current = {
+        setHasChanges,
+        filteredRows,
+        setFilteredRows,
+        readOnly
+      };
+    }
+  }, [filteredRows, readOnly, mainGanttRef, setHasChanges]);
+
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
   
-  // 處理拖曳結束事件
-  const onDragEnd = async (result) => {
-    if (!result.destination || readOnly) return;
-    
-    // 檢查是否有釘選的手術房
-    const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
-    const destinationRoomIndex = parseInt(result.destination.droppableId.split("-")[1], 10);
-    
-    const sourceRoom = filteredRows[sourceRoomIndex];
-    const destRoom = filteredRows[destinationRoomIndex];
-    
-    if (sourceRoom.isPinned || destRoom.isPinned) {
-      console.warn("無法移動釘選的手術房中的手術");
-      return;
-    }
-    
-    // 執行拖曳處理 - 只更新前端界面，不發送後端請求
-    await handleDragEnd(result, filteredRows, setFilteredRows);
-    
-    // 標記有未保存的變更
-    setHasChanges(true);
-    
-    console.log('手術位置已在界面上更新，但未保存到後端');
-  };
-
   // 切換編輯模式
   const toggleEditMode = () => {
     // 如果要從編輯模式切換到唯讀模式，且有未保存的變更，則顯示確認對話框
     if (!readOnly && hasChanges) {
       setShowConfirmDialog(true);
+      // 不要立即切換 readOnly 狀態，等待用戶在對話框中的選擇
     } else {
       // 否則直接切換模式
-      setReadOnly(!readOnly);
+      const newReadOnlyState = !readOnly;
+      setReadOnly(newReadOnlyState);
+      
       // 如果是從唯讀模式切換到編輯模式，重置變更狀態
       if (readOnly) {
         setHasChanges(false);
+      }
+      
+      // 立即更新 mainGanttRef
+      if (mainGanttRef && mainGanttRef.current) {
+        mainGanttRef.current = {
+          ...mainGanttRef.current,
+          readOnly: newReadOnlyState,
+          hasChanges: readOnly ? false : hasChanges
+        };
       }
     }
   };
@@ -117,7 +124,6 @@ function MainGantt({ rows, setRows }) {
       
       for (const roomIndex in filteredRows) {
         if (filteredRows[roomIndex].data && filteredRows[roomIndex].data.length > 0) {
-          // 使用更新後的 updateSurgeryInDatabase 函數更新每個手術房的數據
           const updatePromise = updateSurgeryInDatabase(filteredRows, parseInt(roomIndex))
             .then(results => {
               if (results) {
@@ -138,20 +144,48 @@ function MainGantt({ rows, setRows }) {
       // 等待所有更新完成
       await Promise.all(updatePromises);
       
-      // 更新成功後，重置狀態
-      setHasChanges(false);
-      setShowConfirmDialog(false);
-      setReadOnly(true);
-      
-      // 顯示成功訊息
-      if (errorCount === 0) {
-        alert(`所有變更已成功保存到資料庫！共更新了 ${successCount} 個手術。`);
-      } else {
-        alert(`部分變更已保存到資料庫。成功: ${successCount} 個，失敗: ${errorCount} 個。`);
-      }
-      
       // 重新載入資料以確保顯示最新狀態
-      await fetchSurgeryData(setRows, setLoading, setError);
+      try {
+        const response = await fetch(`${BASE_URL}/api/surgery/getAllSurgery`);
+        if (!response.ok) {
+          throw new Error('重新載入數據失敗');
+        }
+        const newData = await response.json();
+        
+        // 更新所有相關狀態
+        setRows(newData);
+        setFilteredRows(newData);
+        setHasChanges(false);
+        setShowConfirmDialog(false);
+        setReadOnly(true);
+        
+        // 立即更新 mainGanttRef
+        if (mainGanttRef && mainGanttRef.current) {
+          mainGanttRef.current = {
+            ...mainGanttRef.current,
+            filteredRows: newData,
+            readOnly: true,
+            hasChanges: false,
+            setFilteredRows: (updatedRows) => {
+              setFilteredRows(updatedRows);
+              // 確保在更新 filteredRows 時同步更新 mainGanttRef
+              if (mainGanttRef.current) {
+                mainGanttRef.current.filteredRows = updatedRows;
+              }
+            }
+          };
+        }
+        
+        // 顯示成功訊息
+        if (errorCount === 0) {
+          alert(`所有變更已成功保存到資料庫！共更新了 ${successCount} 個手術。`);
+        } else {
+          alert(`部分變更已保存到資料庫。成功: ${successCount} 個，失敗: ${errorCount} 個。`);
+        }
+      } catch (error) {
+        console.error('重新載入數據失敗:', error);
+        throw new Error('重新載入數據失敗');
+      }
       
     } catch (error) {
       console.error('保存變更時發生錯誤:', error);
@@ -171,10 +205,40 @@ function MainGantt({ rows, setRows }) {
     if (confirmDiscard) {
       setLoading(true);
       try {
-        // 重新載入原始資料
-        await fetchSurgeryData(setRows, setLoading, setError);
+        // 首先立即重置狀態
         setHasChanges(false);
         setReadOnly(true);
+        
+        // 立即更新 mainGanttRef
+        if (mainGanttRef && mainGanttRef.current) {
+          mainGanttRef.current = {
+            ...mainGanttRef.current,
+            readOnly: true,
+            hasChanges: false
+          };
+        }
+        
+        // 創建一個自訂的狀態更新函數，將同時更新 rows 和 filteredRows
+        const customSetRows = (newRows) => {
+          // 更新主數據
+          setRows(newRows);
+          
+          // 直接更新過濾後的行，確保它們與 newRows 同步
+          setFilteredRows(newRows);
+          
+          // 確保 mainGanttRef 也獲得更新
+          if (mainGanttRef && mainGanttRef.current) {
+            mainGanttRef.current = {
+              ...mainGanttRef.current,
+              filteredRows: newRows,
+              readOnly: true,
+              hasChanges: false
+            };
+          }
+        };
+        
+        // 使用自訂的設置函數重新載入數據
+        await fetchSurgeryData(customSetRows, setLoading, setError);
       } catch (error) {
         console.error('重新載入資料失敗:', error);
         setError('重新載入資料失敗');
@@ -220,6 +284,31 @@ function MainGantt({ rows, setRows }) {
     setCurrentDate(formattedDate);
   }, []);
   
+  // 確保對話框顯示邏輯
+  useEffect(() => {
+    // 當有未保存的變更時，確保對話框顯示
+    if (!readOnly && hasChanges && !showConfirmDialog) {
+      const handleBeforeUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      
+      // 添加頁面離開提示
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [readOnly, hasChanges, showConfirmDialog]);
+
+  // 監聽 hasChanges 的變化
+  useEffect(() => {
+    if (hasChanges) {
+      console.log('檢測到未保存的變更');
+    }
+  }, [hasChanges]);
+
   // 如果數據尚未載入，顯示載入中
   if (loading) {
     return (
@@ -290,9 +379,9 @@ function MainGantt({ rows, setRows }) {
       </div>
     </div>
 
-      {/* 確認對話框 */}
+      {/* 確認對話框 - 調整樣式確保它始終顯示在最上層 */}
       {showConfirmDialog && (
-        <div className="confirm-dialog-overlay">
+        <div className="confirm-dialog-overlay" style={{ zIndex: 9999 }}>
           <div className="confirm-dialog">
             <h3 className="confirm-dialog-title">保存變更</h3>
             <p className="confirm-dialog-message">您有未保存的變更，是否要保存到資料庫？</p>
@@ -313,7 +402,18 @@ function MainGantt({ rows, setRows }) {
               </button>
               <button 
                 className="confirm-dialog-button confirm-dialog-cancel" 
-                onClick={() => setShowConfirmDialog(false)}
+                onClick={() => {
+                  setShowConfirmDialog(false);
+                  // 取消時恢復到編輯模式
+                  setReadOnly(false);
+                  // 同步更新 mainGanttRef
+                  if (mainGanttRef && mainGanttRef.current) {
+                    mainGanttRef.current = {
+                      ...mainGanttRef.current,
+                      readOnly: false
+                    };
+                  }
+                }}
                 disabled={isSaving}
               >
                 取消
@@ -336,24 +436,22 @@ function MainGantt({ rows, setRows }) {
             <div ref={timeScaleRef} className="gantt-timescale-container">
               <TimeWrapper containerWidth={containerWidth}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="gantt-chart">
-                      {filteredRows.map((room, roomIndex) => (
-                        <div 
-                          key={room.room || roomIndex} 
-                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                        >
-                          <RoomSection 
-                            room={room} 
-                            roomIndex={roomIndex} 
-                            readOnly={readOnly}
-                            onPinStatusChange={handleRoomPinStatusChange}
-                            onSurgeryClick={handleSurgeryClick}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </DragDropContext>
+                  <div className="gantt-chart">
+                    {filteredRows.map((room, roomIndex) => (
+                      <div 
+                        key={room.room || roomIndex} 
+                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                      >
+                        <RoomSection 
+                          room={room} 
+                          roomIndex={roomIndex} 
+                          onPinStatusChange={handleRoomPinStatusChange}
+                          readOnly={readOnly}
+                          onSurgeryClick={handleSurgeryClick}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </TimeWrapper>
             </div>
