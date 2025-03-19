@@ -29,17 +29,17 @@ function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOp
         <h1>手術管理</h1>
       </div>
       <div className="header-function">
-        <SurgeryFilter 
+        <SurgeryFilter
           operatingRooms={operatingRooms}
           filterOperatingRoom={filterOperatingRoom}
           setFilterOperatingRoom={setFilterOperatingRoom}
         />
-        <button className="account-button department-right-button" onClick={addRow}>
+        {/* <button className="account-button department-right-button" onClick={addRow}>
           新增
         </button>
         <button className="account-button mgr-cancel" onClick={() => handleDelete()}>
           刪除
-        </button>
+        </button> */}
       </div>
     </div>
   );

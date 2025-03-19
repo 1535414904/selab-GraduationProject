@@ -35,7 +35,19 @@ function EditableRow({ key, chiefSurgeon, handleSave }) {
                     onChange={handleChange}
                 />
             </td>
-            <td><FontAwesomeIcon icon={faFloppyDisk} className="edit-button" onClick={() => handleSave(editedChiefSurgeon)} /></td>
+            {/* <td><FontAwesomeIcon icon={faFloppyDisk} className="edit-button" onClick={() => handleSave(editedChiefSurgeon)} /></td> */}
+
+            <td className="action-buttons">
+                {/* 儲存按鈕 */}
+                <button
+                    className="action-button edit-button"
+                    onClick={() => {
+                        handleSave(editedChiefSurgeon); // 儲存當前的編輯內容
+                    }}
+                >
+                    <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                </button>
+            </td>
         </tr>
     )
 }
