@@ -59,6 +59,18 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
         }
     };
 
+    const handleDelete = async (name, id) => {
+        const isConfirmed = window.confirm(`請確認是否刪除手術房 ${name} ( ID: ${id} )？`);
+        if (!isConfirmed) return;
+
+        try {
+            await axios.delete(`${BASE_URL}/api/system/surgery/delete/${id}`)
+            setReloadKey((prevKey) => prevKey + 1);
+        } catch (error) {
+            console.error("刪除失敗：", error);
+        }
+    };
+
     const formatTime = (minutes) => {
         const hours = Math.floor(minutes / 60) % 24;
         const mins = minutes % 60;
@@ -83,6 +95,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
                     surgery={selectedSurgery}
                     operatingRooms={operatingRooms}
                     handleSave={handleSave}
+                    handleDelete={handleDelete}
                 />
             )}
         </div>

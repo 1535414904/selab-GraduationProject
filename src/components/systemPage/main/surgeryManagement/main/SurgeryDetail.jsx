@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import EditableDetail from "./EditableDetail";
 
-function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave }) {
+function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDelete }) {
     const [editingSurgery, setEditingSurgery] = useState(null);
 
     const handleEdit = (surgery) => {
@@ -29,7 +29,7 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave }) {
                                 <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
                                     <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
                                 </button>
-                                <button className="action-button delete-button">
+                                <button onClick={() => handleDelete(surgery.surgeryName, surgery.applicationId)} className="action-button delete-button">
                                     <FontAwesomeIcon icon={faTrash} className="action-icon" />
                                 </button>
                             </div>
