@@ -5,6 +5,7 @@ import { BASE_URL } from "../../../../config";
 import DepartmentHeaderWrapper from "./header/DepartmentHeaderWrapper";
 import DepartmentListWrapper from "./main/DepartmentListWrapper";
 import axios from "axios";
+import DepartmentFilter from "./DepartmentFilter";
 
 function DepartmentMgrWrapper({ reloadKey }) {
     const [departments, setDepartments] = useState([]);
@@ -27,6 +28,10 @@ function DepartmentMgrWrapper({ reloadKey }) {
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        console.log("科別資料", departments);
+    }, [departments]);
 
     /*const addHandleSubmit = async () => {
         const hasEmptyField = addDepartments.some(department => !department.id.trim());
@@ -139,6 +144,11 @@ function DepartmentMgrWrapper({ reloadKey }) {
                 setAddDepartments={setAddDepartments}
                 handleAdd={handleAdd}
                 emptyError={emptyError}
+            />
+            <DepartmentFilter
+                departments={departments}
+                filterDepartment={filterDepartment}
+                setFilterDepartment={setFilterDepartment}
             />
         </div>
     )

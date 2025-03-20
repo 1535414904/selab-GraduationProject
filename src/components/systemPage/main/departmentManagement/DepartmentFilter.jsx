@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
+import Select from "react-select";
 
-function DepartmentFilter({ filterDepartment, setFilterDepartment }) {
+function DepartmentFilter({ departments, filterDepartment, setFilterDepartment }) {
   const [isOpen, setIsOpen] = useState(false);
   const filterRef = useRef(null);
 
@@ -18,6 +19,13 @@ function DepartmentFilter({ filterDepartment, setFilterDepartment }) {
 
   // 檢查是否有任何篩選條件
   const hasFilters = filterDepartment.id !== "" || filterDepartment.name !== "";
+
+  const handleNameChange = (selectedOption) => {
+    setFilterDepartment((prevState) => ({
+      ...prevState,
+      name: selectedOption ? selectedOption.label : "",
+    }));
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -60,34 +68,39 @@ function DepartmentFilter({ filterDepartment, setFilterDepartment }) {
           />
         </div>
         <div className="filter-content">
-          <input
-            type="text"
-            name="name"
-            className="filter-input"
-            placeholder="請輸入科別名稱..."
-            value={filterDepartment.name}
-            onChange={handleChange}
+          <Select
+            className="filter-select"
+            options={departments.map((department) => ({
+              value: department.name,
+              label: department.name
+            }))}
+            value={departments.find((department) => department.name === filterDepartment.name)
+              ? { value: filterDepartment.name, label: filterDepartment.name }
+              : null}
+            onChange={handleNameChange}
+            placeholder="請選擇科別名稱..."
+            isClearable={true}
           />
         </div>
-          <div className="filter-content">
-            <button
-              onClick={clearFilters}
-              className="clear-filters-btn"
-              style={{
-                backgroundColor: "#3498db",
-                color: "white",
-                padding: "8px 16px",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                marginTop: "12px",
-                fontWeight: "500",
-                width: "100%",
-              }}
-            >
-              清除所有篩選條件
-            </button>
-          </div>
+        <div className="filter-content">
+          <button
+            onClick={clearFilters}
+            className="clear-filters-btn"
+            style={{
+              backgroundColor: "#3498db",
+              color: "white",
+              padding: "8px 16px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginTop: "12px",
+              fontWeight: "500",
+              width: "100%",
+            }}
+          >
+            清除所有篩選條件
+          </button>
+        </div>
       </div>
       <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
         篩選
