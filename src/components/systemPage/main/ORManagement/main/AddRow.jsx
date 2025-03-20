@@ -15,6 +15,10 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
     const [departments, setDepartments] = useState([]);
 
     useEffect(() => {
+        console.log("addOperatingRooms: ", addOperatingRooms);
+    }, [addOperatingRooms]);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(BASE_URL + "/api/system/departments");
