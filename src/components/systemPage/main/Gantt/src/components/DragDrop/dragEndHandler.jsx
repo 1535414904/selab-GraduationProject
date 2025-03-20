@@ -33,38 +33,70 @@ export const handleDragEnd = async (result, rows, setRows) => {
 // 保留此函數供確認修改按鈕使用
 const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex) => {
   try {
-    const targetRoomIndex = sourceRoomIndex !== destinationRoomIndex ? destinationRoomIndex : sourceRoomIndex;
-    const targetRoom = rows[targetRoomIndex];
+    // 儲存所有更新的房間，用於最後回傳結果
+    const updatedRooms = [];
     
-    // 只處理實際手術，不處理清潔時間
-    const surgeriesToUpdate = targetRoom.data.filter(item => !item.isCleaningTime);
-    
-    // 計算每個手術的實際時間
-    let currentTime = "08:30"; // 每天的起始時間
-    
-    for (let i = 0; i < surgeriesToUpdate.length; i++) {
-      const surgery = surgeriesToUpdate[i];
+    // 遍歷所有房間，更新每個房間的手術時間
+    for (let roomIndex = 0; roomIndex < rows.length; roomIndex++) {
+      const room = rows[roomIndex];
       
-      // 更新資料
-      const updateData = {
-        operatingRoomId: targetRoom.roomId || targetRoom.room,
-        estimatedSurgeryTime: surgery.duration,
-        operatingRoomName: targetRoom.room
-      };
-      
-      // 發送更新請求
-      const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData);
-      
-      if (response.data) {
-        // 更新本地資料
-        surgery.operatingRoomName = targetRoom.room;
+      if (!room.data || room.data.length === 0) {
+        continue; // 跳過空房間
       }
       
-      // 計算下一個手術的開始時間
-      currentTime = addMinutesToTime(currentTime, surgery.duration + 45); // 加上手術時間和清潔時間
+      // 過濾出實際手術（非清潔時間）
+      const surgeries = room.data.filter(item => !item.isCleaningTime);
+      
+      // 手術室ID
+      const operatingRoomId = room.roomId || room.room;
+      
+      // 初始化開始時間為08:30
+      let currentTime = "08:30";
+      
+      // 遍歷該房間的所有手術，按顯示順序更新
+      for (let i = 0; i < surgeries.length; i++) {
+        const surgery = surgeries[i];
+        
+        // 計算實際時間
+        const surgeryStartTime = currentTime;
+        const surgeryEndTime = addMinutesToTime(currentTime, surgery.duration);
+        
+        // 準備更新資料 - 加入優先順序資訊但不強制排序
+        const updateData = {
+          operatingRoomId: operatingRoomId,
+          estimatedSurgeryTime: surgery.duration,
+          operatingRoomName: room.room,
+          prioritySequence: i + 1  // 重新加入優先順序資訊，以記錄當前UI的排序
+        };
+        
+        console.log(`更新手術 ${surgery.applicationId}，房間: ${room.room}，順序: ${i+1}`);
+        
+        // 發送更新請求
+        try {
+          const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData);
+          
+          if (response.data) {
+            // 確保本地資料與後端同步
+            surgery.operatingRoomName = room.room;
+            // 在本地數據中也保存優先順序
+            surgery.prioritySequence = i + 1;
+            // 加入到已更新的手術列表
+            updatedRooms.push({
+              applicationId: surgery.applicationId,
+              roomId: operatingRoomId,
+              prioritySequence: i + 1
+            });
+          }
+        } catch (error) {
+          console.error(`更新手術 ${surgery.applicationId} 時出錯:`, error);
+        }
+        
+        // 更新下一個手術的開始時間（當前手術結束時間 + 清潔時間）
+        currentTime = addMinutesToTime(surgeryEndTime, 45);
+      }
     }
     
-    return true;
+    return updatedRooms;
   } catch (error) {
     console.error('更新手術資訊到資料庫時發生錯誤:', error);
     throw error;

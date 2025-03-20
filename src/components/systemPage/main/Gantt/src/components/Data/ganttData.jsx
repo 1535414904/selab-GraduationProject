@@ -45,7 +45,23 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
         
         // 處理該手術房的手術
         if (surgeriesResponse.data && surgeriesResponse.data.length > 0) {
-          surgeriesResponse.data.forEach(surgery => {
+          // 根據 prioritySequence 對手術排序
+          const sortedSurgeries = [...surgeriesResponse.data].sort((a, b) => {
+            // 如果優先順序存在，按優先順序排序
+            if (a.prioritySequence && b.prioritySequence) {
+              return a.prioritySequence - b.prioritySequence;
+            }
+            // 如果 a 有優先順序而 b 沒有，a 排在前面
+            if (a.prioritySequence) return -1;
+            // 如果 b 有優先順序而 a 沒有，b 排在前面
+            if (b.prioritySequence) return 1;
+            // 如果都沒有優先順序，維持原來的順序
+            return 0;
+          });
+          
+          console.log('排序後的手術數據:', sortedSurgeries);
+          
+          sortedSurgeries.forEach(surgery => {
             // 手術項目，加入科別 specialty
             const surgeryItem = {
               id: surgery.applicationId,
@@ -68,6 +84,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
               specialOrRequirements: surgery.specialOrRequirements,
               user: surgery.user,
               specialty: surgery.specialty || "未指定科別", // 加入科別
+              prioritySequence: surgery.prioritySequence || 999 // 保存優先順序
             };
             console.log('手術項目:', surgeryItem);
             // 清潔時間項目
