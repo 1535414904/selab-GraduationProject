@@ -2,10 +2,9 @@ import React from "react";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { updateSurgeryInDatabase } from "../DragDrop/dragEndHandler";
-import { fetchSurgeryData } from "../Data/ganttData";
 
-const ConfirmScheduleButton = ({ rows, setRows }) => {
-  const confirmSaveChanges = async () => {
+const ConfirmScheduleButton = ({ rows }) => {
+  const confirmChanges = async () => {
     try {
       // 開始確認修改
       console.log('開始確認修改排班...');
@@ -14,9 +13,19 @@ const ConfirmScheduleButton = ({ rows, setRows }) => {
       
       // 遍歷每個手術房
       for (const roomIndex in rows) {
-        if (rows[roomIndex].data && rows[roomIndex].data.length > 0) {
-          // 使用更新後的 updateSurgeryInDatabase 函數更新每個手術房的數據
-          const updatePromise = updateSurgeryInDatabase(rows, parseInt(roomIndex));
+        const room = rows[roomIndex];
+        if (room.data && room.data.length > 0) {
+          // 使用 updateSurgeryInDatabase 函數更新每個手術房的數據
+          // 參數傳遞: rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex
+          // 因為是確認操作，這裡源和目標都是同一個房間
+          const updatePromise = updateSurgeryInDatabase(
+            rows, 
+            parseInt(roomIndex), 
+            parseInt(roomIndex), 
+            0, 
+            0
+          );
+          
           updatePromises.push(updatePromise);
         }
       }
@@ -24,20 +33,8 @@ const ConfirmScheduleButton = ({ rows, setRows }) => {
       // 等待所有更新完成
       await Promise.all(updatePromises);
       
-      // 重新載入最新數據以確保顯示正確的狀態
-      try {
-        // 使用 fetchSurgeryData 函數重新載入並格式化數據
-        await fetchSurgeryData(setRows, () => {}, (error) => {
-          if (error) {
-            console.error('重新載入數據時發生錯誤:', error);
-          }
-        });
-        
-        // 通知用戶更新成功
-        alert('排班已成功更新！');
-      } catch (loadError) {
-        console.error('重新載入數據時發生錯誤:', loadError);
-      }
+      // 通知用戶更新成功
+      alert('排班已成功更新！');
       
     } catch (error) {
       console.error('確認修改時發生錯誤:', error);
@@ -48,7 +45,7 @@ const ConfirmScheduleButton = ({ rows, setRows }) => {
   return (
     <button
       className="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
-      onClick={confirmSaveChanges}
+      onClick={confirmChanges}
     >
       <svg
         className="h-4 w-4 mr-2"

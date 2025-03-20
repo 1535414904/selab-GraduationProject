@@ -29,75 +29,50 @@ export const handleDragEnd = async (result, rows, setRows) => {
   return { updatedRows: newRows };
 };
 
-// 修改為更新手術室中的所有手術項目
-export const updateSurgeryInDatabase = async (rows, roomIndex) => {
+// 這個函數現在僅供 ConfirmScheduleButton 組件使用
+// 保留此函數供確認修改按鈕使用
+const updateSurgeryInDatabase = async (rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex) => {
   try {
-    if (!rows || !rows[roomIndex] || !rows[roomIndex].data) {
-      console.log('無效的手術室數據');
-      return null;
-    }
+    const targetRoomIndex = sourceRoomIndex !== destinationRoomIndex ? destinationRoomIndex : sourceRoomIndex;
+    const targetRoom = rows[targetRoomIndex];
     
-    const roomData = rows[roomIndex].data;
-    const roomName = rows[roomIndex].room;
-    const roomId = rows[roomIndex].roomId || roomName;
-    const updatePromises = [];
+    // 只處理實際手術，不處理清潔時間
+    const surgeriesToUpdate = targetRoom.data.filter(item => !item.isCleaningTime);
     
-    // 遍歷手術室中的所有項目
-    for (let i = 0; i < roomData.length; i += 2) {
-      const surgery = roomData[i];
+    // 計算每個手術的實際時間
+    let currentTime = "08:30"; // 每天的起始時間
+    
+    for (let i = 0; i < surgeriesToUpdate.length; i++) {
+      const surgery = surgeriesToUpdate[i];
       
-      // 跳過清潔時間或無效手術項目
-      if (!surgery || !surgery.applicationId || surgery.isCleaningTime) {
-        continue;
-      }
-      
-      // 計算手術持續時間（分鐘）
-      const durationMinutes = surgery.duration || calculateDuration(surgery.startTime, surgery.endTime);
-      
-      // 設置優先順序（根據在房間中的位置）
-      const prioritySequence = (i / 2) + 1;
-      
-      // 準備更新資料 - 確保格式與後端 API 期望的一致
+      // 更新資料
       const updateData = {
-        operatingRoomId: roomId,
-        operatingRoomName: roomName,
-        prioritySequence: prioritySequence,
-        estimatedSurgeryTime: parseInt(durationMinutes, 10), // 確保是整數
-        startTime: surgery.startTime,
-        endTime: surgery.endTime
+        operatingRoomId: targetRoom.roomId || targetRoom.room,
+        estimatedSurgeryTime: surgery.duration,
+        operatingRoomName: targetRoom.room
       };
       
-      console.log(`準備更新手術 ${surgery.applicationId} 的資料:`, updateData);
-      console.log(`API 端點: ${BASE_URL}/api/surgeries/${surgery.applicationId}`);
-      
       // 發送更新請求
-      const updatePromise = axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }).then(response => {
-        console.log(`已更新手術 ${surgery.applicationId} 的資訊，狀態碼:`, response.status);
-        return response.data;
-      });
+      const response = await axios.put(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, updateData);
       
-      updatePromises.push(updatePromise);
+      if (response.data) {
+        // 更新本地資料
+        surgery.operatingRoomName = targetRoom.room;
+      }
+      
+      // 計算下一個手術的開始時間
+      currentTime = addMinutesToTime(currentTime, surgery.duration + 45); // 加上手術時間和清潔時間
     }
     
-    // 等待所有更新完成
-    const results = await Promise.all(updatePromises);
-    console.log('所有手術更新完成:', results);
-    return results;
-    
+    return true;
   } catch (error) {
-    console.error(`更新手術資訊到資料庫時發生錯誤:`, error);
-    console.error(`錯誤詳情:`, error.response ? error.response.data : '無響應數據');
+    console.error('更新手術資訊到資料庫時發生錯誤:', error);
     throw error;
   }
 };
 
 const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) => {
   const roomData = newRows[roomIndex].data;
-  
   const movedItems = roomData.splice(sourceIndex, 2);
   
   let targetIndex = destinationIndex % 2 !== 0 ? destinationIndex - 1 : destinationIndex;
@@ -112,59 +87,46 @@ const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) =
 };
 
 const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceIndex, destinationIndex) => {
-  if (!newRows[sourceRoomIndex].data) {
-    newRows[sourceRoomIndex].data = [];
-  }
-  if (!newRows[destRoomIndex].data) {
-    newRows[destRoomIndex].data = [];
-  }
-
   const sourceRoomData = newRows[sourceRoomIndex].data;
   const destRoomData = newRows[destRoomIndex].data;
   
   const movedItems = sourceRoomData.splice(sourceIndex, 2);
-  const surgeryDuration = calculateDuration(movedItems[0].startTime, movedItems[0].endTime);
+  const surgeryDuration = movedItems[0].duration; // 使用預估手術時間
 
-  // 更新手術室名稱和ID - 確保使用正確的 roomId
-  const destRoomId = newRows[destRoomIndex].roomId || newRows[destRoomIndex].room;
-  const destRoomName = newRows[destRoomIndex].room;
-  
-  // 更新手術項目的手術室信息
-  movedItems[0].operatingRoomName = destRoomName;
-  movedItems[0].operatingRoomId = destRoomId;
-  
-  // 更新清潔時間項目的手術室信息
-  if (movedItems.length > 1) {
-    movedItems[1].operatingRoomName = destRoomName;
-    movedItems[1].operatingRoomId = destRoomId;
-  }
+  // 更新手術室名稱
+  movedItems[0].operatingRoomName = newRows[destRoomIndex].room;
+  movedItems[1].operatingRoomName = newRows[destRoomIndex].room;
 
+  // 更新源房間的時間
   if (sourceRoomData.length > 0) {
     updateRoomTimes(sourceRoomData);
   }
 
+  // 計算目標位置的時間
   let targetIndex = destinationIndex;
   const prevEndTime = targetIndex === 0 ? "08:30" : 
     (destRoomData.length === 0 ? "08:30" : 
     (targetIndex >= destRoomData.length ? destRoomData[destRoomData.length - 1].endTime : 
     destRoomData[targetIndex - 1].endTime));
 
+  // 更新移動項目的時間
   movedItems[0].startTime = prevEndTime;
   movedItems[0].endTime = addMinutesToTime(prevEndTime, surgeryDuration);
   movedItems[0].color = getColorByEndTime(movedItems[0].endTime, false);
   
-  if (movedItems.length > 1) {
-    movedItems[1].startTime = movedItems[0].endTime;
-    movedItems[1].endTime = addMinutesToTime(movedItems[0].endTime, 45);
-    movedItems[1].color = getColorByEndTime(movedItems[1].endTime, true);
-  }
+  // 更新清潔時間
+  movedItems[1].startTime = movedItems[0].endTime;
+  movedItems[1].endTime = addMinutesToTime(movedItems[0].endTime, 45);
+  movedItems[1].color = getCleaningColor();
 
+  // 插入移動的項目
   if (targetIndex >= destRoomData.length) {
     destRoomData.push(...movedItems);
   } else {
     destRoomData.splice(targetIndex, 0, ...movedItems);
   }
 
+  // 更新目標房間的所有時間
   updateRoomTimes(destRoomData);
 };
 
@@ -173,7 +135,7 @@ const updateRoomTimes = (roomData) => {
   
   for (let i = 0; i < roomData.length; i += 2) {
     const surgery = roomData[i];
-    const surgeryDuration = calculateDuration(surgery.startTime, surgery.endTime);
+    const surgeryDuration = surgery.duration; // 使用預估手術時間
     
     surgery.startTime = currentTime;
     surgery.endTime = addMinutesToTime(currentTime, surgeryDuration);
@@ -188,3 +150,6 @@ const updateRoomTimes = (roomData) => {
     }
   }
 };
+
+// 導出 updateSurgeryInDatabase 函數供確認修改按鈕使用
+export { updateSurgeryInDatabase };
