@@ -276,7 +276,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
           <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
           <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
           <li>點擊手術項目可查看詳細資訊</li>
-          {!readOnly && <li>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</li>}
+          {!readOnly && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
         </ul>
       </div>
     </div>
