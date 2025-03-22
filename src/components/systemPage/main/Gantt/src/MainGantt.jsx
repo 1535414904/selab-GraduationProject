@@ -24,7 +24,6 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   const [modalError, setModalError] = useState(null); // 模態視窗錯誤
   const [hasChanges, setHasChanges] = useState(false); // 是否有未保存的變更
   const [isSaving, setIsSaving] = useState(false); // 是否正在保存
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false); // 是否顯示確認對話框
 
   // 初始化數據
   useEffect(() => {
@@ -75,10 +74,19 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
         setHasChanges,
         filteredRows,
         setFilteredRows,
-        readOnly
+        readOnly,
+        hasChanges
       };
     }
-  }, [filteredRows, readOnly, mainGanttRef, setHasChanges]);
+  }, [filteredRows, readOnly, mainGanttRef, setHasChanges, hasChanges]);
+
+  // 額外監聽 hasChanges 的變化
+  useEffect(() => {
+    if (mainGanttRef && mainGanttRef.current) {
+      console.log(`hasChanges 狀態變更為: ${hasChanges}`);
+      mainGanttRef.current.hasChanges = hasChanges;
+    }
+  }, [hasChanges, mainGanttRef]);
 
   // 處理篩選結果
   const handleFilterChange = (filteredData) => {
@@ -87,167 +95,77 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   
   // 切換編輯模式
   const toggleEditMode = () => {
-    // 如果要從編輯模式切換到唯讀模式，且有未保存的變更，則顯示確認對話框
-    if (!readOnly && hasChanges) {
-      setShowConfirmDialog(true);
-      // 不要立即切換 readOnly 狀態，等待用戶在對話框中的選擇
-    } else {
-      // 否則直接切換模式
-      const newReadOnlyState = !readOnly;
-      setReadOnly(newReadOnlyState);
+    // 如果要從編輯模式切換到唯讀模式
+    if (!readOnly) {
+      console.log("切換到唯讀模式");
       
-      // 如果是從唯讀模式切換到編輯模式，重置變更狀態
-      if (readOnly) {
-        setHasChanges(false);
-      }
+      // 直接調用保存函數
+      confirmSaveChanges();
+    } else {
+      console.log("切換到編輯模式");
+      // 從唯讀模式切換到編輯模式
+      setReadOnly(false);
       
       // 立即更新 mainGanttRef
       if (mainGanttRef && mainGanttRef.current) {
-        mainGanttRef.current = {
-          ...mainGanttRef.current,
-          readOnly: newReadOnlyState,
-          hasChanges: readOnly ? false : hasChanges
-        };
+        mainGanttRef.current.readOnly = false;
       }
     }
   };
   
   // 確認保存變更
   const confirmSaveChanges = async () => {
+    console.log("開始執行保存變更...");
     setIsSaving(true);
-    let successCount = 0;
-    let errorCount = 0;
     
     try {
-      // 遍歷所有手術房，更新每個手術的資料
-      const updatePromises = [];
-      
-      for (const roomIndex in filteredRows) {
-        if (filteredRows[roomIndex].data && filteredRows[roomIndex].data.length > 0) {
-          const updatePromise = updateSurgeryInDatabase(filteredRows, parseInt(roomIndex))
-            .then(results => {
-              if (results) {
-                successCount += results.length;
-              }
-              return results;
-            })
-            .catch(error => {
-              console.error(`更新手術室 ${roomIndex} 失敗:`, error);
-              errorCount++;
-              return null;
-            });
-          
-          updatePromises.push(updatePromise);
-        }
-      }
-      
-      // 等待所有更新完成
-      await Promise.all(updatePromises);
+      console.log("準備更新資料庫，filteredRows:", filteredRows);
+      // 直接調用更新函數，一次性更新所有手術室資料
+      const results = await updateSurgeryInDatabase(filteredRows);
+      console.log("資料庫更新結果:", results);
       
       // 重新載入資料以確保顯示最新狀態
       try {
-        const response = await fetch(`${BASE_URL}/api/surgery/getAllSurgery`);
-        if (!response.ok) {
-          throw new Error('重新載入數據失敗');
-        }
-        const newData = await response.json();
+        console.log("開始重新載入最新資料...");
+        // 使用 fetchSurgeryData 函數重新載入並格式化數據
+        const formattedData = await fetchSurgeryData(setRows, setLoading, setError);
+        console.log("成功獲取並格式化新資料:", formattedData);
         
         // 更新所有相關狀態
-        setRows(newData);
-        setFilteredRows(newData);
-        setHasChanges(false);
-        setShowConfirmDialog(false);
+        setFilteredRows(formattedData);
         setReadOnly(true);
+        setHasChanges(false);
         
-        // 立即更新 mainGanttRef
+        // 更新 mainGanttRef
         if (mainGanttRef && mainGanttRef.current) {
-          mainGanttRef.current = {
-            ...mainGanttRef.current,
-            filteredRows: newData,
-            readOnly: true,
-            hasChanges: false,
-            setFilteredRows: (updatedRows) => {
-              setFilteredRows(updatedRows);
-              // 確保在更新 filteredRows 時同步更新 mainGanttRef
-              if (mainGanttRef.current) {
-                mainGanttRef.current.filteredRows = updatedRows;
-              }
-            }
-          };
+          mainGanttRef.current.filteredRows = formattedData;
+          mainGanttRef.current.readOnly = true;
+          mainGanttRef.current.hasChanges = false;
         }
         
-        // 顯示成功訊息
-        if (errorCount === 0) {
-          alert(`所有變更已成功保存到資料庫！共更新了 ${successCount} 個手術。`);
-        } else {
-          alert(`部分變更已保存到資料庫。成功: ${successCount} 個，失敗: ${errorCount} 個。`);
-        }
+        console.log("所有狀態更新完成");
+        
+        // 顯示通知
+        alert("手術排程已成功保存！");
+        
       } catch (error) {
         console.error('重新載入數據失敗:', error);
-        throw new Error('重新載入數據失敗');
+        throw error;
       }
       
     } catch (error) {
-      console.error('保存變更時發生錯誤:', error);
-      alert(`保存變更失敗: ${error.message}`);
+      console.error('保存或重新載入時發生錯誤:', error);
+      console.error('錯誤詳情:', error.response?.data || error.message);
+      alert(`保存失敗，請稍後再試。錯誤：${error.message}`);
+      return false;
     } finally {
       setIsSaving(false);
+      console.log("保存流程結束");
     }
+    
+    return true;
   };
   
-  // 取消保存變更，重新載入原始資料
-  const cancelSaveChanges = async () => {
-    setShowConfirmDialog(false);
-    
-    // 詢問用戶是否要放棄變更
-    const confirmDiscard = window.confirm('確定要放棄所有未保存的變更嗎？這將重新載入原始資料。');
-    
-    if (confirmDiscard) {
-      setLoading(true);
-      try {
-        // 首先立即重置狀態
-        setHasChanges(false);
-        setReadOnly(true);
-        
-        // 立即更新 mainGanttRef
-        if (mainGanttRef && mainGanttRef.current) {
-          mainGanttRef.current = {
-            ...mainGanttRef.current,
-            readOnly: true,
-            hasChanges: false
-          };
-        }
-        
-        // 創建一個自訂的狀態更新函數，將同時更新 rows 和 filteredRows
-        const customSetRows = (newRows) => {
-          // 更新主數據
-          setRows(newRows);
-          
-          // 直接更新過濾後的行，確保它們與 newRows 同步
-          setFilteredRows(newRows);
-          
-          // 確保 mainGanttRef 也獲得更新
-          if (mainGanttRef && mainGanttRef.current) {
-            mainGanttRef.current = {
-              ...mainGanttRef.current,
-              filteredRows: newRows,
-              readOnly: true,
-              hasChanges: false
-            };
-          }
-        };
-        
-        // 使用自訂的設置函數重新載入數據
-        await fetchSurgeryData(customSetRows, setLoading, setError);
-      } catch (error) {
-        console.error('重新載入資料失敗:', error);
-        setError('重新載入資料失敗');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   // 處理手術房釘選狀態變更
   const handleRoomPinStatusChange = (roomIndex, isPinned) => {
     if (readOnly) return; // 唯讀模式下不允許釘選
@@ -258,7 +176,16 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       isPinned: isPinned
     };
     setFilteredRows(updatedRows);
+    
+    // 設置 hasChanges 為 true
+    console.log("釘選操作 - 設置 hasChanges 為 true");
     setHasChanges(true);
+    
+    // 直接更新 mainGanttRef 中的 hasChanges
+    if (mainGanttRef && mainGanttRef.current) {
+      mainGanttRef.current.hasChanges = true;
+      console.log("釘選操作 - 已更新 mainGanttRef.current.hasChanges 為 true");
+    }
   };
   
   // 處理手術點擊事件，顯示詳細資訊
@@ -284,31 +211,6 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     setCurrentDate(formattedDate);
   }, []);
   
-  // 確保對話框顯示邏輯
-  useEffect(() => {
-    // 當有未保存的變更時，確保對話框顯示
-    if (!readOnly && hasChanges && !showConfirmDialog) {
-      const handleBeforeUnload = (e) => {
-        e.preventDefault();
-        e.returnValue = '';
-      };
-      
-      // 添加頁面離開提示
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      
-      return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-      };
-    }
-  }, [readOnly, hasChanges, showConfirmDialog]);
-
-  // 監聽 hasChanges 的變化
-  useEffect(() => {
-    if (hasChanges) {
-      console.log('檢測到未保存的變更');
-    }
-  }, [hasChanges]);
-
   // 如果數據尚未載入，顯示載入中
   if (loading) {
     return (
@@ -374,54 +276,10 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
           <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
           <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
           <li>點擊手術項目可查看詳細資訊</li>
-          {!readOnly && <li>完成修改後，點擊「關閉移動修改」按鈕時可選擇保存變更</li>}
+          {!readOnly && <li>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</li>}
         </ul>
       </div>
     </div>
-
-      {/* 確認對話框 - 調整樣式確保它始終顯示在最上層 */}
-      {showConfirmDialog && (
-        <div className="confirm-dialog-overlay" style={{ zIndex: 9999 }}>
-          <div className="confirm-dialog">
-            <h3 className="confirm-dialog-title">保存變更</h3>
-            <p className="confirm-dialog-message">您有未保存的變更，是否要保存到資料庫？</p>
-            <div className="confirm-dialog-buttons">
-              <button 
-                className="confirm-dialog-button confirm-dialog-save" 
-                onClick={confirmSaveChanges}
-                disabled={isSaving}
-              >
-                {isSaving ? '保存中...' : '保存變更'}
-              </button>
-              <button 
-                className="confirm-dialog-button confirm-dialog-discard" 
-                onClick={cancelSaveChanges}
-                disabled={isSaving}
-              >
-                放棄變更
-              </button>
-              <button 
-                className="confirm-dialog-button confirm-dialog-cancel" 
-                onClick={() => {
-                  setShowConfirmDialog(false);
-                  // 取消時恢復到編輯模式
-                  setReadOnly(false);
-                  // 同步更新 mainGanttRef
-                  if (mainGanttRef && mainGanttRef.current) {
-                    mainGanttRef.current = {
-                      ...mainGanttRef.current,
-                      readOnly: false
-                    };
-                  }
-                }}
-                disabled={isSaving}
-              >
-                取消
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ✅ 篩選器放在提示下方 */}
       <GanttFilter 

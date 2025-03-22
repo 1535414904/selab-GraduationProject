@@ -57,19 +57,13 @@
 
 /* 手術室計數器 */
 .gantt-room-count {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .gantt-room-count {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: #eff6ff;
-    color: #1d4ed8;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-  }
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
 }
 
 .gantt-icon {
@@ -129,7 +123,7 @@
   margin-top: 1rem;
 }
 
-/* 移除重複的 .scroll-container 定義，合併為單一定義 */
+/* 滾動容器 */
 .scroll-container {
   overflow: auto;
   width: 100%;
@@ -392,8 +386,6 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
 }
-
-
 
 /* 時間軸容器 */
 .time-wrapper-container {

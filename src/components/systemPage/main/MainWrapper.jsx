@@ -65,19 +65,22 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
             setFilteredRows(newRows);
             console.log("已更新rows和filteredRows");
             
-            // 更新 mainGanttRef 中的所有相關狀態
+            // 使用直接修改而不是替換，保留其他屬性
             if (mainGanttRef.current) {
-              mainGanttRef.current = {
-                ...mainGanttRef.current,
-                filteredRows: newRows,
-                hasChanges: true
-              };
+              mainGanttRef.current.filteredRows = newRows;
             }
             
-            // 標記有未保存的變更
-            if (setHasChanges) {
+            // 強制設置 hasChanges 為 true
+            console.log("拖曳完成 - 強制設置 hasChanges 為 true");
+            if (typeof setHasChanges === 'function') {
               setHasChanges(true);
-              console.log("已標記有未保存的變更");
+              console.log("已通過 setHasChanges 函數設置為 true");
+            }
+            
+            // 同時直接修改 mainGanttRef 中的 hasChanges
+            if (mainGanttRef.current) {
+              mainGanttRef.current.hasChanges = true;
+              console.log("已直接設置 mainGanttRef.current.hasChanges 為 true");
             }
           }
           
