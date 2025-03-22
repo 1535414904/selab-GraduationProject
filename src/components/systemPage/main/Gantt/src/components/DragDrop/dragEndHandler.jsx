@@ -2,6 +2,7 @@ import axios from 'axios';
 import { calculateDuration, addMinutesToTime } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
+import { getTimeSettings } from '../Time/timeUtils';
 
 // 修改：移除立即更新後端的邏輯，只更新前端界面
 export const handleDragEnd = async (result, rows, setRows) => {
@@ -187,7 +188,13 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
 };
 
 const updateRoomTimes = (roomData) => {
-  let currentTime = "08:30";
+  // 從時間設定中獲取起始時間和清潔時間
+  const timeSettings = getTimeSettings();
+  const startHour = Math.floor(timeSettings.surgeryStartTime / 60);
+  const startMinute = timeSettings.surgeryStartTime % 60;
+  const initialTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+  
+  let currentTime = initialTime;
   
   for (let i = 0; i < roomData.length; i += 2) {
     const surgery = roomData[i];
@@ -200,7 +207,7 @@ const updateRoomTimes = (roomData) => {
     if (i + 1 < roomData.length) {
       const cleaning = roomData[i + 1];
       cleaning.startTime = surgery.endTime;
-      cleaning.endTime = addMinutesToTime(surgery.endTime, 45);
+      cleaning.endTime = addMinutesToTime(surgery.endTime, timeSettings.cleaningTime);
       cleaning.color = getCleaningColor();
       currentTime = cleaning.endTime;
     }

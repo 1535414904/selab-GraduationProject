@@ -33,6 +33,21 @@ const ConfirmScheduleButton = ({ rows }) => {
       // 等待所有更新完成
       await Promise.all(updatePromises);
       
+      // 重新載入時間設定（如果有的話）
+      const timeSettingsStr = localStorage.getItem("ganttTimeSettings");
+      if (timeSettingsStr) {
+        try {
+          // 讀取並重新保存時間設定，觸發更新
+          const settings = JSON.parse(timeSettingsStr);
+          localStorage.setItem("ganttTimeSettings", JSON.stringify(settings));
+          
+          // 強制重新整理頁面，確保所有組件都重新載入時間設定
+          window.location.reload();
+        } catch (error) {
+          console.error('重新載入時間設定時發生錯誤:', error);
+        }
+      }
+      
       // 通知用戶更新成功
       alert('排班已成功更新！');
       

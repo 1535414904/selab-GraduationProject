@@ -119,7 +119,7 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
         style={{
           width: width,
           height: fixedHeight,
-          opacity: isDragging || isOver24Hours ? 0.7 : 1,
+          opacity: isDragging || isOver24Hours ? 0.4 : 1,
           cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",
           alignSelf: "flex-start",

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { addMinutesToTime } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
+import { getTimeSettings } from '../Time/timeUtils';
 
 export const fetchSurgeryData = async (setRows, setLoading, setError) => {
   setLoading(true);
@@ -133,10 +134,16 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
 // 格式化手術房數據，計算時間和顏色
 export const formatRoomData = (roomsWithSurgeries) => {
   try {
+    // 從時間設定中獲取起始時間和清潔時間
+    const timeSettings = getTimeSettings();
+    const startHour = Math.floor(timeSettings.surgeryStartTime / 60);
+    const startMinute = timeSettings.surgeryStartTime % 60;
+    const initialTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+    
     // 計算時間和顏色
     roomsWithSurgeries.forEach(room => {
       if (room.data && room.data.length > 0) {
-        let currentTime = "08:30";
+        let currentTime = initialTime;
         
         room.data.forEach((item) => {
           item.startTime = currentTime;
@@ -145,6 +152,12 @@ export const formatRoomData = (roomsWithSurgeries) => {
           item.color = item.isCleaningTime 
             ? getCleaningColor() 
             : getColorByEndTime(item.endTime, false);
+          
+          // 使用設定中的清潔時間
+          if (item.isCleaningTime) {
+            item.duration = timeSettings.cleaningTime;
+            item.endTime = addMinutesToTime(item.startTime, timeSettings.cleaningTime);
+          }
           
           currentTime = item.endTime;
         });

@@ -740,3 +740,184 @@ body {
 .confirm-dialog-cancel:hover {
   background-color: #e5e7eb;
 }
+
+/* 特殊時間標記樣式 */
+.regular-end-mark {
+  border-left: 2px dashed #e74c3c !important;
+  z-index: 10;
+}
+
+.overtime-end-mark {
+  border-left: 2px dashed #8e44ad !important;
+  z-index: 10;
+}
+
+.time-mark-special {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.regular-end {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.overtime-end {
+  background-color: rgba(142, 68, 173, 0.1);
+  color: #8e44ad;
+  border: 1px solid #8e44ad;
+}
+
+/* 時間設定頁面樣式 */
+.time-settings-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.time-settings-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.time-settings-form {
+  display: grid;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.time-settings-item {
+  display: grid;
+  grid-template-columns: 150px 200px auto;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  text-align: center;
+}
+
+.time-settings-item label {
+  font-weight: 500;
+  text-align: right;
+}
+
+.time-input, .number-input {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.time-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.time-settings-explanation {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border-left: 4px solid #2563eb;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.time-settings-explanation p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.time-settings-explanation ul {
+  padding-left: 0;
+  list-style-position: inside;
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.time-settings-explanation li {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  text-align: center;
+  list-style: none;
+}
+
+.apply-settings-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.apply-settings-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  margin: 0 auto;
+  display: block;
+}
+
+.apply-settings-button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 時間設定頁籤樣式 */
+.gantt-tabs {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gantt-tab-list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gantt-tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.gantt-tab:hover {
+  color: #2563eb;
+}
+
+.gantt-tab-active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.gantt-tab-panel {
+  padding: 20px 0;
+}
+
+/* 隱藏非激活的頁籤面板 */
+.gantt-tab-panel-hidden {
+  display: none;
+}
