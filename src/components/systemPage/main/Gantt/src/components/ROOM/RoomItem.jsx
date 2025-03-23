@@ -100,7 +100,8 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
     }
   };
 
-  const width = calculateWidth(item.startTime, item.endTime).width;
+  const width = calculateWidth(item.startTime, item.endTime, true).width;
+  const left = calculateWidth(item.startTime, item.endTime, true).left;
 
   const formatDisplayTime = (time) => {
     const [hours, minutes] = time.split(":").map(Number);
@@ -119,6 +120,7 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
         style={{
           width: width,
           height: fixedHeight,
+          left: left,
           opacity: isDragging || isOver24Hours ? 0.4 : 1,
           cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",

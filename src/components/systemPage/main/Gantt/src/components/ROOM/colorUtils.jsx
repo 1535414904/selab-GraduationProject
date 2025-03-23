@@ -6,32 +6,17 @@ export const COLORS = {
     BLUE: "#362de9"     // 對應 CSS 中的 .item.blue
   };
   
-  // 從 localStorage 獲取時間設定，如果不存在則使用預設值
-  const getTimeSettings = () => {
-    const defaultSettings = {
-      surgeryStartTime: 510,  // 預設值 510 分鐘 = 8:30 AM (從00:00開始計算)
-      regularEndTime: 1050,   // 預設值 1050 分鐘 = 17:30 PM (從00:00開始計算)
-      overtimeEndTime: 1200,  // 預設值 1200 分鐘 = 20:00 PM (從00:00開始計算)
-      cleaningTime: 45,       // 預設值 45 分鐘
-    };
-    
-    try {
-      const savedSettings = localStorage.getItem("ganttTimeSettings");
-      return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-    } catch (error) {
-      console.error("獲取時間設定時發生錯誤：", error);
-      return defaultSettings;
-    }
-  };
+  // 從時間設定獲取設定，如果不存在則使用預設值
+  import { getTimeSettings } from '../Time/timeUtils';
   
   // 根據手術結束時間判斷顏色
-  export const getColorByEndTime = (endTime, isCleaningTime) => {
+  export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = false) => {
     if (isCleaningTime) {
       return "blue";
     }
     
-    // 獲取當前的時間設定
-    const timeSettings = getTimeSettings();
+    // 獲取當前的時間設定，指定是否使用臨時設定
+    const timeSettings = getTimeSettings(useTempSettings);
     
     const [hours, minutes] = endTime.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes;
@@ -60,6 +45,6 @@ export const COLORS = {
       case "blue":
         return COLORS.BLUE;
       default:
-        return COLORS.GREEN;
+        return "#999999"; // 預設灰色
     }
   };

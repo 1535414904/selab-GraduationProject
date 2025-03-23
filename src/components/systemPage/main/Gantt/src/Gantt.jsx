@@ -10,6 +10,7 @@ import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
+import { clearTempTimeSettings } from "./components/Time/timeUtils";
 
 // 排班管理專用的甘特圖組件
 function Gantt({ rows, setRows }) {
@@ -238,12 +239,12 @@ function Gantt({ rows, setRows }) {
 
       {/* 時間設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
-        <TimeSettings onTimeSettingsChange={(newSettings) => {
+        <TimeSettings onTimeSettingsChange={(newSettings, isPreview) => {
           // 重新格式化所有手術房的數據
           const updatedRows = formatRoomData([...rows].map(room => ({
             ...room,
             data: room.data ? [...room.data] : []
-          })));
+          })), isPreview); // 傳遞 isPreview 參數
           
           // 強制觸發重新渲染
           setRows([]);

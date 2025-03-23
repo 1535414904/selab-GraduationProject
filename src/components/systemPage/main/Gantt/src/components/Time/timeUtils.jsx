@@ -14,14 +14,32 @@ export const calculateDuration = (startTime, endTime) => {
     return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
   };
   
+  // 用於暫存排班管理頁面的時間設定
+  let tempTimeSettings = null;
+  
+  // 設置臨時時間設定（用於預覽）
+  export const setTempTimeSettings = (settings) => {
+    tempTimeSettings = settings;
+  };
+  
+  // 清除臨時時間設定
+  export const clearTempTimeSettings = () => {
+    tempTimeSettings = null;
+  };
+  
   // 從 localStorage 獲取時間設定，如果不存在則使用預設值
-  export const getTimeSettings = () => {
+  export const getTimeSettings = (useTempSettings = false) => {
     const defaultSettings = {
       surgeryStartTime: 510, // 預設值 510 分鐘 = 8:30 AM (從00:00開始計算)
       regularEndTime: 1050,  // 預設值 1050 分鐘 = 17:30 PM (從00:00開始計算)
       overtimeEndTime: 1200, // 預設值 1200 分鐘 = 20:00 PM (從00:00開始計算)
       cleaningTime: 45,      // 預設值 45 分鐘
     };
+    
+    // 如果是排班管理頁面且有臨時設定，則使用臨時設定
+    if (useTempSettings && tempTimeSettings) {
+      return tempTimeSettings;
+    }
     
     try {
       const savedSettings = localStorage.getItem("ganttTimeSettings");

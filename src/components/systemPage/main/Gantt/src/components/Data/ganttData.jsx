@@ -132,10 +132,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
 };
 
 // 格式化手術房數據，計算時間和顏色
-export const formatRoomData = (roomsWithSurgeries) => {
+export const formatRoomData = (roomsWithSurgeries, useTempSettings = false) => {
   try {
-    // 從時間設定中獲取起始時間和清潔時間
-    const timeSettings = getTimeSettings();
+    // 從時間設定中獲取起始時間和清潔時間，指定是否使用臨時設定
+    const timeSettings = getTimeSettings(useTempSettings);
     const startHour = Math.floor(timeSettings.surgeryStartTime / 60);
     const startMinute = timeSettings.surgeryStartTime % 60;
     const initialTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
@@ -151,7 +151,7 @@ export const formatRoomData = (roomsWithSurgeries) => {
           
           item.color = item.isCleaningTime 
             ? getCleaningColor() 
-            : getColorByEndTime(item.endTime, false);
+            : getColorByEndTime(item.endTime, false, useTempSettings);
           
           // 使用設定中的清潔時間
           if (item.isCleaningTime) {

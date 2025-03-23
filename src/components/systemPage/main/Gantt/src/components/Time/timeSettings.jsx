@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
+import { setTempTimeSettings, clearTempTimeSettings } from "./timeUtils";
 
 const TimeSettings = ({ onTimeSettingsChange }) => {
   // 定義時間設定的狀態
@@ -22,6 +23,11 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
         console.error("解析時間設定時出錯：", error);
       }
     }
+    
+    // 組件卸載時清除臨時設定
+    return () => {
+      clearTempTimeSettings();
+    };
   }, []);
 
   // 轉換分鐘為時間格式 (HH:MM)
@@ -64,14 +70,14 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
     setTimeSettings(updatedSettings);
   };
   
-  // 試排確認
+  // 試排確認 - 僅使用臨時設定預覽
   const applySettings = () => {
-    // 儲存設定到 localStorage
-    localStorage.setItem("ganttTimeSettings", JSON.stringify(timeSettings));
+    // 設置臨時設定，但不保存到 localStorage
+    setTempTimeSettings(timeSettings);
     
     // 如果有傳入回調函數，則調用它
     if (onTimeSettingsChange) {
-      onTimeSettingsChange(timeSettings);
+      onTimeSettingsChange(timeSettings, true); // 傳遞第二個參數表示這是臨時預覽
     }
     
     // 顯示確認訊息
