@@ -100,8 +100,8 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
     }
   };
 
-  const width = calculateWidth(item.startTime, item.endTime, true).width;
-  const left = calculateWidth(item.startTime, item.endTime, true).left;
+  // 使用臨時設定計算寬度和位置 (useTempSettings = true)
+  const { width, left } = calculateWidth(item.startTime, item.endTime, true);
 
   const formatDisplayTime = (time) => {
     const [hours, minutes] = time.split(":").map(Number);
@@ -118,9 +118,9 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
           isDragging ? "bg-orange-400 opacity-50" : ""
         } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
         style={{
-          width: width,
+          width, // 從計算結果中獲取寬度
           height: fixedHeight,
-          left: left,
+          left, // 從計算結果中獲取左側位置
           opacity: isDragging || isOver24Hours ? 0.4 : 1,
           cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",

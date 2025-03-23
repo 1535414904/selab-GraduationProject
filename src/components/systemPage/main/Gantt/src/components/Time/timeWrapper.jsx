@@ -1,8 +1,43 @@
-import React, { useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
+import { getTimeSettings } from './timeUtils';
 
-const TimeWrapper = ({ children }) => {
-  const startTime = 8 * 60 + 30; // 8:30 converted to minutes
-  const endTime = 32 * 60; // 擴展到凌晨8:00 (24:00 + 8:00)
+const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
+  // 新增時間設定狀態
+  const [timeSettings, setTimeSettings] = useState({
+    surgeryStartTime: 510, // 預設值 510 分鐘 = 8:30 AM (從00:00開始計算)
+    regularEndTime: 1050,  // 預設值 1050 分鐘 = 17:30 PM (從00:00開始計算)
+    overtimeEndTime: 1200, // 預設值 1200 分鐘 = 20:00 PM (從00:00開始計算)
+    cleaningTime: 45,      // 預設值 45 分鐘
+  });
+
+  // 從時間設定中獲取設定
+  const updateTimeSettings = useCallback(() => {
+    // 使用臨時設定（排班管理頁面）或正式設定（主頁）
+    const settings = getTimeSettings(useTempSettings);
+    setTimeSettings(settings);
+  }, [useTempSettings]);
+
+  // 初始化時載入設定
+  useEffect(() => {
+    updateTimeSettings();
+  }, [updateTimeSettings]);
+
+  // 監聽 localStorage 變更
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "ganttTimeSettings") {
+        updateTimeSettings();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [updateTimeSettings]);
+  
+  // 將時間設定轉換為分鐘
+  const startTime = timeSettings.surgeryStartTime; // 手術開始時間
+  const endTime = 32 * 60; // 擴展到凌晨8:00 (24:00 + 8:00)，保留不變
+
   const wrapperRef = useRef(null);
   const timeScaleRef = useRef(null);
   const contentRef = useRef(null);

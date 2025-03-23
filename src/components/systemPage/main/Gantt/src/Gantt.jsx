@@ -204,7 +204,7 @@ function Gantt({ rows, setRows }) {
           <div className="gantt-content">
             <div ref={scrollContainerRef} className="scroll-container">
               <div ref={timeScaleRef} className="gantt-timescale-container">
-                <TimeWrapper containerWidth={containerWidth}>
+                <TimeWrapper containerWidth={containerWidth} useTempSettings={true}>
                   <div ref={ganttChartRef} className="gantt-chart-container">
                     <div className="gantt-chart">
                       {filteredRows.map((room, roomIndex) => (

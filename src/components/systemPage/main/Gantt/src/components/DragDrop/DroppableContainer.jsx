@@ -5,6 +5,12 @@ import RoomItem from "../ROOM/RoomItem";
 function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = false, onSurgeryClick }) {
   const fixedHeight = "60px";
 
+  // 確保每個項目都有唯一的 ID
+  const ensureUniqueId = (item, index) => {
+    // 如果項目已經有 ID，則使用它，否則使用索引作為 ID
+    return item.id || `generated-id-${roomIndex}-${index}`;
+  };
+
   // 如果是只讀模式，直接渲染不可拖動的內容
   if (readOnly) {
     return (
@@ -34,7 +40,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
 
           return (
             <div
-              key={`${surgery.id}-${itemIndex}`}
+              key={`${ensureUniqueId(surgery, itemIndex)}-${itemIndex}`}
               style={{
                 display: "flex",
                 height: fixedHeight,
@@ -117,11 +123,15 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
             }
 
             if (!surgery) return null;
+            
+            // 為拖曳項目生成唯一 ID
+            const draggableId = `draggable-${roomIndex}-${index}`;
+            const surgeryId = ensureUniqueId(surgery, itemIndex);
 
             return (
               <Draggable
-                key={`${surgery.id}-${itemIndex}`}
-                draggableId={`draggable-${roomIndex}-${itemIndex}`}
+                key={draggableId}
+                draggableId={draggableId}
                 index={index}
                 isDragDisabled={isPinned}
               >
@@ -141,7 +151,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                     }}
                   >
                     <RoomItem
-                      item={surgery}
+                      item={{...surgery, id: surgeryId}}
                       itemIndex={itemIndex}
                       roomIndex={roomIndex}
                       fixedHeight={fixedHeight}
@@ -152,7 +162,7 @@ function DroppableContainer({ room, roomIndex, isPinned, roomName, readOnly = fa
                     />
                     {cleaning && (
                       <RoomItem
-                        item={cleaning}
+                        item={{...cleaning, id: ensureUniqueId(cleaning, itemIndex + 1)}}
                         itemIndex={itemIndex + 1}
                         roomIndex={roomIndex}
                         fixedHeight={fixedHeight}
