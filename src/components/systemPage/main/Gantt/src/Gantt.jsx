@@ -188,7 +188,7 @@ function Gantt({ rows, setRows }) {
             <p className="gantt-tips-title">使用提示</p>
             <ul className="gantt-tips-list">
               <li>可以橫向滾動查看不同時間段的排程</li>
-              <li>點擊「確認修改」按鈕可將當前排程更新到系統中</li>
+              <li>點擊「更新主頁」按鈕可將當前排程更新到主頁中</li>
               <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
               <li>點擊「時間設定」頁籤可調整手術排程相關的時間參數</li>
             </ul>
