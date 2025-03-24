@@ -11,6 +11,7 @@ import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { clearTempTimeSettings } from "./components/Time/timeUtils";
+import ORSMButton from "./components/Time/ORSMButton";
 
 // 排班管理專用的甘特圖組件
 function Gantt({ rows, setRows }) {
@@ -145,6 +146,7 @@ function Gantt({ rows, setRows }) {
           </div>
           
           <ConfirmScheduleButton rows={filteredRows} setRows={setRows} />
+          <ORSMButton />
         </div>
       </div>
 
