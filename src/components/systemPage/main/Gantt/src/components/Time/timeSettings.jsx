@@ -154,7 +154,9 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
           <li>清潔時間：每次手術後的清潔時間 (預設 45 分鐘)</li>
         </ul>
         <p style={{ marginTop: '10px', color: '#e74c3c', fontWeight: '500' }}>
-          變更設定後，請點擊「試排確認」按鈕預覽變更。確認無誤後，點擊「確認修改」按鈕保存變更。
+          變更設定後，請點擊「試排確認」按鈕預覽變更。</p>
+        <p style={{ marginTop: '10px', color: '#e74c3c', fontWeight: '500' }}>
+          確認無誤後，點擊「更新主頁」按鈕保存變更。
         </p>
       </div>
     </div>
