@@ -32,6 +32,9 @@ export const handleDragEnd = async (result, rows, setRows) => {
   setRows(newRows);
   console.log("前端界面更新完成，標記有未保存的變更");
   
+  // 觸發自定義事件，通知TimeWrapper組件重新渲染
+  window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+  
   // 返回更新後的行數據和變更狀態
   return {
     updatedRows: newRows,

@@ -164,6 +164,11 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false) => {
       }
     });
 
+    // 觸發自定義事件，通知TimeWrapper組件重新渲染
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('cleaningTimeChange'));
+    }, 0);
+
     return roomsWithSurgeries;
   } catch (error) {
     console.error('數據格式化錯誤:', error);

@@ -9,12 +9,17 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     overtimeEndTime: 1200, // 預設值 1200 分鐘 = 20:00 PM (從00:00開始計算)
     cleaningTime: 45,      // 預設值 45 分鐘
   });
+  
+  // 為了解決拖曳後甘特圖顯示偏差問題，新增一個key來強制重新渲染
+  const [renderKey, setRenderKey] = useState(0);
 
   // 從時間設定中獲取設定
   const updateTimeSettings = useCallback(() => {
     // 使用臨時設定（排班管理頁面）或正式設定（主頁）
     const settings = getTimeSettings(useTempSettings);
     setTimeSettings(settings);
+    // 強制重新渲染時間軸和內容
+    setRenderKey(prevKey => prevKey + 1);
   }, [useTempSettings]);
 
   // 初始化時載入設定
@@ -31,7 +36,20 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    // 新增：額外監聽拖曳和清潔時間變更的自定義事件
+    const handleDragOrCleaningChange = () => {
+      updateTimeSettings();
+    };
+    
+    window.addEventListener('ganttDragEnd', handleDragOrCleaningChange);
+    window.addEventListener('cleaningTimeChange', handleDragOrCleaningChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('ganttDragEnd', handleDragOrCleaningChange);
+      window.removeEventListener('cleaningTimeChange', handleDragOrCleaningChange);
+    };
   }, [updateTimeSettings]);
   
   // 將時間設定轉換為分鐘
@@ -127,7 +145,7 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   const totalWidth = totalIntervals * pixelsPer15Minutes;
 
   return (
-    <div className="time-wrapper-container" ref={wrapperRef}>
+    <div className="time-wrapper-container" ref={wrapperRef} key={renderKey}>
       <div className="time-scale-header">
         <div className="scrollable-container">
           <div

@@ -94,6 +94,19 @@ function Gantt({ rows, setRows }) {
     setFilteredRows(filteredData);
   };
   
+  // 處理拖拽結束事件，確保UI更新
+  const onDragEndHandler = async (result) => {
+    if (!result.destination) return;
+    
+    console.log("排班管理甘特圖拖曳結束，更新界面");
+    
+    // 處理拖曳結束
+    await handleDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 確保UI更新
+    window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+  };
+  
   // 處理頁籤切換
   const handleTabChange = (tab) => {
     setActiveTab(tab);

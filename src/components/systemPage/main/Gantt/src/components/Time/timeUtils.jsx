@@ -20,6 +20,9 @@ export const calculateDuration = (startTime, endTime) => {
   // 設置臨時時間設定（用於預覽）
   export const setTempTimeSettings = (settings) => {
     tempTimeSettings = settings;
+    
+    // 觸發自定義事件，當清潔時間改變時通知TimeWrapper組件重新渲染
+    window.dispatchEvent(new CustomEvent('cleaningTimeChange'));
   };
   
   // 清除臨時時間設定

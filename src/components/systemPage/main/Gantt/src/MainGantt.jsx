@@ -194,6 +194,29 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     setModalError(null);
   };
   
+  // 處理拖拽結束事件，需要確保UI更新
+  const onDragEndHandler = async (result) => {
+    if (!result.destination || readOnly) return;
+    
+    console.log("主頁甘特圖拖曳結束，更新界面");
+    
+    // 處理拖曳結束
+    const { updatedRows, hasChanges: dragHasChanges } = await handleDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 確保UI更新
+    window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+    
+    if (dragHasChanges) {
+      console.log("拖曳操作產生變更，更新 hasChanges 狀態");
+      setHasChanges(true);
+      
+      // 確保 mainGanttRef 更新
+      if (mainGanttRef && mainGanttRef.current) {
+        mainGanttRef.current.hasChanges = true;
+      }
+    }
+  };
+  
   // 關閉模態視窗
   const handleCloseModal = () => {
     setSelectedSurgery(null);
