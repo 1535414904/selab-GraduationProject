@@ -29,7 +29,7 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
     <div className="relative" ref={dropdownRef}>
       {/* 用戶按鈕 */}
       <button
-        className={`flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${isListOpen ? "bg-white text-blue-700" : "text-white hover:bg-blue-600"
+        className={`cursor-pointer flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${isListOpen ? "bg-white text-blue-700" : "text-white hover:bg-blue-600"
           } transition-all duration-300`}
         onClick={toggleMenu}
       >
@@ -59,7 +59,7 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
           </div>
 
           <button
-            className="flex items-center w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+            className="cursor-pointer flex items-center w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
             onClick={() => {
               toggleMainPage("userProfile");
               setListOpen(false);
@@ -98,7 +98,7 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
           </button>
 
           <button
-            className="flex items-center w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
+            className="cursor-pointer flex items-center w-full text-left px-4 py-2 text-lg text-gray-700 hover:bg-gray-100"
             onClick={() => fullTogglePage("loginPage")}
           >
             <div className="flex items-center">
