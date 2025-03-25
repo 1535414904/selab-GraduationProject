@@ -312,7 +312,7 @@ function Gantt({ rows, setRows }) {
     
     console.log("排班管理甘特圖拖曳結束，更新界面");
     
-    // 處理拖曳結束（包含群組拖曳的處理）
+    // 處理拖曳結束
     await handleDragEnd(result, filteredRows, setFilteredRows);
     
     // 確保UI更新
