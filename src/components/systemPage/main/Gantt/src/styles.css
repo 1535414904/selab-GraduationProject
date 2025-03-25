@@ -349,22 +349,45 @@
   margin-left: 0.5rem;
 }
 
-/* 篩選切換按鈕 */
+/* 篩選切換按鈕 
 .filter-toggle-btn {
   position: absolute;
-  right: -4rem; /* -64px */
+  right: -4rem; 
+  margin-top: 55rem;
   background-color: #2563eb;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 0 0.375rem 0.375rem 0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  height: 3.5rem; /* 56px */
+  height: 3.5rem; 
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   cursor: pointer;
+  bottom: 1rem 0;
+}*/
+
+.filter-toggle-btn {
+  position: fixed;
+  right: -4rem; /* 保持原本往右偏 */
+  bottom: 1rem; /* 貼近視窗底部 */
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  z-index: 999;
 }
+
+
 
 /* 統一滾動容器樣式 */
 .scrollable-container {
@@ -535,7 +558,7 @@ body {
 }
 .filter-toggle-btn {
   position: absolute; /* 固定定位 */
-  top: 5px; /* 往上移 */
+  /*top: 5px;  往上移 */
   background-color: #2563eb; /* 保持藍色 */
   color: white;
   padding: 8px 12px;

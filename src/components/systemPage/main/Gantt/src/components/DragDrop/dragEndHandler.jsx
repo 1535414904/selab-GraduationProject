@@ -4,12 +4,14 @@ import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 import { getTimeSettings } from '../Time/timeUtils';
 
-// 修改：移除立即更新後端的邏輯，只更新前端界面
+
+// 修改：處理拖曳結束，增加對群組的處理
 export const handleDragEnd = async (result, rows, setRows) => {
   console.log("開始處理拖曳結束事件");
   const { source, destination } = result;
   if (!destination) return null;
 
+  
   const sourceRoomIndex = parseInt(source.droppableId.split("-")[1], 10);
   const destinationRoomIndex = parseInt(destination.droppableId.split("-")[1], 10);
   
