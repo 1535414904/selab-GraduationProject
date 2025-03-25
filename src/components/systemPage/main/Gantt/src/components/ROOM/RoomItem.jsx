@@ -5,7 +5,19 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly = false, onSurgeryClick }) {
+function RoomItem({ 
+  item, 
+  fixedHeight, 
+  isDragging, 
+  isPinned, 
+  roomName, 
+  readOnly = false, 
+  onSurgeryClick,
+  isSelected = false,
+  isGroupMode = false,
+  isUngroupMode = false,
+  isMainPage = false
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [surgeryDetails, setSurgeryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,6 +28,27 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
     // 如果是正在拖曳中，不處理點擊
     if (isDragging) {
       e.preventDefault();
+      return;
+    }
+    
+    // 如果是解除模式且是群組項目，則呼叫解除函數
+    if (isUngroupMode && item.isGroup) {
+      if (onSurgeryClick) {
+        onSurgeryClick(item);
+      }
+      return;
+    }
+    
+    // 如果是群組模式，則直接呼叫選擇函數（忽略清潔時間項目）
+    if (isGroupMode) {
+      // 在群組模式下，清潔時間項目不可選
+      if (item.isCleaningTime) {
+        return;
+      }
+      
+      if (onSurgeryClick) {
+        onSurgeryClick(item);
+      }
       return;
     }
     
@@ -86,6 +119,10 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
 
   // Determine which color class to use
   const colorClass = () => {
+    if (isSelected) {
+      return "bg-blue-200 border-blue-500";
+    }
+    
     switch (item.color) {
       case "green":
         return readOnly ? "bg-green-400" : "bg-green-400 hover:bg-green-300";
@@ -106,37 +143,75 @@ function RoomItem({ item, fixedHeight, isDragging, isPinned, roomName, readOnly 
   const formatDisplayTime = (time) => {
     const [hours, minutes] = time.split(":").map(Number);
     if (hours >= 24) {
-      return `${String(hours - 24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      return `${String(hours - 24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}(+1)`;
     }
     return time;
+  };
+
+  // 根據模式獲取樣式
+  const getInteractionStyle = () => {
+    // 解除模式，只有群組可點擊
+    if (isUngroupMode) {
+      return item.isGroup 
+        ? { cursor: 'pointer', border: '2px solid #EF4444', borderRadius: '0.5rem' }
+        : { cursor: 'default' };
+    }
+    
+    // 群組模式，非清潔時間可點擊
+    if (isGroupMode && !item.isCleaningTime) {
+      return {
+        cursor: 'pointer',
+        border: isSelected ? '2px solid #3B82F6' : '2px solid #d1d5db',
+        borderRadius: '0.5rem'
+      };
+    }
+    
+    return {};
   };
 
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 border-2 ${isPinned ? 'border-red-300' : 'border-gray-300'} rounded-2xl ${colorClass()} ${
+        className={`flex flex-col justify-center items-center text-xs p-1 ${isSelected ? 'border-2 border-blue-500' : 'border-2 border-gray-300'} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${isPinned || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (isPinned ? 'cursor-not-allowed' : item.isCleaningTime ? 'cursor-move' : 'cursor-pointer')} relative`}
+        } transform transition-transform duration-100 ${(!isMainPage && isPinned) || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (!isMainPage && isPinned ? 'cursor-not-allowed' : (isUngroupMode && item.isGroup) ? 'cursor-pointer' : isGroupMode ? 'cursor-pointer' : (item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'))} relative`}
         style={{
-          width, // 從計算結果中獲取寬度
+          width,
           height: fixedHeight,
-          left, // 從計算結果中獲取左側位置
+          left,
           opacity: isDragging || isOver24Hours ? 0.4 : 1,
-          cursor: readOnly ? 'default' : (loading ? 'wait' : (isPinned ? "not-allowed" : (item.isCleaningTime ? "move" : "pointer"))),
+          cursor: readOnly ? 'default' : (loading ? 'wait' : (!isMainPage && isPinned ? "not-allowed" : (isUngroupMode && item.isGroup) ? 'pointer' : (isGroupMode ? 'pointer' : (item.isCleaningTime ? "move" : "pointer")))),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
           zIndex: isDragging ? 10000 : (item.isCleaningTime ? 1 : 2),
-          pointerEvents: "auto", // 允許點擊，即使在唯讀模式下
+          pointerEvents: "auto",
           transform: isDragging ? "scale(1.02)" : "none",
           transformOrigin: "center",
-          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : "none",
+          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : (isSelected ? "0 0 0 2px #3B82F6" : "none"),
+          ...getInteractionStyle()
         }}
         onClick={handleClick}
       >
-        {isPinned && !readOnly && (
+        {!isMainPage && isPinned && !readOnly && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-10 rounded-xl"></div>
+          </div>
+        )}
+        
+        {/* 解除模式下的群組標記 */}
+        {isUngroupMode && item.isGroup && (
+          <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
+            <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-20 rounded-xl"></div>
+          </div>
+        )}
+        
+        {/* 群組標記 - 只在非首頁時顯示 */}
+        {!isMainPage && item.isGroup && (
+          <div className="absolute top-1 left-1 text-white" style={{ zIndex: 3 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+            </svg>
           </div>
         )}
         
