@@ -166,28 +166,6 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     return true;
   };
   
-  // 處理手術房釘選狀態變更
-  const handleRoomPinStatusChange = (roomIndex, isPinned) => {
-    if (readOnly) return; // 唯讀模式下不允許釘選
-    
-    const updatedRows = [...filteredRows];
-    updatedRows[roomIndex] = {
-      ...updatedRows[roomIndex],
-      isPinned: isPinned
-    };
-    setFilteredRows(updatedRows);
-    
-    // 設置 hasChanges 為 true
-    console.log("釘選操作 - 設置 hasChanges 為 true");
-    setHasChanges(true);
-    
-    // 直接更新 mainGanttRef 中的 hasChanges
-    if (mainGanttRef && mainGanttRef.current) {
-      mainGanttRef.current.hasChanges = true;
-      console.log("釘選操作 - 已更新 mainGanttRef.current.hasChanges 為 true");
-    }
-  };
-  
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = (surgery) => {
     setSelectedSurgery(surgery);
@@ -321,14 +299,14 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
                     {filteredRows.map((room, roomIndex) => (
                       <div 
                         key={room.room || roomIndex} 
-                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
                       >
                         <RoomSection 
                           room={room} 
                           roomIndex={roomIndex} 
-                          onPinStatusChange={handleRoomPinStatusChange}
                           readOnly={readOnly}
                           onSurgeryClick={handleSurgeryClick}
+                          isMainPage={true}
                         />
                       </div>
                     ))}
