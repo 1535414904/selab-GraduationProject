@@ -353,6 +353,7 @@
 .filter-toggle-btn {
   position: absolute;
   right: -4rem; /* -64px */
+  margin-top: 55rem;
   background-color: #2563eb;
   color: white;
   padding: 0.5rem 1rem;
@@ -364,6 +365,7 @@
   justify-content: center;
   border: none;
   cursor: pointer;
+  bottom: 1rem 0;
 }
 
 /* 統一滾動容器樣式 */

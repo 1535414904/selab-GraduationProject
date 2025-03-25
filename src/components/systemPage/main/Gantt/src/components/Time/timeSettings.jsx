@@ -23,7 +23,7 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
         console.error("解析時間設定時出錯：", error);
       }
     }
-    
+
     // 組件卸載時清除臨時設定
     return () => {
       clearTempTimeSettings();
@@ -44,17 +44,39 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
   };
 
   // 處理輸入變更
-  const handleTimeChange = (field, timeString) => {
+  // const handleTimeChange = (field, timeString) => {
+  //   try {
+  //     const minutes = timeStringToMinutes(timeString);
+
+  //     // 更新狀態
+  //     const updatedSettings = {
+  //       ...timeSettings,
+  //       [field]: minutes,
+  //     };
+
+  //     setTimeSettings(updatedSettings);
+  //   } catch (error) {
+  //     console.error("轉換時間時出錯：", error);
+  //   }
+  // };
+
+  // 加上邏輯 判斷不得大於小於 之類的
+  const handleTimeChange = (key, value) => {
     try {
-      const minutes = timeStringToMinutes(timeString);
-      
-      // 更新狀態
-      const updatedSettings = {
-        ...timeSettings,
-        [field]: minutes,
-      };
-      
-      setTimeSettings(updatedSettings);
+      const minutes = timeStringToMinutes(value);
+      const newSettings = { ...timeSettings, [key]: minutes };
+
+      // 驗證時間邏輯
+      if (
+        newSettings.surgeryStartTime > newSettings.regularEndTime ||
+        newSettings.surgeryStartTime > newSettings.overtimeEndTime ||
+        newSettings.regularEndTime > newSettings.overtimeEndTime
+      ) {
+        alert('時間設定錯誤：請確認三個時間點的順序為「手術起始時間」 ≤ 「常規結束時間」 ≤ 「加班結束時間」');
+        return;
+      }
+
+      setTimeSettings(newSettings);
     } catch (error) {
       console.error("轉換時間時出錯：", error);
     }
@@ -66,28 +88,30 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
       ...timeSettings,
       cleaningTime: minutes,
     };
-    
+
     setTimeSettings(updatedSettings);
   };
-  
+
   // 試排確認 - 僅使用臨時設定預覽
   const applySettings = () => {
     // 設置臨時設定，但不保存到 localStorage
     setTempTimeSettings(timeSettings);
-    
+
     // 如果有傳入回調函數，則調用它
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true); // 傳遞第二個參數表示這是臨時預覽
     }
-    
+
     // 顯示確認訊息
     alert('時間設定已更新，您可以在甘特圖中預覽變更。若要保存變更，請點擊「更新主頁」按鈕。');
   };
 
+
+
   return (
     <div className="time-settings-container">
       <h3 className="time-settings-title">時間設定</h3>
-      
+
       <div className="time-settings-form">
         <div className="time-settings-item">
           <label>手術起始時間：</label>
@@ -99,7 +123,7 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
           />
           <span className="time-label">{minutesToTimeString(timeSettings.surgeryStartTime)}</span>
         </div>
-        
+
         <div className="time-settings-item">
           <label>常規結束時間：</label>
           <input
@@ -110,7 +134,7 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
           />
           <span className="time-label">{minutesToTimeString(timeSettings.regularEndTime)}</span>
         </div>
-        
+
         <div className="time-settings-item">
           <label>加班結束時間：</label>
           <input
@@ -121,7 +145,7 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
           />
           <span className="time-label">{minutesToTimeString(timeSettings.overtimeEndTime)}</span>
         </div>
-        
+
         <div className="time-settings-item">
           <label>清潔時間 (分鐘)：</label>
           <input
@@ -134,9 +158,9 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
           />
           <span className="time-label">{timeSettings.cleaningTime} 分鐘</span>
         </div>
-        
+
         <div className="apply-settings-button-container">
-          <button 
+          <button
             onClick={applySettings}
             className="apply-settings-button"
           >
