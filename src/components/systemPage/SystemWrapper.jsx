@@ -18,7 +18,10 @@ function SystemWrapper({fullTogglePage, nowUsername}) {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/system/user/${nowUsername}`);
+        console.log(response.data);
+        //response.data.user.name = response.data.user.username;
         setUser(response.data);
+        console.log(user);
       } catch {
         setError("Can not find the user.")
       }

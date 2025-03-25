@@ -1,5 +1,6 @@
 package com.backend.project.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -16,6 +17,35 @@ public class User {
     @Column(name = "username")
     private String username;
 
+    @Column(name = "name")
+    private String user_name;
+
+    @Column(name = "unit")
+    private String unit;
+
+    @Column(name = "role")
+    private int role;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "reset_password_code")
+    private String resetPasswordCode;
+
+    @Column(name = "reset_password_expires")
+    private LocalDateTime resetPasswordExpires;
+
+    @Column(name = "reset_code_attempts")
+    private int resetCodeAttempts;
+
+    @OneToMany(mappedBy = "user")
+    private List<Surgery> surgeries;
+
+    // ===== Getters and Setters =====
+
     public String getUsername(){
         return username;
     }
@@ -23,9 +53,6 @@ public class User {
     public void setUsername(String username){
         this.username = username;
     }
-
-    @Column(name = "name")
-    private String user_name;
 
     public String getName(){
         return user_name;
@@ -35,9 +62,6 @@ public class User {
         this.user_name = user_name;
     }
 
-    @Column(name = "unit")
-    private String unit;
-
     public String getUnit(){
         return unit;
     }
@@ -45,9 +69,6 @@ public class User {
     public void setUnit(String unit){
         this.unit = unit;
     }
-
-    @Column(name = "role")
-    private int role;
 
     public int getRole(){
         return role;
@@ -57,9 +78,6 @@ public class User {
         this.role = role;
     }
 
-    @Column(name = "email")
-    private String email;
-
     public String getEmail(){
         return email;
     }
@@ -68,9 +86,6 @@ public class User {
         this.email = email;
     }
 
-    @Column(name = "password")
-    private String password;
-
     public String getPassword(){
         return password;
     }
@@ -78,7 +93,36 @@ public class User {
     public void setPassword(String password){
         this.password = password;
     }
-    
-    @OneToMany(mappedBy = "user")
-    private List<Surgery> surgeries;
+
+    public String getResetPasswordCode() {
+        return resetPasswordCode;
+    }
+
+    public void setResetPasswordCode(String resetPasswordCode) {
+        this.resetPasswordCode = resetPasswordCode;
+    }
+
+    public LocalDateTime getResetPasswordExpires() {
+        return resetPasswordExpires;
+    }
+
+    public void setResetPasswordExpires(LocalDateTime resetPasswordExpires) {
+        this.resetPasswordExpires = resetPasswordExpires;
+    }
+
+    public int getResetCodeAttempts() {
+        return resetCodeAttempts;
+    }
+
+    public void setResetCodeAttempts(int resetCodeAttempts) {
+        this.resetCodeAttempts = resetCodeAttempts;
+    }
+
+    // public List<Surgery> getSurgeries() {
+    //     return surgeries;
+    // }
+
+    // public void setSurgeries(List<Surgery> surgeries) {
+    //     this.surgeries = surgeries;
+    // }
 }

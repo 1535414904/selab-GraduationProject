@@ -1,13 +1,16 @@
 package com.backend.project.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.UserRepository;
 import com.backend.project.model.User;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -76,6 +79,46 @@ public class UserService {
     }
 
     public void deleteUsers(List<String> usernames) {
-        userRepository.deleteAllById(usernames);
+        usernames.forEach(this::deleteUser);
+    }
+
+    public String generateVerificationCode() {
+        return String.format("%06d", new Random().nextInt(999999));
+    }
+
+    public void saveVerificationCode(User user, String code) {
+        user.setResetPasswordCode(code);
+        user.setResetPasswordExpires(LocalDateTime.now().plusMinutes(10));
+        user.setResetCodeAttempts(0); // 重置嘗試次數
+        userRepository.save(user);
+    }
+
+    public boolean verifyCode(User user, String inputCode) {
+        String storedCode = user.getResetPasswordCode();
+        LocalDateTime sentTime = user.getResetPasswordExpires();
+
+        if (storedCode == null || sentTime == null || user.getResetCodeAttempts() >= 5) return false;
+
+        if (Duration.between(sentTime, LocalDateTime.now()).toMinutes() > 10) return false;
+
+        if (!storedCode.equals(inputCode)) {
+            user.setResetCodeAttempts(user.getResetCodeAttempts() + 1);
+            userRepository.save(user);
+            return false;
+        }
+
+        // 驗證成功：清除驗證碼與次數
+        user.setResetPasswordCode(null);
+        user.setResetPasswordExpires(null);
+        user.setResetCodeAttempts(0);
+        userRepository.save(user);
+        return true;
+    }
+
+    public void clearVerificationCode(User user) {
+        user.setResetPasswordCode(null);
+        user.setResetPasswordExpires(null);
+        user.setResetCodeAttempts(0);
+        userRepository.save(user);
     }
 }

@@ -146,9 +146,9 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
 
       {/* 登入卡片 */}
       <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
-        {/* 卡片圓角裝飾 */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 z-0 opacity-70"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-50 rounded-full -ml-12 -mb-12 z-0 opacity-70"></div>
+        {/* 卡片圓角裝飾
+        // <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 z-0 opacity-70"></div>
+        // <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-50 rounded-full -ml-12 -mb-12 z-0 opacity-70"></div> */}
 
         <div className="flex flex-col items-center mb-8 relative z-10">
           {/* MedTime Logo SVG - 動態時鐘+十字設計 */}

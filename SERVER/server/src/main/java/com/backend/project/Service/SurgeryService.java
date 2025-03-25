@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.backend.project.Controller.ChiefSurgeonController;
+
 import com.backend.project.Dao.ChiefSurgeonRepository;
 import com.backend.project.Dao.OperatingRoomRepository;
 import com.backend.project.Dao.SurgeryRepository;
@@ -66,20 +66,28 @@ public class SurgeryService {
         }).orElseThrow(() -> new RuntimeException("Surgery not found"));
     }
 
-    public Surgery addSurgery(Surgery surgery) {
-        User user = userRepository.findById(surgery.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        OperatingRoom operatingRoom = operatingRoomRepository.findById(surgery.getOperatingRoomId())
-                .orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
-        ChiefSurgeon chiefSurgeon = chiefSurgeonRepository.findById(surgery.getChiefSurgeonId())
-                .orElseThrow(() -> new RuntimeException("chiefSurgeon not found"));
+   public Surgery addSurgery(Surgery surgery) {
+    // 若是以帳號為主關聯
+    User user = userRepository.findByUsername(surgery.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        surgery.setUser(user);
-        surgery.setOperatingRoom(operatingRoom);
-        surgery.setChiefSurgeon(chiefSurgeon);
-
-        return surgeryRepository.save(surgery);
+    if (user == null) {
+        throw new RuntimeException("User not found");
     }
+
+    OperatingRoom operatingRoom = operatingRoomRepository.findById(surgery.getOperatingRoomId())
+            .orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
+    
+    ChiefSurgeon chiefSurgeon = chiefSurgeonRepository.findById(surgery.getChiefSurgeonId())
+            .orElseThrow(() -> new RuntimeException("ChiefSurgeon not found"));
+
+    surgery.setUser(user);
+    surgery.setOperatingRoom(operatingRoom);
+    surgery.setChiefSurgeon(chiefSurgeon);
+
+    return surgeryRepository.save(surgery);
+}
+
 
     public void deleteSurgery(String id) {
         surgeryRepository.deleteById(id);
