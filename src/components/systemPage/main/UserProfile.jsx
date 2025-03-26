@@ -1,5 +1,5 @@
+import { useState } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../config";
 
 function UserProfile({ user, onUpdateUser }) {
@@ -29,38 +29,33 @@ function UserProfile({ user, onUpdateUser }) {
   };
 
   const confirmHandler = () => {
-    let notEmpty = true;
-    let isSame = false;
     const newError = { oldPassword: "", newPassword: "", newPasswordAgain: "" };
+    let valid = true;
 
     if (!oldPassword.trim()) {
       newError.oldPassword = "*請輸入舊密碼";
-      notEmpty = false;
-    } else {
-      oldPassword === user.password
-        ? (isSame = true)
-        : (newError.oldPassword = "*與舊密碼不相符");
+      valid = false;
+    } else if (oldPassword !== user.password) {
+      newError.oldPassword = "*與舊密碼不相符";
+      valid = false;
     }
 
     if (!newPassword.trim()) {
       newError.newPassword = "*請輸入新密碼";
-      notEmpty = false;
+      valid = false;
     }
 
-    if (newPassword.trim() && !newPasswordAgain.trim()) {
+    if (!newPasswordAgain.trim()) {
       newError.newPasswordAgain = "*請再次輸入新密碼";
-      notEmpty = false;
-    }
-
-    if (notEmpty && isSame) {
-      if (newPassword === newPasswordAgain) {
-        changePasswordHandler();
-      } else {
-        newError.newPasswordAgain = "*兩個密碼不相同";
-      }
+      valid = false;
+    } else if (newPassword !== newPasswordAgain) {
+      newError.newPasswordAgain = "*兩個密碼不相同";
+      valid = false;
     }
 
     setError(newError);
+
+    if (valid) changePasswordHandler();
   };
 
   const changePasswordHandler = async () => {
@@ -76,122 +71,124 @@ function UserProfile({ user, onUpdateUser }) {
         setChangingPassword(false);
         clearInputs();
       }
-    } catch (error) {
-      console.error("Error changing password:", error);
+    } catch (err) {
+      console.error("變更密碼時發生錯誤：", err);
     }
   };
 
   const cancelHandler = () => {
-    setPasswordChanged(false);
     setChangingPassword(false);
+    setPasswordChanged(false);
     clearInputs();
   };
 
   return (
-    <div className="flex items-center justify-center w-full h-screen bg-gradient-to-br from-blue-700 via-blue-500 to-blue-300">
-      <div className="w-full max-w-md bg-white bg-opacity-95 p-8 rounded-lg shadow-2xl transform transition-all duration-500 hover:scale-105">
-        {/* <h1 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+    <div className="relative h-screen bg-white">
+      {/* 藍色波浪背景 - 延伸到頂部 */}
+      <div className="absolute top-0 left-0 right-0 h-[200px] overflow-hidden">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 1440 320" 
+          preserveAspectRatio="none" 
+          className="absolute w-full h-full"
+        >
+          <path 
+            fill="#3B82F6" 
+            fillOpacity="0.6" 
+            d="M0,160L48,176C96,192,192,224,288,229.3C384,235,480,213,576,197.3C672,181,768,171,864,170.7C960,171,1056,181,1152,197.3C1248,213,1344,235,1392,245.3L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          ></path>
+        </svg>
+      </div>
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="w-6 h-6 mr-2" // ✅ 設定大小 & 右邊留空間
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
-            />
-          </svg>
-
-          個人資料</h1> */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-          {/* 圖示部分 */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="w-6 h-6 mr-2" // ✅ 設定大小 & 右邊留空間
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
-            />
-          </svg>
-
-          {/* 文字部分 */}
-          個人資料
-        </h1>
-
-        <div className="space-y-3">
-          <p className="text-lg font-medium text-gray-800">帳號：{user.username}</p>
-          <p className="text-lg font-medium text-gray-800">姓名：{user.name}</p>
-          <p className="text-lg font-medium text-gray-800">單位：{user.unit}</p>
-          <p className="text-lg font-medium text-gray-800">權限：{roleMap[user.role]}</p>
-          <p className="text-lg font-medium text-gray-800">信箱：{user.email}</p>
-          <p className="text-lg font-medium text-gray-800">密碼：{maskedPassword} {passwordChanged && "(已更新)"}</p>
-        </div>
-
-        {!isChangingPassword && (
-          <button
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md"
-            onClick={() => setChangingPassword(true)}
-          >
-            更改密碼
-          </button>
-        )}
-
-        {isChangingPassword && (
-          <div className="mt-4 space-y-3">
-            <input
-              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
-              type="password"
-              placeholder="請輸入舊密碼"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-            />
-            {error.oldPassword && <p className="text-red-600 text-sm">{error.oldPassword}</p>}
-
-            <input
-              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
-              type="password"
-              placeholder="請輸入新密碼"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            {error.newPassword && <p className="text-red-600 text-sm">{error.newPassword}</p>}
-
-            <input
-              className="w-full px-4 py-3 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
-              type="password"
-              placeholder="請再次輸入新密碼"
-              value={newPasswordAgain}
-              onChange={(e) => setNewPasswordAgain(e.target.value)}
-            />
-            {error.newPasswordAgain && <p className="text-red-600 text-sm">{error.newPasswordAgain}</p>}
-
-            <div className="flex justify-between w-full mt-4">
-              <button
-                className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-110 shadow-md"
-                onClick={confirmHandler}
+      {/* 主內容 */}
+      <div className="relative z-10 flex items-center justify-center h-full">
+        <div className="bg-white shadow-lg rounded-lg p-10 w-[500px]">
+          <div className="text-center mb-8">
+            <div className="inline-block bg-blue-100 p-4 rounded-full mb-4">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                strokeWidth="1.5" 
+                stroke="currentColor" 
+                className="w-10 h-10 text-blue-600"
               >
-                確認
-              </button>
-              <button
-                className="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-110 shadow-md"
-                onClick={cancelHandler}
-              >
-                取消
-              </button>
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" 
+                />
+              </svg>
             </div>
+            <h2 className="text-3xl font-bold text-blue-900">個人資料</h2>
           </div>
-        )}
+
+          <div className="space-y-5 mb-8 text-gray-700 text-lg">
+            <p><strong>帳號：</strong>{user.username}</p>
+            <p><strong>姓名：</strong>{user.name}</p>
+            <p><strong>單位：</strong>{user.unit}</p>
+            <p><strong>權限：</strong>{roleMap[user.role]}</p>
+            <p><strong>信箱：</strong>{user.email}</p>
+            <p>
+              <strong>密碼：</strong>
+              {maskedPassword} 
+              {passwordChanged && <span className="text-green-600 ml-2">(已更新)</span>}
+            </p>
+          </div>
+
+          {!isChangingPassword ? (
+            <button 
+              onClick={() => setChangingPassword(true)}
+              className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition text-lg"
+            >
+              更改密碼
+            </button>
+          ) : (
+            <div className="space-y-5">
+              <input
+                type="password"
+                placeholder="請輸入舊密碼"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="w-full px-4 py-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+              />
+              {error.oldPassword && <p className="text-red-500 text-sm">{error.oldPassword}</p>}
+
+              <input
+                type="password"
+                placeholder="請輸入新密碼"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+              />
+              {error.newPassword && <p className="text-red-500 text-sm">{error.newPassword}</p>}
+
+              <input
+                type="password"
+                placeholder="請再次輸入新密碼"
+                value={newPasswordAgain}
+                onChange={(e) => setNewPasswordAgain(e.target.value)}
+                className="w-full px-4 py-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+              />
+              {error.newPasswordAgain && <p className="text-red-500 text-sm">{error.newPasswordAgain}</p>}
+
+              <div className="flex space-x-4">
+                <button 
+                  onClick={confirmHandler}
+                  className="flex-1 bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition text-lg"
+                >
+                  確認
+                </button>
+                <button 
+                  onClick={cancelHandler}
+                  className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg hover:bg-gray-300 transition text-lg"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

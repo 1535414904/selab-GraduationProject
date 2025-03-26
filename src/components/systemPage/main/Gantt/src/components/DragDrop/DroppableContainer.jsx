@@ -11,6 +11,7 @@ function DroppableContainer({
   readOnly = false, 
   onSurgeryClick, 
   isGroupMode = false,
+  isMultiSelectMode = false,
   isUngroupMode = false,
   selectedSurgeries = [],
   isMainPage = false 
@@ -50,7 +51,7 @@ function DroppableContainer({
 
   // 渲染普通手術項目
   const renderSurgeryItem = (surgery, itemIndex, cleaning) => {
-    const isSelected = isGroupMode && isSurgerySelected(surgery);
+    const isSelected = (isGroupMode || isMultiSelectMode) && isSurgerySelected(surgery);
     
     return (
       <div
@@ -69,10 +70,11 @@ function DroppableContainer({
           isDragging={false}
           isPinned={isPinned}
           roomName={roomName}
-          readOnly={readOnly || isGroupMode}
+          readOnly={readOnly || (isGroupMode && !isMultiSelectMode)}
           onSurgeryClick={onSurgeryClick}
           isSelected={isSelected}
           isGroupMode={isGroupMode}
+          isMultiSelectMode={isMultiSelectMode}
           isUngroupMode={isUngroupMode}
           isMainPage={isMainPage}
         />
@@ -85,9 +87,10 @@ function DroppableContainer({
             isDragging={false}
             isPinned={isPinned}
             roomName={roomName}
-            readOnly={readOnly || isGroupMode}
+            readOnly={readOnly || (isGroupMode && !isMultiSelectMode)}
             onSurgeryClick={onSurgeryClick}
             isGroupMode={isGroupMode}
+            isMultiSelectMode={isMultiSelectMode}
             isUngroupMode={isUngroupMode}
             isMainPage={isMainPage}
           />
@@ -96,8 +99,46 @@ function DroppableContainer({
     );
   };
 
-  // 如果是只讀模式或群組模式或解除模式，直接渲染不可拖動的內容
-  if (readOnly || isGroupMode || isUngroupMode) {
+  // 創建虛擬拖曳容器項目
+  const createDragContainer = (items) => {
+    if (!items || items.length === 0) return null;
+    
+    // 排序項目，按開始時間排序
+    const sortedItems = [...items].sort((a, b) => {
+      // 轉換時間為分鐘，以便比較
+      const aMinutes = timeToMinutes(a.startTime);
+      const bMinutes = timeToMinutes(b.startTime);
+      return aMinutes - bMinutes;
+    });
+    
+    // 生成容器ID
+    const containerId = `drag-container-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // 取第一個和最後一個項目的時間
+    const firstItem = sortedItems[0];
+    const lastItem = sortedItems[sortedItems.length - 1];
+    
+    // 創建容器項目
+    return {
+      id: containerId,
+      startTime: firstItem.startTime,
+      endTime: lastItem.endTime,
+      items: sortedItems,
+      isVirtualContainer: true,
+      // 保留原始數據
+      originalRoomIndex: roomIndex,
+      roomName: roomName
+    };
+  };
+
+  // 輔助函數：將時間轉換為分鐘數
+  const timeToMinutes = (timeString) => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // 如果是只讀模式或群組模式或解除模式或多選模式，直接渲染不可拖動的內容
+  if (readOnly || isGroupMode || isUngroupMode || isMultiSelectMode) {
     return (
       <div
         style={{
@@ -180,6 +221,45 @@ function DroppableContainer({
             }
 
             if (!surgery) return null;
+            
+            // 如果是虛擬拖曳容器，特殊處理
+            if (surgery.isVirtualContainer) {
+              return (
+                <Draggable
+                  key={`draggable-container-${surgery.id}`}
+                  draggableId={`draggable-container-${surgery.id}`}
+                  index={index}
+                  isDragDisabled={!isMainPage && isPinned}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      style={{
+                        height: fixedHeight,
+                        opacity: snapshot.isDragging ? 0.9 : 1,
+                        zIndex: snapshot.isDragging ? 9999 : 1,
+                        cursor: !isMainPage && isPinned ? 'not-allowed' : 'move',
+                        display: 'flex',
+                        background: '#10B981',
+                        color: 'white',
+                        borderRadius: '0.5rem',
+                        padding: '4px',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        ...provided.draggableProps.style,
+                      }}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        <div>{`${surgery.items.length} 個已選項目`}</div>
+                        <div>{`${surgery.startTime} - ${surgery.endTime}`}</div>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              );
+            }
             
             // 如果是群組，使用特殊的群組渲染邏輯
             if (surgery.isGroup) {

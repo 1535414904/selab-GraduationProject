@@ -1,60 +1,109 @@
 package com.backend.project.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Service.UserService;
 import com.backend.project.model.User;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
-
 @CrossOrigin(origins = { "*" })
 @RestController
 @RequestMapping("/api")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // ✅ 登入
     @PostMapping("/login")
     public String login(@RequestBody User user) {
         User authenticate = userService.authenticate(user.getUsername(), user.getPassword());
-        if (authenticate != null) {
-            return "登入成功";
-        } else {
-            return "*帳號或密碼錯誤";
+        return (authenticate != null) ? "登入成功" : "*帳號或密碼錯誤";
+    }
+
+    @PostMapping("/login/sendVerificationCode")
+    public ResponseEntity<?> sendVerificationCode(@RequestBody User user) {
+        User foundUser = userService.forgotPasswordAuthenticate(user.getUsername(), user.getEmail());
+        if (foundUser == null) {
+            return ResponseEntity.badRequest().body("帳號或電子郵件錯誤");
         }
+
+        // 使用資料庫查到的 email，比較可靠
+        String toEmail = foundUser.getEmail();
+        if (toEmail == null || !toEmail.matches("^[\\w.-]+@[\\w.-]+\\.[A-Za-z]{2,6}$")) {
+            return ResponseEntity.badRequest().body("Email 格式錯誤！");
+        }
+
+        // 產生驗證碼
+        String code = userService.generateVerificationCode();
+        userService.saveVerificationCode(foundUser, code);
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("superstory0310@gmail.com"); // 或你的 Brevo 寄件人信箱
+            message.setTo(toEmail);
+            message.setSubject("【MedTime 密碼重置驗證碼】");
+            message.setText("親愛的使用者您好，\n\n您申請了密碼重置。\n\n您的驗證碼是： " + code +
+                    "\n\n請在 10 分鐘內使用此驗證碼完成操作。\n\n若非您本人操作，請忽略此信。\n\nMedTime 系統敬上");
+
+            mailSender.send(message);
+            return ResponseEntity.ok("驗證碼已發送至您的信箱");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("發送郵件失敗，請稍後再試");
+        }
+    }
+
+    @PostMapping("/login/verifyCode")
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        String email = payload.get("email");
+        String inputCode = payload.get("verificationCode");
+
+        User authenticate = userService.forgotPasswordAuthenticate(username, email);
+        if (authenticate == null) {
+            return ResponseEntity.badRequest().body("帳號或電子郵件錯誤");
+        }
+
+        if (!userService.verifyCode(authenticate, inputCode)) {
+            return ResponseEntity.badRequest().body("驗證碼錯誤或已過期");
+        }
+
+        userService.clearVerificationCode(authenticate);
+        return ResponseEntity.ok("驗證成功");
     }
 
     @PostMapping("/login/ForgotPassword")
     public String forgotPassword(@RequestBody User user) {
         User authenticate = userService.forgotPasswordAuthenticate(user.getUsername(), user.getEmail());
-        if (authenticate != null) {
-            return "1";
-        } else {
-            return "*帳號或電子郵件錯誤";
-        }
+        return (authenticate != null) ? "1" : "*帳號或電子郵件錯誤";
     }
 
     @PutMapping("/login/changePassword/{username}")
     public ResponseEntity<String> changePassword(@PathVariable String username, @RequestBody User user) {
-        String changePasswordCheck = userService.changePassword(username, user.getPassword()); // 使用傳過來的密碼
-        System.out.println(changePasswordCheck+"this is hack");
-        if ("Change Password successfully".equals(changePasswordCheck)) {
-            return ResponseEntity.ok(changePasswordCheck);
+        String result = userService.changePassword(username, user.getPassword());
+        if ("Change Password successfully".equals(result)) {
+            return ResponseEntity.ok(result);
         } else {
-            return ResponseEntity.status(404).body(changePasswordCheck);
-        }
+            return ResponseEntity.status(404).body(result);
+    }
     }
 
     @GetMapping("/system/users")
@@ -84,9 +133,9 @@ public class UserController {
         userService.addUsers(users);
         return ResponseEntity.ok("Users add successfully");
     }
-    
+
     @DeleteMapping("/system/user/delete/{username}")
-    public ResponseEntity<?> deleteUsers(@PathVariable String username) {
+    public ResponseEntity<?> deleteUser(@PathVariable String username) {
         userService.deleteUser(username);
         return ResponseEntity.ok("User deleted successfully");
     }

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { DragDropContext } from "react-beautiful-dnd";
 import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
 import ConfirmScheduleButton from "./components/Time/ConfirmScheduleButton";
@@ -12,6 +13,16 @@ import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { clearTempTimeSettings } from "./components/Time/timeUtils";
 import ORSMButton from "./components/Time/ORSMButton";
+// 引入新的群組操作函數
+import { 
+  createGroup, 
+  ungroup, 
+  createDragContainer, 
+  handleContainerDrop,
+  updateGroupTimes,
+  timeToMinutes,
+  minutesToTime
+} from "./components/ROOM/GroupOperations";
 
 // 排班管理專用的甘特圖組件
 function Gantt({ rows, setRows }) {
@@ -97,152 +108,60 @@ function Gantt({ rows, setRows }) {
     
     const updatedRows = [...filteredRows];
     const roomData = [...updatedRows[roomIndex].data];
+    const roomName = updatedRows[roomIndex].room || updatedRows[roomIndex].name || '手術室';
     
     if (operation === 'create') {
-      // 找到所有選中手術的索引
-      const selectedIndices = selectedSurgeries.map(surgery => {
-        return roomData.findIndex(item => item.id === surgery.id);
-      }).filter(index => index !== -1).sort();
+      // 使用新的創建群組函數
+      const result = createGroup(selectedSurgeries, roomData, roomIndex, roomName);
       
-      // 過濾出非清潔時間的手術
-      const nonCleaningSurgeries = selectedSurgeries.filter(s => !s.isCleaningTime);
-      
-      // 檢查是否為連續手術（考慮到中間有清潔時間）
-      let isConsecutiveWithCleaning = true;
-      for (let i = 1; i < selectedIndices.length; i++) {
-        // 相鄰手術索引差值應該為1（連續）或2（中間有清潔時間）
-        const diff = selectedIndices[i] - selectedIndices[i-1];
-        if (diff !== 1 && diff !== 2) {
-          isConsecutiveWithCleaning = false;
-          break;
-        }
-        
-        // 如果差值為2，檢查中間是否為清潔時間
-        if (diff === 2 && !roomData[selectedIndices[i-1] + 1].isCleaningTime) {
-          isConsecutiveWithCleaning = false;
-          break;
-        }
-      }
-      
-      if (!isConsecutiveWithCleaning) {
-        alert('只能將連續的手術進行群組（可以包含中間的清潔時間）');
+      if (!result.success) {
+        alert(result.message || '創建群組失敗');
         return;
       }
-      
-      // 創建群組對象
-      const groupId = `group-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
-      if (nonCleaningSurgeries.length < 2) {
-        alert('請至少選擇兩個非清潔時間的手術項目');
-        return;
-      }
-      
-      // 排序選中的手術，按開始時間排序
-      const sortedSurgeries = [...nonCleaningSurgeries].sort((a, b) => {
-        return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
-      });
-      
-      // 找出第一個和最後一個非清潔時間手術的索引
-      const firstIndex = roomData.findIndex(item => item.id === sortedSurgeries[0].id);
-      const lastIndex = roomData.findIndex(item => item.id === sortedSurgeries[sortedSurgeries.length - 1].id);
-      
-      // 檢查這段範圍內是否包含了未選中的非清潔時間手術
-      const rangeItems = roomData.slice(firstIndex, lastIndex + 1);
-      const nonCleaningInRange = rangeItems.filter(item => !item.isCleaningTime);
-      const allNonCleaningSelected = nonCleaningInRange.every(item => 
-        sortedSurgeries.some(s => s.id === item.id)
-      );
-      
-      if (!allNonCleaningSelected) {
-        alert('群組中包含了未選中的手術，請確保選擇了範圍內的所有手術');
-        return;
-      }
-      
-      // 將範圍內的所有項目（包括清潔時間）加入到群組中
-      const allGroupItems = rangeItems.slice();
-      
-      // 創建群組項目
-      const groupItem = {
-        id: groupId,
-        doctor: `${sortedSurgeries.length} 個手術`,
-        surgery: '群組手術',
-        startTime: sortedSurgeries[0].startTime,
-        endTime: sortedSurgeries[sortedSurgeries.length - 1].endTime,
-        color: 'blue',
-        isGroup: true,
-        surgeries: allGroupItems, // 包含範圍內的所有項目，包括清潔時間
-        isCleaningTime: false,
-        operatingRoomName: roomData[0].operatingRoomName || filteredRows[roomIndex].room,
-        // 添加必要的引用信息，用於拖曳時保持關係
-        roomId: roomData[0].roomId || filteredRows[roomIndex].roomId,
-        applicationId: sortedSurgeries[0].applicationId
-      };
-      
-      // 找出所有需要移除的項目（包括選中的手術和它們之間的清潔時間）
-      const itemsToRemove = new Set();
-      
-      // 標記範圍內的所有項目
-      for (let i = firstIndex; i <= lastIndex; i++) {
-        itemsToRemove.add(i);
-      }
-      
-      // 移除標記的項目
-      const newRoomData = roomData.filter((_, index) => !itemsToRemove.has(index));
-      
-      // 在原本的位置插入群組
-      newRoomData.splice(firstIndex, 0, groupItem);
       
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
-        data: newRoomData
+        data: result.newRoomData
       };
       
       setFilteredRows(updatedRows);
       
     } else if (operation === 'ungroup') {
-      // 處理解除群組
+      // 使用新的解除群組函數
       const group = selectedSurgeries[0];
       if (!group.isGroup) {
         alert('選擇的項目不是群組');
         return;
       }
       
-      const groupIndex = roomData.findIndex(item => item.id === group.id);
+      const result = ungroup(group, roomData, roomName);
       
-      if (groupIndex === -1) {
-        console.error('找不到要解除的群組');
+      if (!result.success) {
+        alert(result.message || '解除群組失敗');
         return;
-      }
-      
-      // 移除群組
-      roomData.splice(groupIndex, 1);
-      
-      // 對群組中的手術按時間排序
-      const sortedSurgeries = [...group.surgeries].sort((a, b) => {
-        return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
-      });
-      
-      // 插入原本的手術和清潔時間
-      let insertIndex = groupIndex;
-      for (let i = 0; i < sortedSurgeries.length; i++) {
-        const item = sortedSurgeries[i];
-        
-        // 確保ID是唯一的
-        const surgeryItem = {
-          ...item,
-          id: item.id || `restored-${Date.now()}-${i}`
-        };
-        
-        // 插入手術或清潔時間
-        roomData.splice(insertIndex, 0, surgeryItem);
-        insertIndex++;
       }
       
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
-        data: roomData
+        data: result.newRoomData
+      };
+      
+      setFilteredRows(updatedRows);
+    } else if (operation === 'drag') {
+      // 使用新的創建拖曳容器函數
+      const result = createDragContainer(selectedSurgeries, roomData, roomIndex, roomName);
+      
+      if (!result.success) {
+        alert(result.message || '建立多選拖曳失敗');
+        return;
+      }
+      
+      // 更新手術室資料
+      updatedRows[roomIndex] = {
+        ...updatedRows[roomIndex],
+        data: result.newRoomData
       };
       
       setFilteredRows(updatedRows);
@@ -312,11 +231,91 @@ function Gantt({ rows, setRows }) {
     
     console.log("排班管理甘特圖拖曳結束，更新界面");
     
-    // 處理拖曳結束（包含群組拖曳的處理）
-    await handleDragEnd(result, filteredRows, setFilteredRows);
+    // 檢查是否是虛擬拖曳容器
+    const draggedItemId = result.draggableId;
+    if (draggedItemId.includes('draggable-container-')) {
+      await handleMultiItemDragEnd(result, filteredRows, setFilteredRows);
+    } else {
+      // 處理拖曳結束
+      await handleDragEnd(result, filteredRows, setFilteredRows);
+    }
     
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+  };
+  
+  // 處理多項目拖曳結束
+  const handleMultiItemDragEnd = async (dragResult, rows, setRows) => {
+    const { source, destination, draggableId } = dragResult;
+    
+    // 解析源房間和目標房間索引
+    const sourceRoomIndex = parseInt(source.droppableId.split('-')[1]);
+    const destinationRoomIndex = parseInt(destination.droppableId.split('-')[1]);
+    
+    // 獲取源房間和目標房間數據
+    const sourceRoom = rows[sourceRoomIndex];
+    const destinationRoom = rows[destinationRoomIndex];
+    const roomName = destinationRoom.room || destinationRoom.name || '手術室';
+    
+    // 復制數據以便修改
+    const updatedRows = [...rows];
+    const sourceData = [...sourceRoom.data];
+    const destinationData = sourceRoomIndex === destinationRoomIndex ? 
+      sourceData : [...destinationRoom.data];
+    
+    // 找到被拖曳的虛擬容器
+    const containerIndex = sourceData.findIndex(item => 
+      item.isVirtualContainer && 
+      `draggable-container-${item.id}` === draggableId
+    );
+    
+    if (containerIndex === -1) {
+      console.error('找不到拖曳的虛擬容器');
+      return;
+    }
+    
+    // 獲取容器
+    const container = sourceData[containerIndex];
+    
+    // 使用新的容器處理函數
+    const result = handleContainerDrop(
+      container, 
+      destinationData, 
+      destinationRoomIndex, 
+      destination.index * 2, 
+      roomName
+    );
+    
+    if (!result.success) {
+      console.error(result.message || '處理多選拖曳放置失敗');
+      return;
+    }
+    
+    // 從源位置刪除虛擬容器
+    sourceData.splice(containerIndex, 1);
+    
+    // 更新數據
+    if (sourceRoomIndex === destinationRoomIndex) {
+      // 同一房間內的拖曳
+      updatedRows[sourceRoomIndex] = {
+        ...sourceRoom,
+        data: result.newRoomData
+      };
+    } else {
+      // 跨房間的拖曳
+      updatedRows[sourceRoomIndex] = {
+        ...sourceRoom,
+        data: sourceData
+      };
+      
+      updatedRows[destinationRoomIndex] = {
+        ...destinationRoom,
+        data: result.newRoomData
+      };
+    }
+    
+    // 更新狀態
+    setRows(updatedRows);
   };
   
   // 處理頁籤切換
@@ -435,31 +434,33 @@ function Gantt({ rows, setRows }) {
         {/* ✅ 手術排程內容 */}
         {!loading && !error && filteredRows.length > 0 && (
           <div className="gantt-content">
-            <div ref={scrollContainerRef} className="scroll-container">
-              <div ref={timeScaleRef} className="gantt-timescale-container">
-                <TimeWrapper containerWidth={containerWidth} useTempSettings={true}>
-                  <div ref={ganttChartRef} className="gantt-chart-container">
-                    <div className="gantt-chart">
-                      {filteredRows.map((room, roomIndex) => (
-                        <div 
-                          key={room.room || roomIndex} 
-                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                        >
-                          <RoomSection 
-                            room={room} 
-                            roomIndex={roomIndex} 
-                            onPinStatusChange={handleRoomPinStatusChange}
-                            readOnly={readOnly}
-                            onSurgeryClick={handleSurgeryClick}
-                            onGroupOperation={handleGroupOperation}
-                          />
-                        </div>
-                      ))}
+            <DragDropContext onDragEnd={onDragEndHandler}>
+              <div ref={scrollContainerRef} className="scroll-container">
+                <div ref={timeScaleRef} className="gantt-timescale-container">
+                  <TimeWrapper containerWidth={containerWidth} useTempSettings={true}>
+                    <div ref={ganttChartRef} className="gantt-chart-container">
+                      <div className="gantt-chart">
+                        {filteredRows.map((room, roomIndex) => (
+                          <div 
+                            key={room.room || roomIndex} 
+                            className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                          >
+                            <RoomSection 
+                              room={room} 
+                              roomIndex={roomIndex} 
+                              onPinStatusChange={handleRoomPinStatusChange}
+                              readOnly={readOnly}
+                              onSurgeryClick={handleSurgeryClick}
+                              onGroupOperation={handleGroupOperation}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </TimeWrapper>
+                  </TimeWrapper>
+                </div>
               </div>
-            </div>
+            </DragDropContext>
           </div>
         )}
 

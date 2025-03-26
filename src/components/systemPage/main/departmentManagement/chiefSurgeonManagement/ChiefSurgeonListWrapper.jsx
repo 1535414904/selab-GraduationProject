@@ -87,9 +87,81 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
             console.error("刪除失敗：", error);
         }
     };
+    const handleAddChiefSurgeon = () => {
+        setAddChiefSurgeons((prev) => [...prev, { id: "", name: "" }]);
+    };
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    const handleDeleteSelectedChiefSurgeons = async () => {
+        if (selectedIds.length === 0) {
+            alert("請先選取要刪除的主治醫師");
+            return;
+        }
+
+        const confirmDelete = window.confirm(`確定要刪除 ${selectedIds.length} 位主治醫師？`);
+        if (!confirmDelete) return;
+
+        try {
+            await Promise.all(
+                selectedIds.map((id) =>
+                    axios.delete(`${BASE_URL}/api/system/chief-surgeon/delete/${id}`)
+                )
+            );
+
+            const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
+            setChiefSurgeons(response.data);
+            const responseDepartments = await axios.get(`${BASE_URL}/api/system/departments`);
+            setDepartments(responseDepartments.data);
+            setSelectedIds([]);
+        } catch (error) {
+            console.error("批次刪除失敗：", error);
+        }
+    };
 
     return (
+
         <td colSpan={5}>
+            {/* 🔘 功能列 */}
+            <div className="header-function mb-3 flex gap-2">
+                <button className="account-button" onClick={handleAddChiefSurgeon} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        style={{ width: "1em", height: "1em" }}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                    </svg>
+                    新增
+                </button>
+                <button
+                    className="account-button mgr-cancel"
+                    onClick={handleDeleteSelectedChiefSurgeons}
+                    style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        style={{ width: "1em", height: "1em" }}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                    </svg>
+                    刪除
+                </button>
+            </div>
             <table className="system-table chief-surgeon-list">
                 <thead>
                     <tr>

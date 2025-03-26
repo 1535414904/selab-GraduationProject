@@ -264,7 +264,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
             <div className="ml-4 text-2xl">
               <UserList
                 fullTogglePage={fullTogglePage}
-                name={user.name}
+                name={user.username}
                 toggleMainPage={toggleMainPage}
               />
             </div>
