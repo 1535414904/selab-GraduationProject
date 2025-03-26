@@ -384,7 +384,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                 {filter.value === "estimatedSurgeryTime" && (
                   <div className="range-selector" style={{ marginTop: "10px" }}>
                     <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                      <label style={{ marginRight: "10px", width: "60px" }}>最小值:</label>
+                      <label style={{ marginRight: "10px", width: "60px" }}>最小值(分):</label>
                       <input
                         type="number"
                         value={timeRange.min}
@@ -400,7 +400,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                       />
                     </div>
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      <label style={{ marginRight: "10px", width: "60px" }}>最大值:</label>
+                      <label style={{ marginRight: "10px", width: "60px" }}>最大值(分):</label>
                       <input
                         type="number"
                         value={timeRange.max}
@@ -416,6 +416,10 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                       />
                     </div>
                     <div style={{ marginTop: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span>最小：{minEstimatedTime}(分)</span>
+                        <span>目前：{timeRange.min}(分)</span>
+                      </div>
                       <input
                         type="range"
                         min={minEstimatedTime}
@@ -424,6 +428,11 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                         onChange={(e) => handleTimeRangeChange("min", e.target.value)}
                         style={{ width: "100%" }}
                       />
+
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
+                        <span>最大：{maxEstimatedTime}(分)</span>
+                        <span>目前：{timeRange.max}(分)</span>
+                      </div>
                       <input
                         type="range"
                         min={minEstimatedTime}
@@ -434,8 +443,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                       />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
-                      <span>{minEstimatedTime}</span>
-                      <span>{maxEstimatedTime}</span>
+                      {/* <span>{minEstimatedTime}</span>
+                      <span>{maxEstimatedTime}</span> */}
                     </div>
                   </div>
                 )}

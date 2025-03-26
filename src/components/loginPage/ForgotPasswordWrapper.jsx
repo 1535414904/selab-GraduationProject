@@ -169,15 +169,21 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
         <div className="space-y-6 relative z-10">
           {/* 帳號 */}
           <div>
-            <input
-              className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
-              placeholder="帳號"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
+                placeholder="帳號"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
             {error.username && <p className="text-sm text-red-600 mt-1">{error.username}</p>}
           </div>
-
           {/* 信箱 */}
           <div>
             <input
@@ -186,6 +192,12 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </div>
             {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
           </div>
 

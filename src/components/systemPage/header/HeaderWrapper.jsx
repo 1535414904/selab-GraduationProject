@@ -8,11 +8,10 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
   useEffect(() => {
     toggleMainPage("mainPage");
   }, [toggleMainPage]);
-  return (
-    <div className="w-full bg-gradient-to-r from-blue-700 to-blue-900 shadow-lg">
-      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16"> */}
-      <div className="w-ull max-w-screen-3xl mx-auto px-4">
 
+  return (
+    <div className="w-full bg-gradient-to-r from-blue-400 to-blue-400 shadow-lg z-1000 relative">
+      <div className="w-full max-w-screen-3xl mx-auto px-4">
         <div className="flex items-center mr-auto h-16">
           {/* Logo and Hospital Name */}
           <div
@@ -35,7 +34,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                 </svg>
               </div>
               <div className="ml-2">
-                <span className="text-white text-3xl font-semibold">
+                <span className="text-white text-3xl font-semibold drop-shadow-[0_0_3px_#2563eb]">
                   手術排班系統
                 </span>
               </div>
@@ -44,12 +43,11 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
           {/* Navigation */}
           <div className="flex items-center space-x-4 ml-auto">
             <button
-              className="flex items-center cursor-pointer px-4 py-2 text-white text-2xl bg-blue-600 rounded-md hover:bg-blue-500 transition duration-300"
+              className="flex items-center cursor-pointer px-4 py-2 text-white text-2xl bg-blue-400 drop-shadow-[0_0_3px_#2563eb] rounded-md hover:bg-blue-500 transition duration-300"
               onClick={() => toggleMainPage("mainPage")}
             >
               首頁
             </button>
-
 
             {(user.role == 3 || user.role == 2) && (
               <div className="ml-4 relative group">
@@ -68,7 +66,6 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                     />
                   </svg>
                 </button>
-
 
                 <div className="cursor-pointer dropdown-menu absolute text-2xl z-10 mt-1 w-48 bg-white rounded-md shadow-lg py-1">
                   {user.role == 3 && (
