@@ -164,7 +164,7 @@ const TimeSettings = ({ onTimeSettingsChange }) => {
             onClick={applySettings}
             className="apply-settings-button"
           >
-            試排確認
+            確認
           </button>
         </div>
       </div>
