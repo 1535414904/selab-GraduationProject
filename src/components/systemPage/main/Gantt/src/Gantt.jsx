@@ -25,7 +25,7 @@ import {
 } from "./components/ROOM/GroupOperations";
 
 // 排班管理專用的甘特圖組件
-function Gantt({ rows, setRows }) {
+function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -500,7 +500,9 @@ function Gantt({ rows, setRows }) {
           
           // 切換到甘特圖頁籤
           setActiveTab('gantt');
-        }} />
+        }} 
+        initialTimeSettings={initialTimeSettings}
+        setInitialTimeSettings={setInitialTimeSettings}/>
       </div>
     </div>
   );
