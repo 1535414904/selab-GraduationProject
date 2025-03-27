@@ -64,20 +64,43 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   const pixelsPer15Minutes = 25;
 
   // 同步滾動處理
-  const syncScroll = useCallback((scrollLeft) => {
-    if (timeScaleRef.current) {
+  const syncScroll = useCallback((event) => {
+    const scrollLeft = event.target.scrollLeft;
+    
+    // 直接操作兩個容器的滾動位置
+    if (timeScaleRef.current?.parentElement) {
       timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
     }
+    
     if (contentRef.current) {
       contentRef.current.scrollLeft = scrollLeft;
     }
   }, []);
+  
+  const handleScroll = (event) => {
+    syncScroll(event);
+  };
+  
+  useEffect(() => {
+    const timeScaleContainer = timeScaleRef.current?.parentElement;
+    const contentContainer = contentRef.current;
+  
+    if (timeScaleContainer && contentContainer) {
+      timeScaleContainer.addEventListener('scroll', handleScroll);
+      contentContainer.addEventListener('scroll', handleScroll);
+  
+      return () => {
+        timeScaleContainer.removeEventListener('scroll', handleScroll);
+        contentContainer.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, []);
 
   // 處理滾動事件
-  const handleScroll = useCallback((event) => {
-    const { scrollLeft } = event.target;
-    syncScroll(scrollLeft);
-  }, [syncScroll]);
+  // const handleScroll = useCallback((event) => {
+  //   const { scrollLeft } = event.target;
+  //   syncScroll(scrollLeft);
+  // }, [syncScroll]);
 
   // 處理滾輪事件
   const handleWheel = useCallback((event) => {
