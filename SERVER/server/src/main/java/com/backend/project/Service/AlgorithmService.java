@@ -30,8 +30,7 @@ public class AlgorithmService {
     @Value("${time-table.export.path}")
     private String TIME_TABLE_FILE_PATH;
 
-    @Value("${ORSM.export.path}")
-    private String ORSM_FILE_PATH;
+    private String ORSM_FILE_PATH = "ORSM 2025";
 
     private final SurgeryRepository surgeryRepository;
 
@@ -116,7 +115,7 @@ public class AlgorithmService {
                         CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
                         CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                        CSVWriter.DEFAULT_LINE_END)) {
+                        "\n")) {
 
             String[] data = {
                     "#每日開始排程時間 (分)。例如：510 表示 08:30、540 表示 09:00",
@@ -128,7 +127,9 @@ public class AlgorithmService {
                     "#兩檯手術之間的銜接期間 (分)。預設：60",
                     (bridgeTime.isEmpty() ? "60" : bridgeTime)
             };
-            csvWriter.writeNext(data);
+            for (String line : data) {
+                csvWriter.writeNext(new String[]{line}); // 每次寫入一個值，換行處理
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
