@@ -196,6 +196,17 @@ public class Surgery {
         this.chiefSurgeonId = chiefSurgeonId;
     }
 
+    @Column(name = "department_name")
+    private String departmentName;
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
     public String getFormattedTime() {
         try {
             if (this.date == null) {

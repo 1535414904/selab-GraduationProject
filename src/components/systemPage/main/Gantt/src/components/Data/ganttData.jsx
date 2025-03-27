@@ -84,7 +84,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
               surgeryReason: surgery.surgeryReason,
               specialOrRequirements: surgery.specialOrRequirements,
               user: surgery.user,
-              specialty: surgery.specialty || "未指定科別", // 加入科別
+              departmentName: surgery.departmentName || "未指定科別", // 修改科別屬性名
               prioritySequence: surgery.prioritySequence || 999 // 保存優先順序
             };
             console.log('手術項目:', surgeryItem);

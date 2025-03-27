@@ -26,6 +26,12 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
 
     // 檢查是否為MainGantt並且處於唯讀模式
     if (mainState === "mainPage" && mainGanttRef.current) {
+      // 檢查用戶權限，只有管理員(role=3)才能進行拖曳操作
+      if (user.role !== 3) {
+        console.warn("非管理員用戶無法進行拖曳操作");
+        return;
+      }
+      
       // 每次拖曳時獲取最新的狀態
       const { setHasChanges, filteredRows, setFilteredRows, readOnly } = mainGanttRef.current;
       
@@ -92,6 +98,12 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
     }
     // 處理 Gantt (排班管理) 的拖曳
     else if (mainState === "shiftMgr") {
+      // 檢查用戶權限，只有管理員(role=3)才能進行排班管理的拖曳操作
+      if (user.role !== 3) {
+        console.warn("非管理員用戶無法進行排班管理的拖曳操作");
+        return;
+      }
+      
       // 首先嘗試解析拖曳源和目標索引
       try {
         const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);

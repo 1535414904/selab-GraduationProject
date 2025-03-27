@@ -75,7 +75,20 @@ public class OperatingRoomService {
     public List<Surgery> getSurgeryByOperatingRoomId(String operatingRoomId) {
         OperatingRoom operatingRoom = operatingRoomRepository.findById(operatingRoomId)
                 .orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
-        return surgeryRepository.findByOperatingRoom(operatingRoom);
+        
+        // 獲取手術列表
+        List<Surgery> surgeries = surgeryRepository.findByOperatingRoom(operatingRoom);
+        
+        // 為每個手術設置科別資訊
+        for (Surgery surgery : surgeries) {
+            // 確保手術房和科別資訊已加載
+            if (surgery.getOperatingRoom() != null && surgery.getOperatingRoom().getDepartment() != null) {
+                Department department = surgery.getOperatingRoom().getDepartment();
+                surgery.setDepartmentName(department.getName());
+            }
+        }
+        
+        return surgeries;
     }
 
     public String getLastSurgeryEndTime(String operatingRoomId) {
