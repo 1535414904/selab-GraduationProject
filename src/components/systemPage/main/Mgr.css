@@ -502,3 +502,36 @@ table {
   gap: 8px;
   min-height: 40px;
 }
+
+/* 滑入動畫 */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.2 s ease-out forwards;
+}
+
+/* 滑出動畫 */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(200%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+

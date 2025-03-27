@@ -7,7 +7,8 @@ import { faPenSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import EditableRow from "./EditableRow";
 import AddRow from "./AddRow";
 
-function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSurgeons, setDepartments }) {
+function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSurgeons, setDepartments, renderButtons, // 👈 新增這個
+}) {
     const [chiefSurgeons, setChiefSurgeons] = useState([]);
     const [editingChiefSurgeon, setEditingChiefSurgeon] = useState(null);
     const [emptyError, setEmptyError] = useState(null);
@@ -118,50 +119,56 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
         }
     };
 
+    const buttonGroup = (
+        <div className="header-function mb-3 flex gap-2">
+            <button className="account-button" onClick={handleAddChiefSurgeon} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    style={{ width: "1em", height: "1em" }}
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+                新增
+            </button>
+            <button
+                className="account-button mgr-cancel"
+                onClick={handleDeleteSelectedChiefSurgeons}
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    style={{ width: "1em", height: "1em" }}
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+                刪除
+            </button>
+
+        </div>
+    );
+
+
+
     return (
 
         <td colSpan={5}>
-            {/* 🔘 功能列 */}
-            <div className="header-function mb-3 flex gap-2">
-                <button className="account-button" onClick={handleAddChiefSurgeon} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        style={{ width: "1em", height: "1em" }}
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                    </svg>
-                    新增
-                </button>
-                <button
-                    className="account-button mgr-cancel"
-                    onClick={handleDeleteSelectedChiefSurgeons}
-                    style={{ display: "flex", alignItems: "center", gap: "12px" }}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        style={{ width: "1em", height: "1em" }}
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                    </svg>
-                    刪除
-                </button>
-            </div>
+
             <table className="system-table chief-surgeon-list">
                 <thead>
                     <tr>

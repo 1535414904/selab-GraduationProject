@@ -73,6 +73,16 @@ function DepartmentListWrapper({
   const addRow = () => {
     setAddChiefSurgeons([...addChiefSurgeons, { id: "", name: "" }]);
   };
+  const [showPanel, setShowPanel] = useState(false);
+
+  useEffect(() => {
+    if (expandedRow !== null) {
+      setShowPanel(true);
+    } else {
+      // 延遲卸載，等動畫播放完
+      setTimeout(() => setShowPanel(false), 150);
+    }
+  }, [expandedRow]);
 
   // 
   // 舊的 return 我怕做壞，所以先保留，壞了再改回來。
@@ -206,8 +216,9 @@ function DepartmentListWrapper({
   // );
   return (
     <div className={`flex w-full transition-all duration-300 ${expandedRow !== null ? "flex-col md:flex-row" : "flex-col"}`}>
+
       {/* 左欄：科別表格 */}
-      <div className={`${expandedRow !== null ? "w-full md:w-3/4 pr-2" : "w-full"}`}>
+      <div className={`${expandedRow !== null ? "w-full md:w-3/4 pr-0" : "w-full"}`}>
         <div className="mgr-list">
           <table className="system-table">
             <thead>
@@ -296,7 +307,7 @@ function DepartmentListWrapper({
                               className="action-icon"
                             />
                           </button>
-                          {expandedRow === index && (
+                          {/* {expandedRow === index && (
                             <button
                               onClick={addRow}
                               className="action-button add-button"
@@ -306,7 +317,7 @@ function DepartmentListWrapper({
                                 className="action-icon"
                               />
                             </button>
-                          )}
+                          )} */}
                         </div>
                       </td>
                     </tr>
@@ -325,8 +336,10 @@ function DepartmentListWrapper({
       </div>
 
       {/* 右欄：主治醫師區塊 */}
-      {expandedRow !== null && (
-        <div className="w-full md:w-1/4 border-l bg-white p-4 animate-slide-in-right">
+      {/* {expandedRow !== null && (
+        // <div className="w-full md:w-1/4 border-l bg-white p-4 animate-slide-in-right">
+        <div className="w-full md:w-1/3 pl-4 bg-blue-50 border-2 border-blue-400 rounded-xl shadow-lg animate-slide-in-right transition-all duration-300 animate-border-pulse">
+
           <ChiefSurgeonListWrapper
             departmentId={filteredDepartments[expandedRow]?.id}
             addChiefSurgeons={addChiefSurgeons}
@@ -335,8 +348,86 @@ function DepartmentListWrapper({
             setIsEditing={setIsEditing}
           />
         </div>
+      )} */}
+
+      {/* {expandedRow !== null && (
+        <div className="w-full md:w-1/3 pl-4 transform-gpu translate-x-0 transition-all duration-500 ease-in-out">
+          <div className="h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 animate-slide-in-right animate-border-pulse overflow-auto">
+            {/* 
+            <h2 className="text-xl font-semibold text-blue-800 mb-4 border-b pb-2">
+              主刀醫師名單
+            </h2> }
+            <h2 className="text-xl font-semibold text-blue-800 mb-4 border-b pb-2">
+              {filteredDepartments[expandedRow]?.name} 醫師名單
+            </h2>
+
+            <ChiefSurgeonListWrapper
+              departmentId={filteredDepartments[expandedRow]?.id}
+              addChiefSurgeons={addChiefSurgeons}
+              setAddChiefSurgeons={setAddChiefSurgeons}
+              setDepartments={setDepartments}
+              setIsEditing={setIsEditing}
+            />
+          </div>
+        </div>
+      )} */}
+
+      {/* {(expandedRow !== null || showPanel) && (
+        <div className="w-full md:w-1/3 pl-4 transform-gpu translate-x-0 transition-all duration-500 ease-in-out">
+          {/* <div className={`h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
+      ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"} animate-border-pulse`}> }
+          <div className={`h - full bg-white /90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
+          flex flex-col items-center animate-border-pulse ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"}`}>
+            <div className="w-full mb-4 border-b pb-2">
+              <h2 className="text-xl font-semibold text-blue-800 text-left">
+                {filteredDepartments[expandedRow]?.name || ""} 醫師名單
+              </h2>
+            </div>
+
+            {expandedRow !== null && (
+              <ChiefSurgeonListWrapper
+                departmentId={filteredDepartments[expandedRow]?.id}
+                addChiefSurgeons={addChiefSurgeons}
+                setAddChiefSurgeons={setAddChiefSurgeons}
+                setDepartments={setDepartments}
+                setIsEditing={setIsEditing}
+                renderButtons={(buttons) => buttons} // 直接渲染按鈕在這裡
+
+              />
+            )}
+          </div>
+        </div>
+      )} */}
+      {(expandedRow !== null || showPanel) && (
+        <div className="w-full md:w-1/3 pl-4 transform-gpu translate-x-0 transition-all duration-500 ease-in-out">
+          <div className={`h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
+      flex flex-col animate-border-pulse ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"}`}>
+
+            {/* 🔹 標題 + 按鈕 */}
+            <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-xl font-semibold text-blue-800 text-left">
+                {filteredDepartments[expandedRow]?.name || ""} 醫師名單
+              </h2>
+            </div>
+
+            {/* 🔹 主治醫師表格（不含按鈕） */}
+            {expandedRow !== null && (
+              <ChiefSurgeonListWrapper
+                departmentId={filteredDepartments[expandedRow]?.id}
+                addChiefSurgeons={addChiefSurgeons}
+                setAddChiefSurgeons={setAddChiefSurgeons}
+                setDepartments={setDepartments}
+                setIsEditing={setIsEditing}
+                renderButtons={() => null}
+              />
+            )}
+          </div>
+        </div>
       )}
-    </div>
+
+
+
+    </div >
   );
 
 }

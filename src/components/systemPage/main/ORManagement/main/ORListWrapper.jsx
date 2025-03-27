@@ -115,7 +115,12 @@ function ORListWrapper({
                                     setIsEditing={setEditingOperatingRoom}
                                 />
                             ) : (
-                                <tr key={operatingRoom.id}>
+                                // <tr key={operatingRoom.id}>
+                                <tr
+                                    key={operatingRoom.id}
+                                    className={selectedOperatingRooms.includes(operatingRoom.id) ? "selected" : "unselected"}
+                                >
+
                                     <td
                                         onClick={() => handleCheckboxChange(operatingRoom.id)}
                                         className={`selectable-cell ${selectedOperatingRooms.includes(operatingRoom.id) ? "selected" : ""}`}

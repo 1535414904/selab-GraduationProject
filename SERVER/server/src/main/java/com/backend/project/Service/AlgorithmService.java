@@ -2,6 +2,7 @@ package com.backend.project.Service;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,6 +30,9 @@ public class AlgorithmService {
     @Value("${time-table.export.path}")
     private String TIME_TABLE_FILE_PATH;
 
+    @Value("${ORSM.export.path}")
+    private String ORSM_FILE_PATH;
+
     private final SurgeryRepository surgeryRepository;
 
     public AlgorithmService(SurgeryRepository surgeryRepository) {
@@ -38,6 +42,7 @@ public class AlgorithmService {
     public void runBatchFile() {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
         exportSurgeriesToCsv();
+        // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", BATCH_FILE_PATH);
@@ -60,7 +65,7 @@ public class AlgorithmService {
 
         try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
                 BufferedWriter writer = new BufferedWriter(osw);
-                CSVWriter csvWriter = new CSVWriter(writer, 
+                CSVWriter csvWriter = new CSVWriter(writer,
                         CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
                         CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
@@ -93,6 +98,38 @@ public class AlgorithmService {
                 };
                 csvWriter.writeNext(data);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportArgumentsToCsv(
+            String startTime,
+            String normalTime,
+            String maxTime,
+            String bridgeTime) {
+        String filePath = ORSM_FILE_PATH + "/Arguments4Exec.csv";
+
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+                BufferedWriter writer = new BufferedWriter(osw);
+                CSVWriter csvWriter = new CSVWriter(writer,
+                        CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
+                        CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
+                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                        CSVWriter.DEFAULT_LINE_END)) {
+
+            String[] data = {
+                    "#每日開始排程時間 (分)。例如：510 表示 08:30、540 表示 09:00",
+                    (startTime.isEmpty() ? "510" : startTime),
+                    "#每日允許可用的最大常規期間 (分)。預設：540",
+                    (normalTime.isEmpty() ? "540" : normalTime),
+                    "#每日允許可用的最大超時期間 (分)。預設：120",
+                    (maxTime.isEmpty() ? "120" : maxTime),
+                    "#兩檯手術之間的銜接期間 (分)。預設：60",
+                    (bridgeTime.isEmpty() ? "60" : bridgeTime)
+            };
+            csvWriter.writeNext(data);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
