@@ -87,7 +87,7 @@ function DepartmentFilter({ departments, filterDepartment, setFilterDepartment }
             onClick={clearFilters}
             className="clear-filters-btn"
             style={{
-              backgroundColor: "#3498db",
+              backgroundColor: "#3b82f6",
               color: "white",
               padding: "8px 16px",
               border: "none",

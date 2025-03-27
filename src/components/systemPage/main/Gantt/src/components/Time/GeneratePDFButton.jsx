@@ -145,7 +145,7 @@ const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
 
   return (
     <button
-      className="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+      className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
       onClick={generatePDF}
     >
       <svg
