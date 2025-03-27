@@ -41,6 +41,7 @@ public class User {
     @Column(name = "reset_code_attempts")
     private int resetCodeAttempts;
 
+    // @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Surgery> surgeries;
 

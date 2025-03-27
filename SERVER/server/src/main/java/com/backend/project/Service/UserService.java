@@ -106,6 +106,8 @@ public class UserService {
             userRepository.save(user);
             return false;
         }
+        // System.out.println("驗證碼應該是: " + user.getResetPasswordCode());
+        // System.out.println("使用者輸入: " + inputCode);
 
         // 驗證成功：清除驗證碼與次數
         user.setResetPasswordCode(null);

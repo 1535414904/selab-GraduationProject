@@ -8,7 +8,8 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
   const [verificationCode, setVerificationCode] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState({ username: "", email: "", verificationCode: "" });
-  const [step, setStep] = useState("send"); // 'send' or 'verify'
+  const [step, setStep] = useState("send");
+  const [countdown, setCountdown] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -58,17 +59,34 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
   const { hourHand, minuteHand } = getClockHands();
   const cross = getMedicalCross();
 
+  // Email validation regex
+  const validateEmail = (email) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const resetErrors = () => {
+    setError({ username: "", email: "", verificationCode: "" });
+  };
+
   const sendCodeHandler = async () => {
-    const newError = { username: "", email: "", verificationCode: "" };
+    resetErrors();
     let isValid = true;
+    const newError = { username: "", email: "", verificationCode: "" };
+
     if (!username.trim()) {
-      newError.username = "*請輸入帳號";
+      newError.username = "帳號不能為空";
       isValid = false;
     }
+
     if (!email.trim()) {
-      newError.email = "*請輸入信箱";
+      newError.email = "電子信箱不能為空";
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      newError.email = "請輸入有效的電子信箱";
       isValid = false;
     }
+
     setError(newError);
     if (!isValid) return;
 
@@ -77,41 +95,73 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
         username,
         email,
       });
-      setMessage(res.data);
+      
+      setMessage("驗證碼已發送，請檢查您的郵箱");
       setStep("verify");
+      setCountdown(300); // 5分鐘倒數
     } catch (err) {
       setMessage("發送驗證碼失敗，請確認帳號與信箱是否正確");
     }
   };
 
   const confirmHandler = async () => {
-    const newError = { username: "", email: "", verificationCode: "" };
+    resetErrors();
     let isValid = true;
-
+    const newError = { verificationCode: "" };
+  
     if (!verificationCode.trim()) {
-      newError.verificationCode = "*請輸入驗證碼";
+      newError.verificationCode = "驗證碼不能為空";
       isValid = false;
     }
-
+  
     setError(newError);
     if (!isValid) return;
-
+  
     try {
-      const res = await axios.post(`${BASE_URL}/api/login/ForgotPassword`, {
+      const res = await axios.post(`${BASE_URL}/api/login/verifyCode`, {
         username,
         email,
-        verificationCode,
+        verificationCode
+      }, {
+        headers: {
+          "Content-Type": "application/json"
+        }
       });
-
-      if (res.data === 1) {
+  
+      setMessage("");
+      if (res.data === "驗證成功") {
         setNowUsername(username);
         togglePage("changePasswordPage");
       } else {
         setMessage("驗證失敗，請確認驗證碼是否正確");
       }
-    } catch {
+    } catch (err) {
       setMessage("驗證過程發生錯誤，請稍後再試");
     }
+  };
+  
+
+  // Countdown timer for verification code
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const resendCode = () => {
+    if (countdown === 0) {
+      sendCodeHandler();
+    }
+  };
+
+  const formatCountdown = () => {
+    const minutes = Math.floor(countdown / 60);
+    const seconds = countdown % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   return (
@@ -201,7 +251,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
             {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
           </div>
 
-          {/* 驗證碼（僅在 step === 'verify' 顯示） */}
+          {/* 驗證碼輸入 */}
           {step === "verify" && (
             <div>
               <input
@@ -211,6 +261,21 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
                 onChange={(e) => setVerificationCode(e.target.value)}
               />
               {error.verificationCode && <p className="text-sm text-red-600 mt-1">{error.verificationCode}</p>}
+              
+              {/* 倒數計時器 */}
+              {countdown > 0 && (
+                <p className="text-sm text-blue-600 mt-2">
+                  驗證碼將在 {Math.floor(countdown / 60)}:{countdown % 60 < 10 ? '0' : ''}{countdown % 60} 後過期
+                </p>
+              )}
+              {countdown === 0 && (
+                <button 
+                  className="text-sm text-blue-700 hover:underline mt-2"
+                  onClick={resendCode}
+                >
+                  重新發送驗證碼
+                </button>
+              )}
             </div>
           )}
 
@@ -223,13 +288,24 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
 
           {/* 按鈕 */}
           <div className="flex justify-between items-center pt-2">
-            <button className="text-sm text-blue-700 hover:underline" onClick={() => togglePage("loginPage")}>返回登入</button>
+            <button 
+              className="text-sm text-blue-700 hover:underline" 
+              onClick={() => togglePage("loginPage")}
+            >
+              返回登入
+            </button>
             {step === "send" ? (
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={sendCodeHandler}>
+              <button 
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" 
+                onClick={sendCodeHandler}
+              >
                 發送驗證碼
               </button>
             ) : (
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={confirmHandler}>
+              <button 
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" 
+                onClick={confirmHandler}
+              >
                 確認
               </button>
             )}
