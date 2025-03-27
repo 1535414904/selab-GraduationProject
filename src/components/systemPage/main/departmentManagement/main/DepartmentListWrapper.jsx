@@ -20,6 +20,7 @@ function DepartmentListWrapper({
   setAddDepartments,
   handleAdd,
   emptyError,
+  setEmptyError
 }) {
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [editingDepartment, setEditingDepartment] = useState(null);
@@ -236,6 +237,7 @@ function DepartmentListWrapper({
                 setAddDepartments={setAddDepartments}
                 handleAdd={handleAdd}
                 emptyError={emptyError}
+                setEmptyError={setEmptyError}
               />
               {filteredDepartments.length > 0 ? (
                 filteredDepartments.map((department, index) =>

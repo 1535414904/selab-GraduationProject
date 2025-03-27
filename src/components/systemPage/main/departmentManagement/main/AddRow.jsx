@@ -2,40 +2,49 @@
 import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError }) {
-    const handleChange = (index, event) => {
+function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError, setEmptyError }) {
+    const handleChange = (uniqueId, event) => {
         const { name, value } = event.target;
         const updated = [...addDepartments];
-        updated[index][name] = value;
+        const department = updated.find(dep => dep.uniqueId === uniqueId);
+        if (department) {
+            department[name] = value;
+        }
         setAddDepartments(updated);
     };
+    
 
-    const handleDelete = (index) => {
-        const updated = addDepartments.filter((department, idx) => idx !== index);
+    const handleDelete = (uniqueId) => {
+        const updated = addDepartments.filter(department => department.uniqueId !== uniqueId);
         setAddDepartments(updated);
+        setEmptyError((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[uniqueId];  // 根據 uniqueId 刪除錯誤
+            return newErrors;
+        });
     };
 
     return (
         <>
-            {addDepartments.map((department, index) => (
-                <tr className="editable-row" key={index}>
+            {addDepartments.map((department) => (
+                <tr className="editable-row" key={department.uniqueId}>
                     <td></td>
                     <td>
                         <input
                             type="text"
                             name="id"
                             value={department.id}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(department.uniqueId, e)}
                             placeholder="輸入科別編號"
                         />
-                        <div className="error">{emptyError}</div>
+                        {emptyError[department.uniqueId] && <span className="error">{emptyError[department.uniqueId]}</span>}
                     </td>
                     <td>
                         <input
                             type="text"
                             name="name"
                             value={department.name}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(department.uniqueId, e)}
                             placeholder="輸入科別名稱"
                         />
                     </td>
@@ -51,14 +60,14 @@ function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError }) {
                         <div className="action-buttons">
                             {/* 儲存按鈕 */}
                             <button className="action-button edit-button" onClick={() => {
-                                handleAdd(department);
-                                if (department.id.trim()) { handleDelete(index); }
+                                handleAdd(department, department.uniqueId);
+                                if (department.id.trim()) { handleDelete(department.uniqueId); }
                             }}>
                                 <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                             </button>
 
                             {/* 刪除按鈕 */}
-                            <button className="action-button delete-button" onClick={() => handleDelete(index)}>
+                            <button className="action-button delete-button" onClick={() => handleDelete(department.uniqueId)}>
                                 <FontAwesomeIcon icon={faTrash} className="action-icon" />
                             </button>
                         </div>

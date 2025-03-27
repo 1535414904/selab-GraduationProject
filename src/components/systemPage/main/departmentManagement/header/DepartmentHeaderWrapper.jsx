@@ -15,7 +15,12 @@ function DepartmentHeaderWrapper({
   setAddDepartments,
 }) {
   const addRow = () => {
-    setAddDepartments([...addDepartments, { id: "", name: "" }]);
+    const newDepartment = {
+      id: "",
+      name: "",
+      uniqueId: Date.now()  // 使用當前時間戳作為唯一 ID
+    };
+    setAddDepartments([...addDepartments, newDepartment]);
   };
 
   return (
