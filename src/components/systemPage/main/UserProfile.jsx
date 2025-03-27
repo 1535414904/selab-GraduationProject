@@ -16,9 +16,9 @@ function UserProfile({ user, onUpdateUser }) {
   });
 
   const roleMap = {
-    1: "管理者",
+    1: "查看者",
     2: "編輯者",
-    3: "查看者",
+    3: "管理者",
   };
 
   const clearInputs = () => {
