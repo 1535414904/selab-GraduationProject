@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Dao.OperatingRoomRepository;
 import com.backend.project.Service.SurgeryService;
+import com.backend.project.model.Department;
 import com.backend.project.model.OperatingRoom;
 import com.backend.project.model.Surgery;
 import org.springframework.web.bind.annotation.PostMapping;
 
-
+/**
+ * SurgeryController
+ */
 @CrossOrigin(origins = { "*" })
 @RestController
 @RequestMapping("/api")
@@ -64,6 +67,21 @@ public class SurgeryController {
         response.put("estimatedSurgeryTime", surgery.getEstimatedSurgeryTime());
         response.put("anesthesiaMethod", surgery.getAnesthesiaMethod());
         response.put("surgeryReason", surgery.getSurgeryReason());
+
+        // 科別資訊 - 從手術房獲取關聯的科別
+        if (surgery.getOperatingRoom() != null) {
+            OperatingRoom operatingRoom = surgery.getOperatingRoom();
+            Department department = operatingRoom.getDepartment();
+            if (department != null) {
+                response.put("departmentName", department.getName());
+            } else {
+                response.put("departmentName", "未指定科別");
+                System.out.println("Warning: Operating Room " + operatingRoom.getId() + " has no associated department");
+            }
+        } else {
+            response.put("departmentName", "未指定科別");
+            System.out.println("Warning: Surgery " + surgery.getApplicationId() + " has no associated operating room");
+        }
 
         // 其他資訊
         response.put("specialOrRequirements", surgery.getSpecialOrRequirements());

@@ -103,7 +103,7 @@ function SurgeryModal({ surgery, onClose, error }) {
           <div className="info-group green">
             <h3>手術資訊</h3>
             <p>
-              <strong>科別：</strong> {surgery.specialty || '未指定'}
+              <strong>科別：</strong> {surgery.departmentName || '未指定'}
             </p>
             <p>
               <strong>手術名稱：</strong> {surgery.surgeryName || '未指定'}

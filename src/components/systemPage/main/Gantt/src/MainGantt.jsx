@@ -24,6 +24,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   const [modalError, setModalError] = useState(null); // 模態視窗錯誤
   const [hasChanges, setHasChanges] = useState(false); // 是否有未保存的變更
   const [isSaving, setIsSaving] = useState(false); // 是否正在保存
+  const [userRole, setUserRole] = useState(null); // 用戶角色
 
   // 初始化數據
   useEffect(() => {
@@ -31,6 +32,17 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       setLoading(true);
       try {
         await fetchSurgeryData(setRows, setLoading, setError);
+        
+        // 獲取當前用戶信息
+        const username = localStorage.getItem('username');
+        if (username) {
+          try {
+            const response = await axios.get(`${BASE_URL}/api/system/user/${username}`);
+            setUserRole(response.data.role);
+          } catch (error) {
+            console.error("獲取用戶信息失敗:", error);
+          }
+        }
       } catch (error) {
         console.error("初始化數據失敗:", error);
         setError("初始化數據失敗");
@@ -95,6 +107,12 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   
   // 切換編輯模式
   const toggleEditMode = () => {
+    // 檢查用戶權限，只有管理員(role=3)才能切換到編輯模式
+    if (userRole !== 3 && !readOnly) {
+      alert("您沒有權限進行編輯操作！");
+      return;
+    }
+    
     // 如果要從編輯模式切換到唯讀模式
     if (!readOnly) {
       console.log("切換到唯讀模式");
@@ -102,8 +120,13 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       // 直接調用保存函數
       confirmSaveChanges();
     } else {
+      // 從唯讀模式切換到編輯模式，需要檢查權限
+      if (userRole !== 3) {
+        alert("只有管理員才能進行編輯操作！");
+        return;
+      }
+      
       console.log("切換到編輯模式");
-      // 從唯讀模式切換到編輯模式
       setReadOnly(false);
       
       // 立即更新 mainGanttRef
@@ -225,7 +248,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
 
   return (
     <div className="gantt-main-container">
-      {/* ✅ 上方資訊區塊 */}
+      {/* 上方資訊區塊 */}
       <div className="gantt-header">
         <div className="gantt-title">
         <div className="gantt-date">
@@ -234,7 +257,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
         </div>
       </div>
 
-        {/* ✅ 手術室數量、編輯模式按鈕 & PDF 按鈕 */}
+        {/* 手術室數量、編輯模式按鈕 & PDF 按鈕 */}
         <div className="gantt-actions">
           <div className="gantt-room-count">
             <svg className="gantt-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +279,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
         </div>
       </div>
 
-      {/* ✅ 使用提示 */}
+      {/* 使用提示 */}
     <div className="gantt-tips">
       <svg 
         className="gantt-tips-icon" 
@@ -282,13 +305,13 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       </div>
     </div>
 
-      {/* ✅ 篩選器放在提示下方 */}
+      {/* 篩選器放在提示下方 */}
       <GanttFilter 
         originalRows={rows} 
         onFilteredDataChange={handleFilterChange} 
       />
 
-      {/* ✅ 手術排程內容 */}
+      {/* 手術排程內容 */}
       {!loading && !error && filteredRows.length > 0 && (
         <div className="gantt-content">
           <div ref={scrollContainerRef} className="scroll-container">
@@ -318,7 +341,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
         </div>
       )}
 
-      {/* ✅ 當篩選後無符合的資料 */}
+      {/* 當篩選後無符合的資料 */}
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">
           <p className="no-data-title">尚無符合條件的排程資料</p>
