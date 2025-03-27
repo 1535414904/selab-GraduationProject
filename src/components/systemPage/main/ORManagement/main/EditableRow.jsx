@@ -11,7 +11,9 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
         name: operatingRoom.name,
         departmentId: operatingRoom.department.id,
         roomType: operatingRoom.roomType,
-        status: operatingRoom.status
+        // status: operatingRoom.status
+        status: String(operatingRoom.status) // 👈 改這裡
+
     });
     const [error, setError] = useState(null);
     const [departments, setDepartments] = useState([]);
@@ -92,8 +94,8 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
             <td>
                 <select name="status" value={editedOperatingRoom.status}
                     onChange={handleChange}>
-                    <option value={0}>關閉</option>
-                    <option value={1}>開啟</option>
+                    <option value="0">關閉</option>
+                    <option value="1">開啟</option>
                 </select>
             </td>
             {/* <td>

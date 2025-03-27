@@ -57,6 +57,13 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
             console.error("updated error：", error);
         }
     };
+    const handleCheckboxChange = (id) => {
+        setSelectedIds((prevSelected) =>
+            prevSelected.includes(id)
+                ? prevSelected.filter((selectedId) => selectedId !== id)
+                : [...prevSelected, id]
+        );
+    };
 
     // const handleDelete = async (id) => {
     //     try {
@@ -193,10 +200,19 @@ function ChiefSurgeonListWrapper({ departmentId, addChiefSurgeons, setAddChiefSu
                                 handleSave={handleSave}
                             />
                         ) : (
-                            <tr key={chiefSurgeon.id}>
-                                <td>
+                            <tr key={chiefSurgeon.id}
+                                className={selectedIds.includes(chiefSurgeon.id) ? "selected" : "unselected"}
+                            >
+                                <td
+                                    onClick={() => handleCheckboxChange(chiefSurgeon.id)}
+                                    className={`selectable-cell ${selectedIds.includes(chiefSurgeon.id) ? "selected" : ""}`}
+                                >
                                     <input
                                         type="checkbox"
+                                        checked={selectedIds.includes(chiefSurgeon.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={() => handleCheckboxChange(chiefSurgeon.id)}
+                                        className="checkbox"
                                     />
                                 </td>
                                 <td>{chiefSurgeon.id}</td>

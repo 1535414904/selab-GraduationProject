@@ -11,7 +11,7 @@ function ORHeaderWrapper({
   addOperatingRooms, setAddOperatingRooms
 }) {
   const addRow = () => {
-    setAddOperatingRooms([...addOperatingRooms, { id: "", name: "", departmentId: "1", roomType: "", status: 1 }]);
+    setAddOperatingRooms([...addOperatingRooms, { id: "", name: "", departmentId: "1", roomType: "", status: "" }]);
   };
 
   return (

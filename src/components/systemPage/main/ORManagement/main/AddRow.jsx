@@ -86,8 +86,8 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             value={operatingRoom.status}
                             onChange={(e) => handleChange(index, e)}
                         >
-                            <option value={1}>開啟</option>
-                            <option value={0}>關閉</option>
+                            <option value="1">開啟</option>
+                            <option value="0">關閉</option>
                         </select>
                     </td>
                     {/* <td>
