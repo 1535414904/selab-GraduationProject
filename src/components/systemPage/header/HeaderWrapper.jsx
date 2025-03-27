@@ -1,41 +1,106 @@
 import UserList from "./UserList";
 import "../SystemPage.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /* eslint-disable react/prop-types */
 
 function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   useEffect(() => {
     toggleMainPage("mainPage");
   }, [toggleMainPage]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getClockHands = () => {
+    const hours = currentTime.getHours() % 12;
+    const minutes = currentTime.getMinutes();
+    const hourAngle = hours * 30 + minutes * 0.5;
+    const minuteAngle = minutes * 6;
+    const hourHandLength = 35;
+    const minuteHandLength = 45;
+    return {
+      hourHand: {
+        x2: 100 + hourHandLength * Math.sin((hourAngle * Math.PI) / 180),
+        y2: 100 - hourHandLength * Math.cos((hourAngle * Math.PI) / 180),
+      },
+      minuteHand: {
+        x2: 100 + minuteHandLength * Math.sin((minuteAngle * Math.PI) / 180),
+        y2: 100 - minuteHandLength * Math.cos((minuteAngle * Math.PI) / 180),
+      },
+    };
+  };
+
+  const getMedicalCross = () => {
+    const minutes = currentTime.getMinutes();
+    const minuteAngle = minutes * 6;
+    const centerDistance = 30;
+    const centerX = 100 + centerDistance * Math.sin((minuteAngle * Math.PI) / 180);
+    const centerY = 100 - centerDistance * Math.cos((minuteAngle * Math.PI) / 180);
+    return {
+      horizontal: {
+        x: centerX - 15,
+        y: centerY - 4,
+      },
+      vertical: {
+        x: centerX - 4,
+        y: centerY - 15,
+      },
+    };
+  };
+
+  const { hourHand, minuteHand } = getClockHands();
+  const cross = getMedicalCross();
 
   return (
     <div className="w-full bg-gradient-to-r from-blue-400 to-blue-400 shadow-lg z-1000 relative">
       <div className="w-full max-w-screen-3xl mx-auto px-4">
         <div className="flex items-center mr-auto h-16">
           {/* Logo and Hospital Name */}
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => toggleMainPage("mainPage")}
-          >
+          <div className="flex items-center cursor-pointer" onClick={() => toggleMainPage("mainPage")}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-8 w-8 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
-                </svg>
+                <div className="w-10 h-10 mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="w-full h-full">
+                    <circle cx="100" cy="100" r="90" fill="#0d6efd" />
+                    <circle cx="100" cy="100" r="75" fill="#FFFFFF" />
+                    <line x1="100" y1="40" x2="100" y2="50" stroke="#0d6efd" strokeWidth="5" />
+                    <line x1="100" y1="150" x2="100" y2="160" stroke="#0d6efd" strokeWidth="5" />
+                    <line x1="40" y1="100" x2="50" y2="100" stroke="#0d6efd" strokeWidth="5" />
+                    <line x1="150" y1="100" x2="160" y2="100" stroke="#0d6efd" strokeWidth="5" />
+                    <line x1="100" y1="100" x2={hourHand.x2} y2={hourHand.y2} stroke="#0d6efd" strokeWidth="6" strokeLinecap="round" />
+                    <line x1="100" y1="100" x2={minuteHand.x2} y2={minuteHand.y2} stroke="#0d6efd" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="100" cy="100" r="8" fill="#0d6efd" />
+                    <rect
+                      x={cross.horizontal.x}
+                      y={cross.horizontal.y}
+                      width="30"
+                      height="8"
+                      rx="4"
+                      fill="#0d6efd"
+                      transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.horizontal.x + 15}, ${cross.horizontal.y + 4})`}
+                    />
+                    <rect
+                      x={cross.vertical.x}
+                      y={cross.vertical.y}
+                      width="8"
+                      height="30"
+                      rx="4"
+                      fill="#0d6efd"
+                      transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`}
+                    />
+                  </svg>
+                </div>
               </div>
               <div className="ml-2">
                 <span className="text-white text-3xl font-semibold drop-shadow-[0_0_3px_#2563eb]">
-                  手術排班系統
+                  MedTime
                 </span>
               </div>
             </div>
@@ -43,15 +108,15 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
           {/* Navigation */}
           <div className="flex items-center space-x-4 ml-auto">
             <button
-              className="flex items-center cursor-pointer px-4 py-2 text-white text-2xl bg-blue-400 drop-shadow-[0_0_3px_#2563eb] rounded-md hover:bg-blue-500 transition duration-300"
+              className="flex items-center cursor-pointer font-bold px-4 py-2 text-white text-2xl bg-blue-400 drop-shadow-[0_0_2px_white]
+ rounded-md hover:bg-blue-500 transition duration-300"
               onClick={() => toggleMainPage("mainPage")}
             >
               首頁
             </button>
-
             {(user.role == 3 || user.role == 2) && (
               <div className="ml-4 relative group">
-                <button className="cursor-pointer flex items-center cursor-pointer px-4 py-2 bg-transparent text-white text-2xl hover:bg-blue-600 rounded-md transition duration-300 flex items-center">
+                <button className="cursor-pointer drop-shadow-[0_0_3px_#2563eb] flex font-bold items-center cursor-pointer px-4 py-2 bg-transparent text-white text-2xl hover:bg-blue-500 rounded-md transition duration-300 flex items-center">
                   管理功能
                   <svg
                     className="ml-1 h-4 w-4"
@@ -124,8 +189,6 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                       科別管理
                     </button>
                   )}
-
-
 
                   {user.role == 3 && (
                     <button
@@ -206,7 +269,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
               </div>
             )}
 
-            {/* Quick Access Icons */}
+
             {/* <div className="hidden md:flex items-center ml-4 space-x-3">
               <button className="text-white hover:text-blue-200 transition duration-300">
                 <svg

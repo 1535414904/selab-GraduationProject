@@ -26,10 +26,10 @@ function UserList({ fullTogglePage, name, toggleMainPage }) {
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative " ref={dropdownRef}>
       {/* 用戶按鈕 */}
       <button
-        className={`cursor-pointer flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${isListOpen ? "bg-white text-blue-700" : "text-white hover:bg-blue-600"
+        className={`cursor-pointer font-bold flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${isListOpen ? "bg-white text-blue-500" : "text-white font-bold hover:bg-blue-500"
           } transition-all duration-300`}
         onClick={toggleMenu}
       >

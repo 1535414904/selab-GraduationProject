@@ -147,7 +147,7 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
               onClick={clearFilters}
               className="clear-filters-btn"
               style={{
-                backgroundColor: "#3498db",
+                backgroundColor: "#3b82f6",
                 color: "white",
                 padding: "8px 16px",
                 border: "none",
@@ -164,7 +164,7 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
         </div>
 
         <button
-          className="filter-toggle-btn"
+          className="filter-toggle-btn" 
           onClick={() => setIsOpen(!isOpen)}
         >
           篩選

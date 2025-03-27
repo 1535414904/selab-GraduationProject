@@ -24,7 +24,7 @@ const ORSMButton = () => {
     return (
         <button
             type="button"
-            className="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+            className="flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
             onClick={(e) => handleRunAlgorithm(e)}
             disabled={isLoading}
         >
