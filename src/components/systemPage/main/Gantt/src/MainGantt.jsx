@@ -108,8 +108,8 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   // 切換編輯模式
   const toggleEditMode = () => {
     // 檢查用戶權限，只有管理員(role=3)才能切換到編輯模式
-    if (userRole !== 3 && !readOnly) {
-      alert("您沒有權限進行編輯操作！");
+    if (userRole !== 3) {
+      alert("只有管理員才能進行編輯操作！");
       return;
     }
     
@@ -120,12 +120,6 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       // 直接調用保存函數
       confirmSaveChanges();
     } else {
-      // 從唯讀模式切換到編輯模式，需要檢查權限
-      if (userRole !== 3) {
-        alert("只有管理員才能進行編輯操作！");
-        return;
-      }
-      
       console.log("切換到編輯模式");
       setReadOnly(false);
       

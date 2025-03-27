@@ -3,6 +3,8 @@ package com.backend.project.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -41,7 +43,7 @@ public class User {
     @Column(name = "reset_code_attempts")
     private int resetCodeAttempts;
 
-    // @JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Surgery> surgeries;
 
@@ -119,11 +121,12 @@ public class User {
         this.resetCodeAttempts = resetCodeAttempts;
     }
 
-    // public List<Surgery> getSurgeries() {
-    //     return surgeries;
-    // }
+    @JsonIgnore
+    public List<Surgery> getSurgeries() {
+        return surgeries;
+    }
 
-    // public void setSurgeries(List<Surgery> surgeries) {
-    //     this.surgeries = surgeries;
-    // }
+    public void setSurgeries(List<Surgery> surgeries) {
+        this.surgeries = surgeries;
+    }
 }
