@@ -41,13 +41,13 @@ public class OperatingRoom {
     }
 
     @Column(name = "operating_room_status")
-    private String operatingRoomStatus;
+    private int operatingRoomStatus;
 
-    public String getStatus() {
+    public int getStatus() {
         return operatingRoomStatus;
     }
 
-    public void setStatus(String operatingRoomStatus) {
+    public void setStatus(int operatingRoomStatus) {
         this.operatingRoomStatus = operatingRoomStatus;
     }
 

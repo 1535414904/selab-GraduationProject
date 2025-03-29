@@ -183,7 +183,7 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
                     <strong>特殊需求：</strong>{" "}
                     <textarea
                         className="surgery-reason"
-                        name="surgeryReason"
+                        name="specialOrRequirements"
                         value={editedSurgery.specialOrRequirements}
                         onChange={handleChange}
                         rows="4"

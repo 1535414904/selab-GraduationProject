@@ -37,7 +37,7 @@ public class OperatingRoomService {
             operatingRoom.setId(updateOperatingRoom.getId());
             operatingRoom.setName(updateOperatingRoom.getName());
             operatingRoom.setRoomType(updateOperatingRoom.getRoomType());
-            operatingRoom.setStatus(operatingRoom.getStatus());
+            operatingRoom.setStatus(updateOperatingRoom.getStatus());
             operatingRoom.setDepartment(department);
             return operatingRoomRepository.save(operatingRoom);
         }).orElseThrow(() -> new RuntimeException("OperatingRoom not found"));

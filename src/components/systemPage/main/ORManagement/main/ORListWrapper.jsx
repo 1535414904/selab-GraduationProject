@@ -144,7 +144,7 @@ function ORListWrapper({
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
                                                 fill={
-                                                    operatingRoom.status === "1"
+                                                    operatingRoom.status
                                                         ? "#facc15" // 開啟：黃色
                                                         : "#9ca3af" // 關閉：灰色
                                                 }

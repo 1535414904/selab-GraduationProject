@@ -157,6 +157,7 @@ public class SurgeryController {
 
     @PostMapping("/system/surgery/add")
     public ResponseEntity<?> addSurgery(@RequestBody Surgery surgery) {
+        System.out.println("🔹 接收到的 Surgery 物件：" + surgery);
         surgeryService.addSurgery(surgery);
         return ResponseEntity.ok("Surgery add successfully");
     }

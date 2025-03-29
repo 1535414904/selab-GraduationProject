@@ -67,13 +67,13 @@ public class SurgeryService {
     }
 
    public Surgery addSurgery(Surgery surgery) {
-    // 若是以帳號為主關聯
+    /*// 若是以帳號為主關聯
     User user = userRepository.findByUsername(surgery.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
 
     if (user == null) {
         throw new RuntimeException("User not found");
-    }
+    }*/
 
     OperatingRoom operatingRoom = operatingRoomRepository.findById(surgery.getOperatingRoomId())
             .orElseThrow(() -> new RuntimeException("OperatingRoom not found"));
@@ -81,7 +81,7 @@ public class SurgeryService {
     ChiefSurgeon chiefSurgeon = chiefSurgeonRepository.findById(surgery.getChiefSurgeonId())
             .orElseThrow(() -> new RuntimeException("ChiefSurgeon not found"));
 
-    surgery.setUser(user);
+    //surgery.setUser(user);
     surgery.setOperatingRoom(operatingRoom);
     surgery.setChiefSurgeon(chiefSurgeon);
 
