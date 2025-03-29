@@ -332,6 +332,14 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
       roomName
     );
     destRoomData.splice(targetIndex + 1, 0, cleaningItem);
+  } else if (targetIndex === destRoomData.length - 1) {
+    // 如果是最後一個手術，也需要添加清潔時間
+    const cleaningItem = createCleaningTimeItem(
+      surgery.endTime,
+      addMinutesToTime(surgery.endTime, getTimeSettings(true).cleaningTime),
+      roomName
+    );
+    destRoomData.push(cleaningItem);
   }
   
   // 更新目標房間的時間
@@ -377,6 +385,19 @@ const updateRoomTimes = (roomData) => {
             const surgeryDuration = calculateDuration(surgery.startTime, surgery.endTime);
             surgery.endTime = addMinutesToTime(groupItemTime, surgeryDuration);
             surgery.color = getColorByEndTime(surgery.endTime, false);
+            
+            // 如果是最後一個手術且不是清潔時間，需要添加清潔時間
+            if (j === item.surgeries.length - 1 && !surgery.isCleaningTime) {
+              const cleaningTime = {
+                isCleaningTime: true,
+                startTime: surgery.endTime,
+                endTime: addMinutesToTime(surgery.endTime, timeSettings.cleaningTime),
+                color: getCleaningColor(),
+                operatingRoomName: surgery.operatingRoomName,
+                _processedInGroup: true
+              };
+              item.surgeries.push(cleaningTime);
+            }
           }
           
           groupItemTime = surgery.endTime;
@@ -420,6 +441,18 @@ const updateRoomTimes = (roomData) => {
       const surgeryDuration = item.duration || calculateDuration(item.startTime, item.endTime);
       item.endTime = addMinutesToTime(currentTime, surgeryDuration);
       item.color = getColorByEndTime(item.endTime, false);
+      
+      // 如果是最後一個項目且不是清潔時間，添加清潔時間
+      if (i === roomData.length - 1 && !item.isCleaningTime) {
+        const cleaningTime = {
+          isCleaningTime: true,
+          startTime: item.endTime,
+          endTime: addMinutesToTime(item.endTime, timeSettings.cleaningTime),
+          color: getCleaningColor(),
+          operatingRoomName: item.operatingRoomName
+        };
+        roomData.push(cleaningTime);
+      }
       
       currentTime = item.endTime;
     }
