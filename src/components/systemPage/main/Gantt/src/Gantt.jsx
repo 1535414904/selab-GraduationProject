@@ -13,12 +13,10 @@ import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { clearTempTimeSettings } from "./components/Time/timeUtils";
 import ORSMButton from "./components/Time/ORSMButton";
-// 引入新的群組操作函數
+// 引入群組操作函數
 import { 
   createGroup, 
   ungroup, 
-  createDragContainer, 
-  handleContainerDrop,
   updateGroupTimes,
   timeToMinutes,
   minutesToTime
@@ -149,22 +147,6 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       };
       
       setFilteredRows(updatedRows);
-    } else if (operation === 'drag') {
-      // 使用新的創建拖曳容器函數
-      const result = createDragContainer(selectedSurgeries, roomData, roomIndex, roomName);
-      
-      if (!result.success) {
-        alert(result.message || '建立多選拖曳失敗');
-        return;
-      }
-      
-      // 更新手術室資料
-      updatedRows[roomIndex] = {
-        ...updatedRows[roomIndex],
-        data: result.newRoomData
-      };
-      
-      setFilteredRows(updatedRows);
     }
   };
   
@@ -231,91 +213,11 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     
     console.log("排班管理甘特圖拖曳結束，更新界面");
     
-    // 檢查是否是虛擬拖曳容器
-    const draggedItemId = result.draggableId;
-    if (draggedItemId.includes('draggable-container-')) {
-      await handleMultiItemDragEnd(result, filteredRows, setFilteredRows);
-    } else {
-      // 處理拖曳結束
-      await handleDragEnd(result, filteredRows, setFilteredRows);
-    }
+    // 處理拖曳結束
+    await handleDragEnd(result, filteredRows, setFilteredRows);
     
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
-  };
-  
-  // 處理多項目拖曳結束
-  const handleMultiItemDragEnd = async (dragResult, rows, setRows) => {
-    const { source, destination, draggableId } = dragResult;
-    
-    // 解析源房間和目標房間索引
-    const sourceRoomIndex = parseInt(source.droppableId.split('-')[1]);
-    const destinationRoomIndex = parseInt(destination.droppableId.split('-')[1]);
-    
-    // 獲取源房間和目標房間數據
-    const sourceRoom = rows[sourceRoomIndex];
-    const destinationRoom = rows[destinationRoomIndex];
-    const roomName = destinationRoom.room || destinationRoom.name || '手術室';
-    
-    // 復制數據以便修改
-    const updatedRows = [...rows];
-    const sourceData = [...sourceRoom.data];
-    const destinationData = sourceRoomIndex === destinationRoomIndex ? 
-      sourceData : [...destinationRoom.data];
-    
-    // 找到被拖曳的虛擬容器
-    const containerIndex = sourceData.findIndex(item => 
-      item.isVirtualContainer && 
-      `draggable-container-${item.id}` === draggableId
-    );
-    
-    if (containerIndex === -1) {
-      console.error('找不到拖曳的虛擬容器');
-      return;
-    }
-    
-    // 獲取容器
-    const container = sourceData[containerIndex];
-    
-    // 使用新的容器處理函數
-    const result = handleContainerDrop(
-      container, 
-      destinationData, 
-      destinationRoomIndex, 
-      destination.index * 2, 
-      roomName
-    );
-    
-    if (!result.success) {
-      console.error(result.message || '處理多選拖曳放置失敗');
-      return;
-    }
-    
-    // 從源位置刪除虛擬容器
-    sourceData.splice(containerIndex, 1);
-    
-    // 更新數據
-    if (sourceRoomIndex === destinationRoomIndex) {
-      // 同一房間內的拖曳
-      updatedRows[sourceRoomIndex] = {
-        ...sourceRoom,
-        data: result.newRoomData
-      };
-    } else {
-      // 跨房間的拖曳
-      updatedRows[sourceRoomIndex] = {
-        ...sourceRoom,
-        data: sourceData
-      };
-      
-      updatedRows[destinationRoomIndex] = {
-        ...destinationRoom,
-        data: result.newRoomData
-      };
-    }
-    
-    // 更新狀態
-    setRows(updatedRows);
   };
   
   // 處理頁籤切換

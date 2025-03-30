@@ -8,7 +8,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
   const [isPinned, setIsPinned] = useState(room.isPinned || false);
   const [isGroupMode, setIsGroupMode] = useState(false);
   const [isUngroupMode, setIsUngroupMode] = useState(false);
-  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [groupOptions, setGroupOptions] = useState(false);
   const [selectedSurgeries, setSelectedSurgeries] = useState([]);
 
@@ -31,31 +30,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
     if (!groupOptions) {
       // 重置選中的手術
       setSelectedSurgeries([]);
-      setIsMultiSelectMode(false);
     }
-  };
-
-  // 啟用多選模式
-  const enableMultiSelectMode = () => {
-    setIsMultiSelectMode(true);
-    setGroupOptions(false);
-  };
-  
-  // 處理多選拖曳
-  const handleDragMultipleItems = () => {
-    if (selectedSurgeries.length < 2) {
-      alert('請至少選擇兩個手術項目');
-      return;
-    }
-    
-    // 調用父組件的群組拖曳函數
-    if (onGroupOperation) {
-      onGroupOperation(roomIndex, selectedSurgeries, 'drag');
-    }
-    
-    // 重置狀態
-    setSelectedSurgeries([]);
-    setIsMultiSelectMode(false);
   };
 
   // 處理選擇手術
@@ -67,7 +42,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
       return;
     }
     
-    if (!isGroupMode && !isMultiSelectMode) return;
+    if (!isGroupMode) return;
     
     // 忽略清潔時間項目
     if (surgery.isCleaningTime) {
@@ -175,7 +150,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 display: 'flex', 
                 alignItems: 'center', 
                 cursor: 'pointer',
-                color: isGroupMode || isUngroupMode || isMultiSelectMode ? '#3B82F6' : 'currentColor'
+                color: isGroupMode || isUngroupMode ? '#3B82F6' : 'currentColor'
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
@@ -215,18 +190,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                   }}
                 >
                   解除
-                </button>
-                <button 
-                  onClick={enableMultiSelectMode}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    padding: '4px 8px',
-                    color: '#10B981'
-                  }}
-                >
-                  多選拖曳
                 </button>
               </div>
             )}
@@ -276,55 +239,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
               </div>
             )}
             
-            {/* 多選模式下選定後的操作按鈕 */}
-            {isMultiSelectMode && (
-              <div className="room-multiselect-actions" style={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                background: '#f3f4f6', 
-                padding: '2px 8px',
-                borderRadius: '4px',
-                marginLeft: '8px'
-              }}>
-                <span style={{ color: '#10B981' }}>{selectedSurgeries.length > 0 ? `已選擇 ${selectedSurgeries.length} 個項目` : '點擊選擇多個項目'}</span>
-                {selectedSurgeries.length > 0 && (
-                  <>
-                    <button 
-                      onClick={handleDragMultipleItems}
-                      style={{ 
-                        background: '#10B981', 
-                        border: 'none', 
-                        cursor: 'pointer',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        color: 'white',
-                        marginLeft: '8px'
-                      }}
-                    >
-                      開始拖曳
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setSelectedSurgeries([]);
-                        setIsMultiSelectMode(false);
-                      }}
-                      style={{ 
-                        background: '#EF4444', 
-                        border: 'none', 
-                        cursor: 'pointer',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        color: 'white',
-                        marginLeft: '4px'
-                      }}
-                    >
-                      取消
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-            
             {/* 解除模式提示 */}
             {isUngroupMode && (
               <div className="room-ungroup-hint" style={{ 
@@ -362,9 +276,8 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
           isPinned={isPinned}
           roomName={room.room}
           readOnly={readOnly}
-          onSurgeryClick={isGroupMode || isMultiSelectMode ? handleSurgerySelect : (isUngroupMode ? handleUngroupItem : onSurgeryClick)}
+          onSurgeryClick={isGroupMode ? handleSurgerySelect : (isUngroupMode ? handleUngroupItem : onSurgeryClick)}
           isGroupMode={isGroupMode}
-          isMultiSelectMode={isMultiSelectMode}
           isUngroupMode={isUngroupMode}
           selectedSurgeries={selectedSurgeries}
           isMainPage={isMainPage}

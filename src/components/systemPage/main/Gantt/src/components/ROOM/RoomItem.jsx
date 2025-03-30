@@ -15,7 +15,6 @@ function RoomItem({
   onSurgeryClick,
   isSelected = false,
   isGroupMode = false,
-  isMultiSelectMode = false,
   isUngroupMode = false,
   isMainPage = false
 }) {
@@ -40,8 +39,8 @@ function RoomItem({
       return;
     }
     
-    // 如果是多選模式或群組模式，則直接呼叫選擇函數（忽略清潔時間項目）
-    if (isGroupMode || isMultiSelectMode) {
+    // 如果是群組模式，則直接呼叫選擇函數（忽略清潔時間項目）
+    if (isGroupMode) {
       // 在群組模式下，清潔時間項目不可選
       if (item.isCleaningTime) {
         return;
@@ -121,7 +120,7 @@ function RoomItem({
   // Determine which color class to use
   const colorClass = () => {
     if (isSelected) {
-      return isMultiSelectMode ? "bg-emerald-200 border-emerald-500" : "bg-blue-200 border-blue-500";
+      return "bg-blue-200 border-blue-500";
     }
     
     switch (item.color) {
@@ -158,15 +157,6 @@ function RoomItem({
         : { cursor: 'default' };
     }
     
-    // 多選模式，非清潔時間可點擊
-    if (isMultiSelectMode && !item.isCleaningTime) {
-      return {
-        cursor: 'pointer',
-        border: isSelected ? '2px solid #10B981' : '2px solid #d1d5db',
-        borderRadius: '0.5rem'
-      };
-    }
-    
     // 群組模式，非清潔時間可點擊
     if (isGroupMode && !item.isCleaningTime) {
       return {
@@ -182,15 +172,15 @@ function RoomItem({
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 ${isSelected ? (isMultiSelectMode ? 'border-2 border-emerald-500' : 'border-2 border-blue-500') : 'border-2 border-gray-300'} rounded-2xl ${colorClass()} ${
+        className={`flex flex-col justify-center items-center text-xs p-1 ${isSelected ? 'border-2 border-blue-500' : 'border-2 border-gray-300'} rounded-2xl ${colorClass()} ${
           isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${(!isMainPage && isPinned) || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (!isMainPage && isPinned ? 'cursor-not-allowed' : (isUngroupMode && item.isGroup) ? 'cursor-pointer' : (isMultiSelectMode || isGroupMode) ? 'cursor-pointer' : (item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'))} relative`}
+        } transform transition-transform duration-100 ${(!isMainPage && isPinned) || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (!isMainPage && isPinned ? 'cursor-not-allowed' : (isUngroupMode && item.isGroup) ? 'cursor-pointer' : (isGroupMode) ? 'cursor-pointer' : (item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'))} relative`}
         style={{
           width,
           height: fixedHeight,
           left,
           opacity: isDragging || isOver24Hours ? 0.4 : 1,
-          cursor: readOnly ? 'default' : (loading ? 'wait' : (!isMainPage && isPinned ? "not-allowed" : (isUngroupMode && item.isGroup) ? 'pointer' : ((isMultiSelectMode || isGroupMode) && !item.isCleaningTime) ? 'pointer' : (item.isCleaningTime ? "move" : "pointer"))),
+          cursor: readOnly ? 'default' : (loading ? 'wait' : (!isMainPage && isPinned ? "not-allowed" : (isUngroupMode && item.isGroup) ? 'pointer' : (isGroupMode && !item.isCleaningTime) ? 'pointer' : (item.isCleaningTime ? "move" : "pointer"))),
           position: "relative",
           alignSelf: "flex-start",
           inset: "auto",
@@ -198,7 +188,7 @@ function RoomItem({
           pointerEvents: "auto",
           transform: isDragging ? "scale(1.02)" : "none",
           transformOrigin: "center",
-          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : (isSelected ? (isMultiSelectMode ? "0 0 0 2px #10B981" : "0 0 0 2px #3B82F6") : "none"),
+          boxShadow: isDragging ? "0 4px 6px rgba(0, 0, 0, 0.1)" : (isSelected ? "0 0 0 2px #3B82F6" : "none"),
           ...getInteractionStyle()
         }}
         onClick={handleClick}
@@ -206,18 +196,6 @@ function RoomItem({
         {!isMainPage && isPinned && !readOnly && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-10 rounded-xl"></div>
-          </div>
-        )}
-        
-        {/* 多選模式下的標記 */}
-        {isMultiSelectMode && isSelected && !item.isCleaningTime && (
-          <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
-            <div className="absolute top-0 right-0 bottom-0 left-0 bg-emerald-100 opacity-20 rounded-xl"></div>
-            <div className="absolute top-1 right-1 bg-emerald-500 rounded-full w-4 h-4 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="white" className="size-3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </div>
           </div>
         )}
         
