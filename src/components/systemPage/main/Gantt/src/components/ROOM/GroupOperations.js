@@ -1,4 +1,5 @@
 import { getTimeSettings } from '../Time/timeUtils';
+import { getColorByEndTime } from './colorUtils';
 
 // 輔助函數：將時間轉換為分鐘數
 export const timeToMinutes = (timeString) => {
@@ -41,8 +42,27 @@ export const createCleaningTimeItem = (startTime, endTime, roomName, id) => {
     endTime,
     isCleaningTime: true,
     operatingRoomName: roomName,
-    color: 'gray'
+    color: 'blue'
   };
+};
+
+// 檢查項目之間的時間一致性
+export const checkTimeContinuity = (items) => {
+  if (!items || items.length < 2) return true;
+  
+  // 按開始時間排序項目
+  const sortedItems = [...items].sort((a, b) => {
+    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+  });
+  
+  // 檢查每對相鄰項目的時間是否連續
+  for (let i = 0; i < sortedItems.length - 1; i++) {
+    if (sortedItems[i].endTime !== sortedItems[i + 1].startTime) {
+      return false;
+    }
+  }
+  
+  return true;
 };
 
 // 檢查項目是否連續（包含清潔時間）
@@ -72,9 +92,13 @@ export const checkConsecutiveItems = (items, roomData) => {
   return true;
 };
 
-// 獲取選擇範圍內的所有項目
+// 獲取選擇範圍內的所有項目（包括中間可能未選中的項目）
 export const getRangeItems = (selectedItems, roomData) => {
-  // 排序選中的手術，按開始時間排序
+  if (!selectedItems || selectedItems.length === 0 || !roomData || roomData.length === 0) {
+    return [];
+  }
+  
+  // 排序選中的項目，按開始時間排序
   const sortedItems = [...selectedItems].sort((a, b) => {
     return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
   });
@@ -89,7 +113,13 @@ export const getRangeItems = (selectedItems, roomData) => {
   }
   
   // 獲取範圍內的所有項目（包括中間的清潔時間）
-  return roomData.slice(firstIndex, lastIndex + 1);
+  // 確保最後一個手術後的清潔時間也被包含
+  let endIndex = lastIndex;
+  if (lastIndex < roomData.length - 1 && roomData[lastIndex + 1].isCleaningTime) {
+    endIndex = lastIndex + 1;
+  }
+  
+  return roomData.slice(firstIndex, endIndex + 1);
 };
 
 // 創建群組
@@ -136,15 +166,39 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
   const firstItem = sortedItems[0];
   const lastItem = sortedItems[sortedItems.length - 1];
   
+  // 檢查最後一個項目後是否有清潔時間，如果有則併入群組
+  let lastEndTime = lastItem.endTime;
+  const lastItemIndex = roomData.findIndex(item => item.id === lastItem.id);
+  if (lastItemIndex < roomData.length - 1 && roomData[lastItemIndex + 1].isCleaningTime) {
+    lastEndTime = roomData[lastItemIndex + 1].endTime;
+    
+    // 確保該清潔時間也被加入到 rangeItems 中
+    if (!rangeItems.some(item => item.id === roomData[lastItemIndex + 1].id)) {
+      rangeItems.push(roomData[lastItemIndex + 1]);
+    }
+  }
+  
+  // 按開始時間排序所有要包含的項目
+  const allGroupItems = [...rangeItems].sort((a, b) => {
+    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+  });
+  
+  // 獲取最後一個非清潔項目的顏色
+  const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
+    return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
+  })[0];
+  
+  const groupColor = getColorByEndTime(lastNonCleaningItem.endTime, false, true);
+  
   const groupItem = {
     id: groupId,
-    doctor: `${sortedItems.length} 個手術`,
+    doctor: `${nonCleaningItems.length} 個手術`,
     surgery: '群組手術',
     startTime: firstItem.startTime,
-    endTime: lastItem.endTime,
-    color: 'blue',
+    endTime: lastEndTime,
+    color: groupColor,
     isGroup: true,
-    surgeries: rangeItems, // 包含範圍內的所有項目，包括清潔時間
+    surgeries: allGroupItems, // 包含範圍內的所有項目，包括清潔時間
     isCleaningTime: false,
     operatingRoomName: roomName,
     // 添加必要的引用信息，用於拖曳時保持關係
@@ -154,19 +208,20 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     // 保存群組內部時間信息，用於解除群組時恢復
     originalTimeInfo: {
       startTime: firstItem.startTime,
-      endTime: lastItem.endTime,
-      items: rangeItems.map(item => ({
+      endTime: lastEndTime,
+      items: allGroupItems.map(item => ({
         id: item.id,
         startTime: item.startTime,
         endTime: item.endTime,
-        isCleaningTime: item.isCleaningTime
+        isCleaningTime: item.isCleaningTime,
+        color: item.color
       }))
     }
   };
   
   // 找出第一個和最後一個項目的索引
-  const firstIndex = roomData.findIndex(item => item.id === firstItem.id);
-  const lastIndex = roomData.findIndex(item => item.id === lastItem.id);
+  const firstIndex = roomData.findIndex(item => item.id === allGroupItems[0].id);
+  const lastIndex = roomData.findIndex(item => item.id === allGroupItems[allGroupItems.length - 1].id);
   
   // 標記要移除的項目
   const itemsToRemove = new Set();
@@ -248,13 +303,22 @@ export const ungroup = (groupItem, roomData, roomName) => {
   for (let i = 0; i < sortedItems.length; i++) {
     const item = sortedItems[i];
     
-    // 如果有原始時間信息，使用它恢復時間
+    // 如果有原始時間信息，使用它恢復時間和顏色
     let restoredItem = {...item};
     if (hasOriginalTimeInfo) {
       const originalItem = groupItem.originalTimeInfo.items.find(orig => orig.id === item.id);
       if (originalItem) {
         restoredItem.startTime = originalItem.startTime;
         restoredItem.endTime = originalItem.endTime;
+        // 恢復原始顏色
+        if (!restoredItem.isCleaningTime) {
+          restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
+        }
+      }
+    } else {
+      // 如果沒有原始信息，基於結束時間重新計算顏色
+      if (!restoredItem.isCleaningTime) {
+        restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
       }
     }
     
@@ -313,6 +377,17 @@ export const ensureTimeConsistency = (roomData, startIndex, roomName) => {
     else if (currentItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
       currentItem.endTime = nextItem.startTime;
     }
+    // 如果普通項目時間不連續，調整結束時間
+    else if (!currentItem.isCleaningTime && !nextItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
+      // 插入清潔時間
+      const cleaningItem = createCleaningTimeItem(
+        currentItem.endTime,
+        nextItem.startTime,
+        roomName
+      );
+      roomData.splice(i + 1, 0, cleaningItem);
+      i++; // 跳過新插入的清潔時間
+    }
   }
   
   return roomData;
@@ -332,7 +407,7 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   // 更新群組開始時間（如果有前一個項目）
   if (prevItem) {
     const newStartTime = prevItem.isCleaningTime 
-      ? prevItem.startTime  // 如果前一個是清潔時間，使用其開始時間
+      ? prevItem.endTime  // 如果前一個是清潔時間，使用其結束時間
       : minutesToTime(timeToMinutes(prevItem.endTime) + getCleaningDuration(true)); // 否則加上清潔時間
       
     if (newStartTime !== updatedGroup.startTime) {
@@ -343,8 +418,9 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   
   // 更新群組結束時間（如果有後一個項目）
   if (nextItem) {
+    // 如果有後一個項目，調整結束時間
     const newEndTime = nextItem.isCleaningTime
-      ? nextItem.endTime  // 如果後一個是清潔時間，使用其結束時間
+      ? nextItem.startTime  // 如果後一個是清潔時間，調整到其開始時間
       : minutesToTime(timeToMinutes(nextItem.startTime) - getCleaningDuration(true)); // 否則減去清潔時間
       
     if (newEndTime !== updatedGroup.endTime) {
@@ -370,7 +446,7 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
       const nonCleaningItems = updatedGroup.surgeries.filter(item => !item.isCleaningTime);
       
       if (nonCleaningItems.length > 0) {
-        // 計算原始總持續時間
+        // 計算原始總持續時間（不包括清潔時間）
         let originalTotalDuration = 0;
         for (const item of nonCleaningItems) {
           originalTotalDuration += timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
@@ -394,6 +470,12 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
             // 非清潔時間項目，按比例縮放
             const originalDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
             itemDuration = Math.round(originalDuration * scaleFactor);
+            
+            // 確保最短持續時間至少15分鐘
+            itemDuration = Math.max(itemDuration, 15);
+            
+            // 更新項目顏色
+            item.color = getColorByEndTime(minutesToTime(currentTime + itemDuration), false, true);
           } else {
             // 清潔時間固定
             itemDuration = getCleaningDuration(true);
@@ -406,7 +488,15 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
         
         // 確保最後一個項目的結束時間與群組結束時間一致
         if (updatedGroup.surgeries.length > 0) {
-          updatedGroup.surgeries[updatedGroup.surgeries.length - 1].endTime = updatedGroup.endTime;
+          const lastSurgery = updatedGroup.surgeries[updatedGroup.surgeries.length - 1];
+          lastSurgery.endTime = updatedGroup.endTime;
+          
+          // 更新群組顏色基於最後一個非清潔時間項目
+          const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
+            return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
+          })[0];
+          
+          updatedGroup.color = getColorByEndTime(lastNonCleaningItem.endTime, false, true);
         }
       }
     }

@@ -8,6 +8,7 @@ import { fetchSurgeryData, formatRoomData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter";
 import { handleDragEnd } from "./components/DragDrop/dragEndHandler";
+import { handleGroupDragEnd } from "./components/DragDrop/groupDragHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
@@ -16,10 +17,7 @@ import ORSMButton from "./components/Time/ORSMButton";
 // 引入群組操作函數
 import { 
   createGroup, 
-  ungroup, 
-  updateGroupTimes,
-  timeToMinutes,
-  minutesToTime
+  ungroup
 } from "./components/ROOM/GroupOperations";
 
 // 排班管理專用的甘特圖組件
@@ -149,19 +147,6 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       setFilteredRows(updatedRows);
     }
   };
-  
-  // 輔助函數：將時間轉換為分鐘數
-  const timeToMinutes = (timeString) => {
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
-  
-  // 輔助函數：將分鐘數轉換為時間字符串
-  const minutesToTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-  };
 
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = async (surgery) => {
@@ -213,8 +198,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     
     console.log("排班管理甘特圖拖曳結束，更新界面");
     
-    // 處理拖曳結束
-    await handleDragEnd(result, filteredRows, setFilteredRows);
+    // 首先嘗試處理群組拖曳
+    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
+    
+    // 如果不是群組拖曳，則按一般手術拖曳處理
+    if (!isGroupDrag) {
+      await handleDragEnd(result, filteredRows, setFilteredRows);
+    }
     
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));

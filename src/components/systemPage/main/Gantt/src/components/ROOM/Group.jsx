@@ -23,7 +23,7 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
     surgery: '群組手術',
     startTime: startTime,
     endTime: endTime,
-    color: 'blue', // 使用藍色作為群組顏色
+    color: 'orange', // 使用橘色作為群組顏色
     isGroup: true,
     surgeries: group.surgeries,
     isCleaningTime: false,
