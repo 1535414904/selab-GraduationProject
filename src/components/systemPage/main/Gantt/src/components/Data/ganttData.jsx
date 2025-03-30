@@ -23,11 +23,26 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
 
     console.log('收到的手術房數據:', operatingRoomsResponse.data);
     
+    // 過濾掉status為0(關閉)的手術房
+    const closedRooms = operatingRoomsResponse.data.filter(room => room.status === 0);
+    if (closedRooms.length > 0) {
+      console.log('以下手術房因狀態為關閉而被過濾:');
+      closedRooms.forEach(room => {
+        console.log(`- ID: ${room.id}, 名稱: ${room.name}, 科別: ${room.department.name}`);
+      });
+    } else {
+      console.log('沒有處於關閉狀態的手術房');
+    }
+    
+    const filteredOperatingRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
+    
+    console.log('過濾後的手術房數據:', filteredOperatingRooms);
+    
     // 2. 準備存儲所有手術房及其手術的數據
     const allRoomsWithSurgeries = [];
     
     // 3. 對每個手術房獲取相關手術
-    for (const room of operatingRoomsResponse.data) {
+    for (const room of filteredOperatingRooms) {
       try {
         console.log(`獲取手術房 ${room.id} 的手術數據...`);
         
