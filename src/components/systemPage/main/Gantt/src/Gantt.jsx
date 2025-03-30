@@ -213,6 +213,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   // 處理頁籤切換
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    
+    // 如果切換到甘特圖頁籤，觸發重新加載
+    if (tab === 'gantt') {
+      // 讓甘特圖組件重新加載數據
+      console.log('切換到甘特圖頁籤，重新加載數據');
+      window.dispatchEvent(new CustomEvent('ganttTabActive'));
+    }
   };
 
   // 關閉模態視窗
@@ -234,6 +241,38 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     
       setCurrentDate(formattedDate);
     }, []);
+
+  // 初始化甘特圖
+  useEffect(() => {
+    const initializeGantt = async () => {
+      if (!rows || rows.length === 0) {
+        await fetchSurgeryData(setRows, setLoading, setError);
+      }
+      setIsInitialized(true);
+    };
+    
+    initializeGantt();
+  }, [rows]);
+  
+  // 監聽ganttTabActive事件
+  useEffect(() => {
+    const handleGanttTabActive = async () => {
+      console.log('接收到ganttTabActive事件，重新加載甘特圖數據');
+      setLoading(true);
+      try {
+        await fetchSurgeryData(setRows, setLoading, setError);
+      } catch (error) {
+        console.error('重新加載甘特圖數據失敗:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    window.addEventListener('ganttTabActive', handleGanttTabActive);
+    return () => {
+      window.removeEventListener('ganttTabActive', handleGanttTabActive);
+    };
+  }, []);
 
   // 如果數據尚未初始化，顯示載入中
   if (!isInitialized && loading) {
@@ -284,7 +323,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             className={`gantt-tab ${activeTab === 'timeSettings' ? 'gantt-tab-active' : ''}`}
             onClick={() => handleTabChange('timeSettings')}
           >
-            時間設定
+            參數設定
           </li>
         </ul>
       </div>
@@ -312,7 +351,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
               <li>點擊「更新主頁」按鈕可將當前排程更新到主頁中</li>
               <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
               <li>點擊手術房名稱右側的群組按鈕可進行手術群組操作</li>
-              <li>點擊「時間設定」頁籤可調整手術排程相關的時間參數</li>
+              <li>點擊「參數設定」頁籤可調整手術排程相關的參數</li>
             </ul>
           </div>
         </div>

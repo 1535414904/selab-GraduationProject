@@ -34,9 +34,25 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
       console.log('沒有處於關閉狀態的手術房');
     }
     
-    const filteredOperatingRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
+    // 從localStorage獲取用戶選中的關閉手術房
+    let reservedClosedRooms = [];
+    try {
+      const reservedRoomsStr = localStorage.getItem('reservedClosedRooms');
+      if (reservedRoomsStr) {
+        reservedClosedRooms = JSON.parse(reservedRoomsStr);
+        console.log('從localStorage獲取的保留關閉手術房:', reservedClosedRooms);
+      }
+    } catch (error) {
+      console.error('解析保留手術房數據時出錯:', error);
+    }
     
-    console.log('過濾後的手術房數據:', filteredOperatingRooms);
+    // 過濾出開啟的手術房
+    const openRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
+    
+    // 合併開啟的手術房和選定的關閉手術房
+    const filteredOperatingRooms = [...openRooms, ...reservedClosedRooms];
+    
+    console.log('過濾後的手術房數據（包含保留的關閉手術房）:', filteredOperatingRooms);
     
     // 2. 準備存儲所有手術房及其手術的數據
     const allRoomsWithSurgeries = [];
