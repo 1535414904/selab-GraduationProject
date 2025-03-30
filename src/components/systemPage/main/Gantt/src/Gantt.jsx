@@ -35,6 +35,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [activeTab, setActiveTab] = useState('gantt'); // 新增頁籤狀態，預設顯示甘特圖
   const [selectedSurgery, setSelectedSurgery] = useState(null); // 選中的手術
   const [modalError, setModalError] = useState(null); // 模態視窗錯誤
+  const [tipsCollapsed, setTipsCollapsed] = useState(false);
 
   // 初始化數據
   useEffect(() => {
@@ -274,6 +275,21 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     };
   }, []);
 
+  // 初始化時讀取提示收合狀態
+  useEffect(() => {
+    const savedTipsState = localStorage.getItem('ganttTipsCollapsed');
+    if (savedTipsState) {
+      setTipsCollapsed(savedTipsState === 'true');
+    }
+  }, []);
+
+  // 處理提示收合狀態變更
+  const toggleTips = () => {
+    const newState = !tipsCollapsed;
+    setTipsCollapsed(newState);
+    localStorage.setItem('ganttTipsCollapsed', newState.toString());
+  };
+
   // 如果數據尚未初始化，顯示載入中
   if (!isInitialized && loading) {
     return (
@@ -330,8 +346,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
 
       {/* 甘特圖頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`}>
-        {/* ✅ 使用提示 */}
-        <div className="gantt-tips">
+        {/* ✅ 使用提示 - 添加收合功能 */}
+        <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
           <svg 
             className="gantt-tips-icon" 
             xmlns="http://www.w3.org/2000/svg" 
@@ -345,14 +361,26 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
           </svg>
           <div className="gantt-tips-content">
-            <p className="gantt-tips-title">使用提示</p>
-            <ul className="gantt-tips-list">
-              <li>可以橫向滾動查看不同時間段的排程</li>
-              <li>點擊「更新主頁」按鈕可將當前排程更新到主頁中</li>
-              <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
-              <li>點擊手術房名稱右側的群組按鈕可進行手術群組操作</li>
-              <li>點擊「參數設定」頁籤可調整手術排程相關的參數</li>
-            </ul>
+            <div className="tips-header">
+              <p className="gantt-tips-title">使用提示</p>
+              <button 
+                className="tips-toggle-button" 
+                onClick={toggleTips}
+                aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
+              >
+                {tipsCollapsed ? "展開" : "收合"}
+              </button>
+            </div>
+            
+            {!tipsCollapsed && (
+              <ul className="gantt-tips-list">
+                <li>可以橫向滾動查看不同時間段的排程</li>
+                <li>點擊「更新主頁」按鈕可將當前排程更新到主頁中</li>
+                <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
+                <li>點擊手術房名稱右側的群組按鈕可進行手術群組操作</li>
+                <li>點擊「參數設定」頁籤可調整手術排程相關的參數</li>
+              </ul>
+            )}
           </div>
         </div>
 

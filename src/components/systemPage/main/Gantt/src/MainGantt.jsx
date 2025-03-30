@@ -25,6 +25,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   const [hasChanges, setHasChanges] = useState(false); // 是否有未保存的變更
   const [isSaving, setIsSaving] = useState(false); // 是否正在保存
   const [userRole, setUserRole] = useState(null); // 用戶角色
+  const [tipsCollapsed, setTipsCollapsed] = useState(false);
 
   // 初始化數據
   useEffect(() => {
@@ -228,6 +229,21 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     });
     setCurrentDate(formattedDate);
   }, []);
+
+  // 初始化時讀取提示收合狀態
+  useEffect(() => {
+    const savedTipsState = localStorage.getItem('mainGanttTipsCollapsed');
+    if (savedTipsState) {
+      setTipsCollapsed(savedTipsState === 'true');
+    }
+  }, []);
+
+  // 處理提示收合狀態變更
+  const toggleTips = () => {
+    const newState = !tipsCollapsed;
+    setTipsCollapsed(newState);
+    localStorage.setItem('mainGanttTipsCollapsed', newState.toString());
+  };
   
   // 如果數據尚未載入，顯示載入中
   if (loading) {
@@ -274,7 +290,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       </div>
 
       {/* 使用提示 */}
-    <div className="gantt-tips">
+    <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
       <svg 
         className="gantt-tips-icon" 
         xmlns="http://www.w3.org/2000/svg" 
@@ -288,14 +304,26 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
         <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
       </svg>
       <div className="gantt-tips-content">
-        <p className="gantt-tips-title">使用提示</p>
-        <ul className="gantt-tips-list">
-          <li>可以橫向滾動查看不同時間段的排程</li>
-          <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
-          <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
-          <li>點擊手術項目可查看詳細資訊</li>
-          {!readOnly && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
-        </ul>
+        <div className="tips-header">
+          <p className="gantt-tips-title">使用提示</p>
+          <button 
+            className="tips-toggle-button" 
+            onClick={toggleTips}
+            aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
+          >
+            {tipsCollapsed ? "展開" : "收合"}
+          </button>
+        </div>
+        
+        {!tipsCollapsed && (
+          <ul className="gantt-tips-list">
+            <li>可以橫向滾動查看不同時間段的排程</li>
+            <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
+            <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
+            <li>點擊手術項目可查看詳細資訊</li>
+            {!readOnly && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
+          </ul>
+        )}
       </div>
     </div>
 

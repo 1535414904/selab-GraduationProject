@@ -13,10 +13,18 @@ const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTim
   const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
   // 加載狀態
   const [loading, setLoading] = useState(false);
+  // 使用提示的折疊狀態
+  const [tipsCollapsed, setTipsCollapsed] = useState(false);
 
   useEffect(() => {
     // 獲取所有關閉的手術房
     fetchClosedRooms();
+    
+    // 從localStorage讀取提示收合狀態
+    const savedTipsState = localStorage.getItem('parameterTipsCollapsed');
+    if (savedTipsState) {
+      setTipsCollapsed(savedTipsState === 'true');
+    }
   }, []);
 
   useEffect(() => {
@@ -151,12 +159,19 @@ const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTim
     alert("參數設定已更新，您可以在甘特圖中預覽變更。");
   };
 
+  // 處理提示收合狀態變更
+  const toggleTips = () => {
+    const newState = !tipsCollapsed;
+    setTipsCollapsed(newState);
+    localStorage.setItem('parameterTipsCollapsed', newState.toString());
+  };
+
   return (
     <div className="time-settings-container">
       <h3 className="time-settings-title">參數設定</h3>
       
-      {/* 使用提示區域 */}
-      <div className="parameter-tips">
+      {/* 使用提示區域 - 添加收合功能 */}
+      <div className={`parameter-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
         <svg 
           className="parameter-tips-icon" 
           xmlns="http://www.w3.org/2000/svg" 
@@ -169,14 +184,27 @@ const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTim
           <circle cx="12" cy="7" r="1.5" fill="white" />
           <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
         </svg>
+        
         <div className="parameter-tips-content">
-          <p className="parameter-tips-title">參數設定使用說明</p>
-          <ul className="parameter-tips-list">
-            <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間清潔所需時間</li>
-            <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排班，但不會更改手術房管理中的狀態</li>
-            <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排班</li>
-            <li><strong>確認所有設定</strong>：將所有參數設定（時間和保留的手術房）一併應用到甘特圖中</li>
-          </ul>
+          <div className="tips-header">
+            <p className="parameter-tips-title">參數設定使用說明</p>
+            <button 
+              className="tips-toggle-button" 
+              onClick={toggleTips}
+              aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
+            >
+              {tipsCollapsed ? "展開" : "收合"}
+            </button>
+          </div>
+          
+          {!tipsCollapsed && (
+            <ul className="parameter-tips-list">
+              <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間清潔所需時間</li>
+              <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排班，但不會更改手術房管理中的狀態</li>
+              <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排班</li>
+              <li><strong>確認所有設定</strong>：將所有參數設定（時間和保留的手術房）一併應用到甘特圖中</li>
+            </ul>
+          )}
         </div>
       </div>
       
@@ -188,42 +216,50 @@ const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTim
             <h4 className="settings-section-title">時間設定</h4>
             <div className="time-settings-form">
               <div className="time-settings-item">
-                <label>手術起始時間：</label>
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.surgeryStartTime)}
-                  onChange={(e) => handleTimeChange("surgeryStartTime", e.target.value)}
-                  className="time-input"
-                />
+                <label>手術開始時間：</label>
+                <div className="input-container">
+                  <input
+                    type="time"
+                    value={minutesToTimeString(timeSettings.surgeryStartTime)}
+                    onChange={(e) => handleTimeChange("surgeryStartTime", e.target.value)}
+                    className="time-input"
+                  />
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>常規結束時間：</label>
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.regularEndTime)}
-                  onChange={(e) => handleTimeChange("regularEndTime", e.target.value)}
-                  className="time-input"
-                />
+                <div className="input-container">
+                  <input
+                    type="time"
+                    value={minutesToTimeString(timeSettings.regularEndTime)}
+                    onChange={(e) => handleTimeChange("regularEndTime", e.target.value)}
+                    className="time-input"
+                  />
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>加班結束時間：</label>
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.overtimeEndTime)}
-                  onChange={(e) => handleTimeChange("overtimeEndTime", e.target.value)}
-                  className="time-input"
-                />
+                <div className="input-container">
+                  <input
+                    type="time"
+                    value={minutesToTimeString(timeSettings.overtimeEndTime)}
+                    onChange={(e) => handleTimeChange("overtimeEndTime", e.target.value)}
+                    className="time-input"
+                  />
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>清潔時間 (分鐘)：</label>
-                <input
-                  type="number"
-                  min="5"
-                  max="120"
-                  value={timeSettings.cleaningTime}
-                  onChange={(e) => handleCleaningTimeChange(parseInt(e.target.value))}
-                  className="number-input"
-                />
+                <div className="input-container">
+                  <input
+                    type="number"
+                    min="5"
+                    max="120"
+                    value={timeSettings.cleaningTime}
+                    onChange={(e) => handleCleaningTimeChange(parseInt(e.target.value))}
+                    className="number-input"
+                  />
+                </div>
               </div>
             </div>
           </div>

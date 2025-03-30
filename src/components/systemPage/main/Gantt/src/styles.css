@@ -865,24 +865,50 @@ body {
 
 .time-settings-item {
   display: grid;
-  grid-template-columns: 150px 200px auto;
+  grid-template-columns: 2fr 1fr;
   align-items: center;
-  gap: 10px;
-  justify-content: center;
-  text-align: center;
+  margin-bottom: 12px;
+  padding: 4px 0;
 }
 
 .time-settings-item label {
   font-weight: 500;
   text-align: right;
+  color: #4b5563;
 }
 
-.time-input, .number-input {
-  padding: 8px 10px;
-  border: 1px solid #d1d5db;
+.time-input,
+.number-input {
+  width: 100%;
+  max-width: 120px;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 0.9rem;
-  text-align: center;
+  font-size: 14px;
+  color: #334155;
+  background-color: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.time-input:focus,
+.number-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.time-input:hover,
+.number-input:hover {
+  border-color: #94a3b8;
+}
+
+/* 確保輸入框不會超出其容器 */
+.time-settings-item .input-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .time-label {
@@ -1121,7 +1147,7 @@ body {
 }
 
 /* 參數提示樣式 - 基於甘特圖提示樣式 */
-.parameter-tips {
+.parameter-tips, .gantt-tips {
   background-color: #eff6ff;
   border: 1px solid #bfdbfe;
   border-radius: 0.375rem;
@@ -1129,9 +1155,15 @@ body {
   margin-bottom: 1.5rem;
   display: flex;
   align-items: flex-start;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.parameter-tips-icon {
+.tips-collapsed {
+  padding-bottom: 0.5rem;
+}
+
+.parameter-tips-icon, .gantt-tips-icon {
   height: 1.25rem;
   width: 1.25rem;
   color: #3b82f6;
@@ -1140,18 +1172,42 @@ body {
   flex-shrink: 0;
 }
 
-.parameter-tips-content {
+.parameter-tips-content, .gantt-tips-content {
   font-size: 0.875rem;
   color: #1e40af;
+  width: 100%;
 }
 
-.parameter-tips-title {
+.tips-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.parameter-tips-title, .gantt-tips-title {
   font-weight: 500;
   margin-bottom: 8px;
 }
 
-.parameter-tips-list {
-  margin-top: 0.25rem;
+.tips-toggle-button {
+  background-color: transparent;
+  color: #3b82f6;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tips-toggle-button:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.parameter-tips-list, .gantt-tips-list {
+  margin-top: 0.5rem;
   list-style-type: disc;
   list-style-position: inside;
   color: #1e40af;
@@ -1160,10 +1216,10 @@ body {
   gap: 0.5rem;
 }
 
-.parameter-tips-list li {
+.parameter-tips-list li, .gantt-tips-list li {
   line-height: 1.4;
 }
 
-.parameter-tips-list strong {
+.parameter-tips-list strong, .gantt-tips-list strong {
   font-weight: 600;
 }
