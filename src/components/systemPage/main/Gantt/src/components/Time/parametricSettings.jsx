@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
-import { setTempTimeSettings, clearTempTimeSettings } from "./timeUtils";
+import { setTempTimeSettings } from "./timeUtils";
 import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 
-const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
+const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
   // 使用 initialTimeSettings 作為初始值
   const [timeSettings, setTimeSettings] = useState(initialTimeSettings);
   // 關閉的手術房列表
@@ -316,4 +316,4 @@ const TimeSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTim
   );
 };
 
-export default TimeSettings;
+export default ParametricSettings;

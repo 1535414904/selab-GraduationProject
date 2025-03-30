@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { addMinutesToTime } from '../Time/timeUtils';
+import { addMinutesToTime ,getTimeSettings} from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
-import { getTimeSettings } from '../Time/timeUtils';
 
 export const fetchSurgeryData = async (setRows, setLoading, setError) => {
   setLoading(true);

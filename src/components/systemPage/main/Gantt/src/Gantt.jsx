@@ -3,7 +3,7 @@ import { DragDropContext } from "react-beautiful-dnd";
 import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
 import ConfirmScheduleButton from "./components/Time/ConfirmScheduleButton";
-import TimeSettings from "./components/Time/timeSettings";
+import ParametricSettings from "./components/Time/parametricSettings";
 import { fetchSurgeryData, formatRoomData } from "./components/Data/ganttData";
 import "./styles.css";
 import GanttFilter from "./components/GanttFilter";
@@ -443,7 +443,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
 
       {/* 時間設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
-        <TimeSettings onTimeSettingsChange={(newSettings, isPreview) => {
+        <ParametricSettings onTimeSettingsChange={(newSettings, isPreview) => {
           // 重新格式化所有手術房的數據
           const updatedRows = formatRoomData([...rows].map(room => ({
             ...room,

@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { calculateDuration, addMinutesToTime } from '../Time/timeUtils';
+import { calculateDuration, addMinutesToTime, getTimeSettings } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
-import { getTimeSettings } from '../Time/timeUtils';
 import { 
   timeToMinutes, 
   minutesToTime, 
