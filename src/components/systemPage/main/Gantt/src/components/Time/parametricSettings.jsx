@@ -11,6 +11,10 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
   const [closedRooms, setClosedRooms] = useState([]);
   // 選中的關閉手術房 ID 列表
   const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
+  // 已保留的手術房列表
+  const [reservedRooms, setReservedRooms] = useState([]);
+  // 選中的已保留手術房 ID 列表
+  const [selectedReservedRooms, setSelectedReservedRooms] = useState([]);
   // 加載狀態
   const [loading, setLoading] = useState(false);
   // 使用提示的折疊狀態
@@ -71,6 +75,17 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     });
   };
 
+  // 處理已保留手術房勾選
+  const handleReservedRoomSelect = (roomId) => {
+    setSelectedReservedRooms(prev => {
+      if (prev.includes(roomId)) {
+        return prev.filter(id => id !== roomId);
+      } else {
+        return [...prev, roomId];
+      }
+    });
+  };
+
   // 轉換分鐘為時間格式 (HH:MM)
   const minutesToTimeString = (minutes) => {
     const hours = Math.floor(minutes / 60);
@@ -121,10 +136,49 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     // 從closedRooms中找出被選中的手術房完整信息
     const selectedRooms = closedRooms.filter(room => selectedClosedRooms.includes(room.id));
     
+    // 將選中的關閉手術房信息和原有的保留手術房合併
+    const newReservedRooms = [...reservedRooms, ...selectedRooms];
+    const uniqueRooms = newReservedRooms.filter((room, index, self) => 
+      index === self.findIndex(r => r.id === room.id)
+    );
+    
+    // 更新保留手術房列表
+    setReservedRooms(uniqueRooms);
+    
     // 將選中的關閉手術房信息存儲到localStorage，供ganttData.jsx使用
-    localStorage.setItem("reservedClosedRooms", JSON.stringify(selectedRooms));
+    localStorage.setItem("reservedClosedRooms", JSON.stringify(uniqueRooms));
     
     alert(`已選擇 ${selectedRooms.length} 個關閉手術房加入本次排班`);
+    
+    // 清空選中列表
+    setSelectedClosedRooms([]);
+    
+    // 通知父組件更新
+    if (onTimeSettingsChange) {
+      onTimeSettingsChange(timeSettings, true);
+    }
+  };
+  
+  // 移除選中的已保留手術房
+  const removeSelectedReservedRooms = () => {
+    if (selectedReservedRooms.length === 0) {
+      alert("請至少選擇一個要移除的保留手術房");
+      return;
+    }
+    
+    // 從保留的手術房中移除選中的手術房
+    const updatedReservedRooms = reservedRooms.filter(room => !selectedReservedRooms.includes(room.id));
+    
+    // 更新保留手術房列表
+    setReservedRooms(updatedReservedRooms);
+    
+    // 將更新後的保留手術房信息存儲到localStorage
+    localStorage.setItem("reservedClosedRooms", JSON.stringify(updatedReservedRooms));
+    
+    alert(`已移除 ${selectedReservedRooms.length} 個保留手術房`);
+    
+    // 清空選中列表
+    setSelectedReservedRooms([]);
     
     // 通知父組件更新
     if (onTimeSettingsChange) {
@@ -132,8 +186,8 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     }
   };
 
-  // 試排確認
-  const applySettings = async (event)=> {
+  // 僅更新時間設定
+  const applyTimeSettings = async (event) => {
     if (event) event.preventDefault();
     setTempTimeSettings(timeSettings);
     setInitialTimeSettings(timeSettings);
@@ -151,12 +205,11 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
   
       const response = await axios.post(`${BASE_URL}/api/system/algorithm/time-settings/export`, payload);
       console.log("CSV 產生結果：", response.data);
-      alert("CSV 檔案已成功生成！");
+      alert("參數設定已更新，您可以在甘特圖中預覽變更。");
     } catch (error) {
       console.error("生成 CSV 失敗：", error);
       alert("生成 CSV 失敗，請稍後再試。");
     }
-    alert("參數設定已更新，您可以在甘特圖中預覽變更。");
   };
 
   // 處理提示收合狀態變更
@@ -202,7 +255,8 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
               <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間清潔所需時間</li>
               <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排班，但不會更改手術房管理中的狀態</li>
               <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排班</li>
-              <li><strong>確認所有設定</strong>：將所有參數設定（時間和保留的手術房）一併應用到甘特圖中</li>
+              <li><strong>確認時間設定</strong>：僅將時間參數設定應用到甘特圖中</li>
+              <li><strong>移除選中的保留手術房</strong>：從甘特圖中移除已加入的關閉手術房</li>
             </ul>
           )}
         </div>
@@ -261,6 +315,17 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                   />
                 </div>
               </div>
+              
+              {/* 將確認按鈕移到時間設定區域內 */}
+              <div className="time-settings-button-container">
+                <button 
+                  onClick={applyTimeSettings} 
+                  className="time-settings-button"
+                  type="button"
+                >
+                  確認時間設定
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -271,46 +336,79 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
             <h4 className="settings-section-title">保留手術房</h4>
             <p className="settings-description">可選擇將目前關閉的手術房加入本次排班（不會改變手術房管理中的狀態）</p>
             
-            {loading ? (
-              <div className="loading-rooms">正在載入關閉的手術房...</div>
-            ) : closedRooms.length === 0 ? (
-              <div className="no-closed-rooms">目前沒有處於關閉狀態的手術房</div>
-            ) : (
-              <div className="closed-rooms-list">
-                {closedRooms.map(room => (
-                  <div key={room.id} className="closed-room-item">
-                    <input
-                      type="checkbox"
-                      id={`room-${room.id}`}
-                      checked={selectedClosedRooms.includes(room.id)}
-                      onChange={() => handleRoomSelect(room.id)}
-                    />
-                    <label htmlFor={`room-${room.id}`}>
-                      {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
-                    </label>
+            {/* 整合的手術房列表區域 */}
+            <div className="operating-rooms-container">
+              {/* 已保留的手術房列表 */}
+              {reservedRooms.length > 0 && (
+                <div className="reserved-rooms-section">
+                  <h5 className="rooms-section-title">已加入排班的關閉手術房</h5>
+                  <div className="rooms-list">
+                    {reservedRooms.map(room => (
+                      <div key={`reserved-${room.id}`} className="room-item">
+                        <input
+                          type="checkbox"
+                          id={`reserved-room-${room.id}`}
+                          checked={selectedReservedRooms.includes(room.id)}
+                          onChange={() => handleReservedRoomSelect(room.id)}
+                        />
+                        <label htmlFor={`reserved-room-${room.id}`}>
+                          {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
+                        </label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                
-                <div className="confirm-rooms-button-container">
-                  <button 
-                    onClick={confirmSelectedRooms} 
-                    className="confirm-rooms-button"
-                    disabled={selectedClosedRooms.length === 0}
-                  >
-                    確認加入選中的手術房
-                  </button>
                 </div>
+              )}
+              
+              {/* 可選擇的關閉手術房列表 */}
+              {loading ? (
+                <div className="loading-rooms">正在載入關閉的手術房...</div>
+              ) : closedRooms.length === 0 ? (
+                <div className="no-closed-rooms">目前沒有處於關閉狀態的手術房</div>
+              ) : (
+                <div className="closed-rooms-section">
+                  <h5 className="rooms-section-title">可選擇的關閉手術房</h5>
+                  <div className="rooms-list">
+                    {closedRooms.filter(room => !reservedRooms.some(r => r.id === room.id)).map(room => (
+                      <div key={room.id} className="room-item">
+                        <input
+                          type="checkbox"
+                          id={`room-${room.id}`}
+                          checked={selectedClosedRooms.includes(room.id)}
+                          onChange={() => handleRoomSelect(room.id)}
+                        />
+                        <label htmlFor={`room-${room.id}`}>
+                          {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* 整合的按鈕區域 */}
+              <div className="rooms-buttons-container">
+                <button 
+                  onClick={confirmSelectedRooms} 
+                  className="confirm-rooms-button"
+                  disabled={selectedClosedRooms.length === 0}
+                >
+                  確認加入選中的手術房
+                </button>
+                
+                {reservedRooms.length > 0 && (
+                  <button 
+                    onClick={removeSelectedReservedRooms} 
+                    className="remove-rooms-button"
+                    disabled={selectedReservedRooms.length === 0}
+                  >
+                    移除選中的保留手術房
+                  </button>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* 確認按鈕 */}
-      <div className="apply-settings-button-container">
-        <button onClick={applySettings} className="apply-settings-button">
-          確認所有設定
-        </button>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     const initializeData = async () => {
       setLoading(true);
       try {
-        await fetchSurgeryData(setRows, setLoading, setError);
+        await fetchSurgeryData(setRows, setLoading, setError, true);
         
         // 獲取當前用戶信息
         const username = localStorage.getItem('username');
@@ -146,7 +146,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       try {
         console.log("開始重新載入最新資料...");
         // 使用 fetchSurgeryData 函數重新載入並格式化數據
-        const formattedData = await fetchSurgeryData(setRows, setLoading, setError);
+        const formattedData = await fetchSurgeryData(setRows, setLoading, setError, true);
         console.log("成功獲取並格式化新資料:", formattedData);
         
         // 更新所有相關狀態

@@ -3,11 +3,11 @@ import { addMinutesToTime ,getTimeSettings} from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 
-export const fetchSurgeryData = async (setRows, setLoading, setError) => {
+export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage = false) => {
   setLoading(true);
   setError(null);
   try {
-    console.log('開始獲取手術房數據...');
+    console.log('開始獲取手術房數據...', isMainPage ? '(主頁模式)' : '(排班管理模式)');
     
     // 1. 先獲取所有手術房
     const operatingRoomsResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms`, {
@@ -33,25 +33,29 @@ export const fetchSurgeryData = async (setRows, setLoading, setError) => {
       console.log('沒有處於關閉狀態的手術房');
     }
     
-    // 從localStorage獲取用戶選中的關閉手術房
+    // 從localStorage獲取用戶選中的關閉手術房 - 只在排班管理頁面使用，主頁不使用
     let reservedClosedRooms = [];
-    try {
-      const reservedRoomsStr = localStorage.getItem('reservedClosedRooms');
-      if (reservedRoomsStr) {
-        reservedClosedRooms = JSON.parse(reservedRoomsStr);
-        console.log('從localStorage獲取的保留關閉手術房:', reservedClosedRooms);
+    if (!isMainPage) {
+      try {
+        const reservedRoomsStr = localStorage.getItem('reservedClosedRooms');
+        if (reservedRoomsStr) {
+          reservedClosedRooms = JSON.parse(reservedRoomsStr);
+          console.log('從localStorage獲取的保留關閉手術房:', reservedClosedRooms);
+        }
+      } catch (error) {
+        console.error('解析保留手術房數據時出錯:', error);
       }
-    } catch (error) {
-      console.error('解析保留手術房數據時出錯:', error);
+    } else {
+      console.log('主頁模式下不使用保留手術房');
     }
     
     // 過濾出開啟的手術房
     const openRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
     
-    // 合併開啟的手術房和選定的關閉手術房
-    const filteredOperatingRooms = [...openRooms, ...reservedClosedRooms];
+    // 合併開啟的手術房和選定的關閉手術房（如果不是主頁模式）
+    const filteredOperatingRooms = isMainPage ? openRooms : [...openRooms, ...reservedClosedRooms];
     
-    console.log('過濾後的手術房數據（包含保留的關閉手術房）:', filteredOperatingRooms);
+    console.log('過濾後的手術房數據' + (isMainPage ? ' (僅開啟狀態)' : ' (包含保留的關閉手術房)') + ':', filteredOperatingRooms);
     
     // 2. 準備存儲所有手術房及其手術的數據
     const allRoomsWithSurgeries = [];
