@@ -126,40 +126,48 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const groupByRoom = (surgeries) => {
     const roomGroups = {};
     const result = [];
-
-    // 先排序手術（按房間名稱和開始時間）
+  
+    // 建立房間名稱清單，並排序（A → Z）
+    const roomNames = Array.isArray(originalRows)
+      ? Array.from(
+          new Set(
+            originalRows.map((row) => row.room || row.name || "未指定手術室")
+          )
+        ).sort((a, b) => a.localeCompare(b))
+      : [];
+  
+    // 初始化每個房間區塊
+    roomNames.forEach((roomName) => {
+      roomGroups[roomName] = {
+        id: `room-${roomName}`,
+        name: roomName,
+        room: roomName,
+        data: [],
+      };
+    });
+  
+    // 排序手術資料（先依房間名，再依時間）
     const sortedSurgeries = [...surgeries].sort((a, b) => {
-      const roomComparison = (a.operatingRoomName || "").localeCompare(
+      const roomCompare = (a.operatingRoomName || "").localeCompare(
         b.operatingRoomName || ""
       );
-      if (roomComparison !== 0) return roomComparison;
+      if (roomCompare !== 0) return roomCompare;
       return (a.startTime || "").localeCompare(b.startTime || "");
     });
-
+  
+    // 填入手術資料與清潔時間
     sortedSurgeries.forEach((surgery) => {
       const roomName = surgery.operatingRoomName || "未指定手術室";
-      if (!roomGroups[roomName]) {
-        const newRoom = {
-          id: `room-${roomName}`,
-          name: roomName,
-          room: roomName, // 保持與 name 一致
-          data: [],
-        };
-        roomGroups[roomName] = newRoom;
-        result.push(newRoom);
-      }
-
-      // 根據 isFilteredOut 來決定顏色是否要半透明
+  
       const surgeryColor = surgery.isFilteredOut
-        ? "rgba(0, 128, 0, 0.5)" // 半透明綠
+        ? "rgba(0, 128, 0, 0.5)"
         : surgery.color || "green";
-
-      // 建立手術資料
+  
       const surgeryData = {
         ...surgery,
-        surgery: surgery.surgeryName 
-        ? `${surgery.surgeryName} (${surgery.patientName || '未知病患'})`
-        : surgery.surgery || "未指定手術",
+        surgery: surgery.surgeryName
+          ? `${surgery.surgeryName} (${surgery.patientName || "未知病患"})`
+          : surgery.surgery || "未指定手術",
         doctor: surgery.chiefSurgeonName || surgery.doctor || "未指定醫生",
         patientName: surgery.patientName || "未知病患",
         operatingRoomName: roomName,
@@ -170,14 +178,13 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
           surgery.applicationId ||
           `temp-${Math.random().toString(36).substr(2, 9)}`,
       };
-
-      roomGroups[roomName].data.push(surgeryData);
-
-      // 為每個手術添加清潔時間區塊
+  
+      roomGroups[roomName]?.data.push(surgeryData);
+  
       const cleaningColor = surgery.isFilteredOut
-        ? "rgba(0, 0, 255, 0.3)" // 半透明藍
+        ? "rgba(0, 0, 255, 0.3)"
         : getCleaningColor();
-
+  
       const cleaningData = {
         id: `cleaning-${surgeryData.applicationId}`,
         doctor: "清潔時間",
@@ -191,30 +198,18 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         associatedSurgeryId: surgeryData.applicationId,
         applicationId: `cleaning-${surgeryData.applicationId}`,
       };
-
-      roomGroups[roomName].data.push(cleaningData);
+  
+      roomGroups[roomName]?.data.push(cleaningData);
     });
-
-    // 補上原始資料中存在但可能因篩選而無手術資料的手術室
-    if (Array.isArray(originalRows)) {
-      originalRows.forEach((row) => {
-        // 修改處：若 row 中有 room 屬性則以該屬性為主，否則使用 row.name，再無則預設「未指定手術室」
-        const roomName = row.room || row.name || "未指定手術室";
-        if (!roomGroups[roomName]) {
-          const newRoom = {
-            id: `room-${roomName}`,
-            name: roomName,
-            room: roomName,
-            data: [],
-          };
-          roomGroups[roomName] = newRoom;
-          result.push(newRoom);
-        }
-      });
-    }
+  
+    // 將房間按排序好的名稱加入結果
+    roomNames.forEach((roomName) => {
+      result.push(roomGroups[roomName]);
+    });
+  
     return result;
   };
-
+  
   // 5) 篩選邏輯：不刪除手術，而是標記 isFilteredOut
   const applyFilters = () => {
     if (!flattenedRows || flattenedRows.length === 0) {
