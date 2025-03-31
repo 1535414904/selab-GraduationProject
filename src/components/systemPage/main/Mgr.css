@@ -537,3 +537,40 @@ table {
   animation: slideOutRight 0.3s ease-in forwards;
 }
 
+/* 🔵 通用 aa 系列 icon + 文字 水平按鈕 */
+.aa-button {
+  display: inline-flex;              /* 橫向排列圖示與文字 */
+  align-items: center;              /* 垂直置中 */
+  gap: 0.5em;                        /* icon 與文字間距 */
+  white-space: nowrap;
+
+  color: white;
+  background-color: #2563eb;
+  height: 2.5em;
+
+  border-radius: 8px;
+  border: none;
+  font-size: 20;
+  font-weight: bold;
+
+  padding: 0.3% 3%;
+  /* cursor: pointer;  */
+
+  /* transition: all 0.2s ease; */
+}
+
+.aa-button svg {
+  width: 1em;
+  height: 1em;
+}
+
+.aa-button:hover {
+  filter: brightness(0.9);
+  transform: scale(1.05);
+}
+
+.aa-button.danger {
+  background-color: brown;
+}
+
+/* 這個樣式會讓按鈕在 hover 時有一點點的放大效果 */

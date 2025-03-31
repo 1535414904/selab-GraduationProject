@@ -443,19 +443,137 @@ function DepartmentListWrapper({
           </div>
         </div>
       )} */}
-      {(expandedRow !== null || showPanel) && (
+      {/* {(expandedRow !== null || showPanel) && (
         <div className="w-full md:w-1/3 pl-4 transform-gpu translate-x-0 transition-all duration-500 ease-in-out">
           <div className={`h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
       flex flex-col animate-border-pulse ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"}`}>
 
-            {/* 🔹 標題 + 按鈕 */}
+            {/* 🔹 標題 + 按鈕 }
             <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-semibold text-blue-800 text-left">
                 {filteredDepartments[expandedRow]?.name || ""} 醫師名單
               </h2>
             </div>
 
-            {/* 🔹 主治醫師表格（不含按鈕） */}
+            {/* 🔹 主治醫師表格（不含按鈕） }
+            {expandedRow !== null && (
+              <ChiefSurgeonListWrapper
+                departmentId={filteredDepartments[expandedRow]?.id}
+                addChiefSurgeons={addChiefSurgeons}
+                setAddChiefSurgeons={setAddChiefSurgeons}
+                setDepartments={setDepartments}
+                setIsEditing={setIsEditing}
+                renderButtons={() => null}
+              />
+            )}
+          </div>
+        </div>
+      )} */}
+
+      {(expandedRow !== null || showPanel) && (
+        <div className="w-full md:w-1/3 pl-4 transform-gpu translate-x-0 transition-all duration-500 ease-in-out">
+          <div className={`h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
+      flex flex-col animate-border-pulse ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"}`}>
+
+            {/* 🔹 主治醫師區塊：標題 + 按鈕 */}
+            {/* <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-xl font-semibold text-blue-800 text-left">
+                {filteredDepartments[expandedRow]?.name || ""} 醫師名單
+              </h2>
+              <div className="flex gap-2 aa">
+                <button
+                  className="account-button"
+                  onClick={addRow}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    style={{ width: "1em", height: "1em" }}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  新增
+                </button>
+                <button
+                  className="account-button mgr-cancel"
+                  onClick={() => handleDelete(selectedUsers)}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    style={{ width: "1em", height: "1em" }}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  刪除
+                </button>
+              </div>
+            </div> */}
+
+            <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-xl font-semibold text-blue-800 text-left">
+                {filteredDepartments[expandedRow]?.name || ""} 醫師名單
+              </h2>
+              <div className="flex gap-2">
+                <button className="aa-button flex items-center gap-2" onClick={addRow}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                  // className="w-5 h-5"
+                  // style={{ width: "1.5em", height: "1em" }}
+
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  新增
+                </button>
+                <button className="aa-button danger mgr-cancel flex items-center gap-2" onClick={() => handleDelete(selectedUsers)}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    // className="w-5 h-5"
+                    style={{ width: "1em", height: "1em" }}
+
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  刪除
+                </button>
+              </div>
+            </div>
+            {/* 🔹 主治醫師表格 */}
             {expandedRow !== null && (
               <ChiefSurgeonListWrapper
                 departmentId={filteredDepartments[expandedRow]?.id}
@@ -469,7 +587,6 @@ function DepartmentListWrapper({
           </div>
         </div>
       )}
-
 
 
     </div >
