@@ -38,7 +38,11 @@ function ORMgrWrapper({ reloadKey }) {
                 await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
                 const response = await axios.get(BASE_URL + "/api/system/operating-rooms");
                 setOperatingRooms(response.data);
-                setEmptyError(null);
+                setEmptyError((prevErrors) => {
+                    const newErrors = { ...prevErrors };
+                    delete newErrors[operatingRoom.uniqueId];
+                    return newErrors;
+                })
             } catch (error) {
                 console.error("Error add data: ", error);
             }

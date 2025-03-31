@@ -17,6 +17,7 @@ function ORListWrapper({
 }) {
     const [filteredOperatingRooms, setFilteredOperatingRooms] = useState([]);
     const [editingOperatingRoom, setEditingOperatingRoom] = useState(null);
+    const [selectAll, setSelectAll] = useState(false);
 
     // 顯示狀態的文字
     const statusDisplayMap = {
@@ -48,6 +49,8 @@ function ORListWrapper({
             return matchesId && matchesName && matchesDepartment && matchesRoomType && matchesStatus;
         });
 
+        newFilteredOperatingRooms.sort((a, b) => a.id - b.id);
+
         setFilteredOperatingRooms(newFilteredOperatingRooms);
     }, [
         filterOperatingRoom.id,
@@ -62,7 +65,7 @@ function ORListWrapper({
         try {
             // 向 API 查詢該手術房是否包含手術
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms/${operatingRoom.id}/surgery`);
-            
+
             if (response.data.length > 0) {
                 // 這個手術房有手術，標記為不可修改 roomType
                 setEditingOperatingRoom({ ...operatingRoom, hasSurgeries: true });
@@ -97,12 +100,37 @@ function ORListWrapper({
         );
     };
 
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setSelectedOperatingRooms([]);
+        } else {
+            setSelectedOperatingRooms(filteredOperatingRooms.map(room => room.id));
+        }
+        setSelectAll(!selectAll);
+    }
+
+    useEffect(() => {
+        setSelectAll(
+            filteredOperatingRooms.length > 0 &&
+            selectedOperatingRooms.length === filteredOperatingRooms.length
+        );
+    }, [filteredOperatingRooms, selectedOperatingRooms]);
+
     return (
         <div className="mgr-list">
             <table className="system-table">
                 <thead>
                     <tr>
-                        <th>選取</th>
+                        <th
+                            className="selectable-cell"
+                        >
+                            <input
+                                type="checkbox"
+                                checked={selectAll}
+                                onChange={handleSelectAll}
+                                className="checkbox"
+                            />
+                        </th>
                         <th>手術房編號</th>
                         <th>手術房名稱</th>
                         <th>所屬科別</th>
