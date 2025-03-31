@@ -30,7 +30,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
   });
 
   useEffect(() => {
-    console.log("initialTimeSettings", initialTimeSettings); 
+    console.log("initialTimeSettings", initialTimeSettings);
   }, [initialTimeSettings]);
 
   const onDragEnd = (result) => {
@@ -110,7 +110,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
     }
     // 處理 Gantt (排班管理) 的拖曳
     else if (mainState === "shiftMgr") {
-      // 檢查用戶權限，只有管理員(role=3)才能進行排班管理的拖曳操作
+      // 檢查用戶權限，只有管理員(role=3)才能進行排班管理的拖曳操作 //其實沒必要判斷 因為除了管理員 沒人可以看到這個頁面
       if (user.role !== 3) {
         console.warn("非管理員用戶無法進行排班管理的拖曳操作");
         return;

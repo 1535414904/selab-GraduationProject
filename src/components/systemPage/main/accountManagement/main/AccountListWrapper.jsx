@@ -35,6 +35,7 @@ function AccountListWrapper({
     };
 
     useEffect(() => {
+
         if (!users.length) return;
 
         const newFilteredUsers = users.filter(user => {
@@ -50,7 +51,6 @@ function AccountListWrapper({
             const matchesRole = filterUser.role
                 ? user.role == filterUser.role
                 : true;
-
             return matchesUsername && matchesName && matchesUnit && matchesRole;
         });
 
@@ -160,13 +160,12 @@ function AccountListWrapper({
                                     <td>{user.username}</td>
                                     <td>{user.name}</td>
                                     <td>{user.unit}</td>
-                                    {/* <td>{roleDisplayMap[user.role]}</td> */}
                                     <td>
                                         <div className="inline-flex items-center gap-2">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
-                                                fill={user.role === 1 ? "#22c55e" : user.role === 2 ? "#3b82f6" : "#ef4444"}
+                                                fill={user.role == 1 ? "#22c55e" : user.role == 2 ? "#3b82f6" : "#ef4444"}
                                                 // className="w-5 h-5"
                                                 className="w-5 h-5 inline-block align-middle"
 
