@@ -38,14 +38,11 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
 
     // 檢查是否為MainGantt並且處於唯讀模式
     if (mainState === "mainPage" && mainGanttRef.current) {
-      // 檢查用戶權限，只有管理員(role=3)才能進行拖曳操作
-      if (user.role !== 3) {
-        console.warn("非管理員用戶無法進行拖曳操作");
-        return;
-      }
-
-      // 每次拖曳時獲取最新的狀態
+      // 從 mainGanttRef 中獲取最新的狀態
       const { setHasChanges, filteredRows, setFilteredRows, readOnly } = mainGanttRef.current;
+      
+      console.log("用戶角色:", user.role);  // 除錯用
+      console.log("用戶名稱:", user.username);  // 除錯用
 
       // 每次拖曳前重新檢查最新的 readOnly 狀態
       console.log("拖曳操作檢查 - readOnly 狀態:", readOnly);
@@ -110,12 +107,6 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
     }
     // 處理 Gantt (排班管理) 的拖曳
     else if (mainState === "shiftMgr") {
-      // 檢查用戶權限，只有管理員(role=3)才能進行排班管理的拖曳操作 //其實沒必要判斷 因為除了管理員 沒人可以看到這個頁面
-      if (user.role !== 3) {
-        console.warn("非管理員用戶無法進行排班管理的拖曳操作");
-        return;
-      }
-
       // 首先嘗試解析拖曳源和目標索引
       try {
         const sourceRoomIndex = parseInt(result.source.droppableId.split("-")[1], 10);
@@ -149,7 +140,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
         <div className="flex-grow p-4 md:p-6">
           {mainState === "mainPage" && (
             <div className="transition-all duration-300 ease-in-out">
-              <MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} />
+              <MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} user={user} />
             </div>
           )}
 

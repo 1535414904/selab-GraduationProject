@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import RoomSection from "./components/ROOM/RoomSection";
 import TimeWrapper from "./components/Time/timeWrapper";
 import GeneratePDFButton from "./components/Time/GeneratePDFButton";
@@ -11,7 +11,7 @@ import axios from "axios";
 import { BASE_URL } from "/src/config";
 
 // 主頁專用的甘特圖組件，預設只能查看，但可以切換到編輯模式
-function MainGantt({ rows, setRows, mainGanttRef }) {
+function MainGantt({ rows, setRows, mainGanttRef, user }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -24,25 +24,36 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
   const [modalError, setModalError] = useState(null); // 模態視窗錯誤
   const [hasChanges, setHasChanges] = useState(false); // 是否有未保存的變更
   const [isSaving, setIsSaving] = useState(false); // 是否正在保存
-  const [userRole, setUserRole] = useState(null); // 用戶角色
+  const [userRole, setUserRole] = useState(user?.role || null); // 優先使用傳入的用戶角色
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
+
+  // 處理篩選結果 - 提前定義並使用 useCallback 包裝
+  const handleFilterChange = useCallback((filteredData) => {
+    setFilteredRows(filteredData);
+  }, []);
 
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
       try {
-        await fetchSurgeryData(setRows, setLoading, setError);
+        await fetchSurgeryData(setRows, setLoading, setError, true);
         
-        // 獲取當前用戶信息
-        const username = localStorage.getItem('username');
-        if (username) {
-          try {
-            const response = await axios.get(`${BASE_URL}/api/system/user/${username}`);
-            setUserRole(response.data.role);
-          } catch (error) {
-            console.error("獲取用戶信息失敗:", error);
+        // 如果沒有通過props獲取到用戶角色，才嘗試從API獲取
+        if (!user || user.role === undefined) {
+          console.log("從props未獲取到用戶角色，嘗試從API獲取...");
+          const username = localStorage.getItem('username');
+          if (username) {
+            try {
+              const response = await axios.get(`${BASE_URL}/api/system/user/${username}`);
+              setUserRole(response.data.role);
+              console.log("從API獲取到用戶角色:", response.data.role);
+            } catch (error) {
+              console.error("獲取用戶信息失敗:", error);
+            }
           }
+        } else {
+          console.log("從props獲取到用戶角色:", user.role);
         }
       } catch (error) {
         console.error("初始化數據失敗:", error);
@@ -52,7 +63,15 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     };
     
     initializeData();
-  }, []);
+  }, [user]);
+
+  // 當傳入的user變化時，更新userRole
+  useEffect(() => {
+    if (user && user.role !== undefined) {
+      console.log("用戶角色更新:", user.role);
+      setUserRole(user.role);
+    }
+  }, [user]);
 
   // 當原始數據變更時，更新篩選後的結果
   useEffect(() => {
@@ -67,6 +86,30 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       };
     }
   }, [rows, mainGanttRef]);
+
+  // 監聽甘特圖數據更新事件
+  useEffect(() => {
+    const handleGanttDataUpdated = () => {
+      console.log("收到甘特圖數據更新事件，強制重新渲染UI");
+      
+      // 確保狀態已更新
+      if (mainGanttRef && mainGanttRef.current) {
+        mainGanttRef.current.readOnly = true;
+        mainGanttRef.current.hasChanges = false;
+      }
+      
+      // 如果有篩選條件，則重新應用篩選
+      if (filteredRows.length !== rows.length) {
+        handleFilterChange([...rows]);
+      }
+    };
+    
+    window.addEventListener('ganttDataUpdated', handleGanttDataUpdated);
+    
+    return () => {
+      window.removeEventListener('ganttDataUpdated', handleGanttDataUpdated);
+    };
+  }, [filteredRows, rows, handleFilterChange, mainGanttRef]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -101,18 +144,23 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
     }
   }, [hasChanges, mainGanttRef]);
 
-  // 處理篩選結果
-  const handleFilterChange = (filteredData) => {
-    setFilteredRows(filteredData);
-  };
-  
   // 切換編輯模式
   const toggleEditMode = () => {
+    // 記錄當前用戶角色
+    console.log("切換編輯模式時的用戶角色:", userRole, "類型:", typeof userRole);
+    console.log("直接從props獲取的用戶角色:", user?.role, "類型:", typeof user?.role);
+    
+    // 將角色轉換為數字進行比較
+    const roleAsNumber = Number(userRole);
+    
     // 檢查用戶權限，只有管理員(role=3)才能切換到編輯模式
-    if (userRole !== 3) {
+    if (roleAsNumber !== 3) {
       alert("只有管理員才能進行編輯操作！");
+      console.log("用戶角色檢查失敗，當前角色:", userRole, "轉換後:", roleAsNumber);
       return;
     }
+    
+    console.log("管理員權限檢查通過，當前角色:", userRole, "轉換後:", roleAsNumber);
     
     // 如果要從編輯模式切換到唯讀模式
     if (!readOnly) {
@@ -127,6 +175,7 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       // 立即更新 mainGanttRef
       if (mainGanttRef && mainGanttRef.current) {
         mainGanttRef.current.readOnly = false;
+        console.log("mainGanttRef 更新為編輯模式");
       }
     }
   };
@@ -145,26 +194,38 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
       // 重新載入資料以確保顯示最新狀態
       try {
         console.log("開始重新載入最新資料...");
-        // 使用 fetchSurgeryData 函數重新載入並格式化數據
-        const formattedData = await fetchSurgeryData(setRows, setLoading, setError);
-        console.log("成功獲取並格式化新資料:", formattedData);
         
-        // 更新所有相關狀態
-        setFilteredRows(formattedData);
+        // 先設置唯讀模式 - 避免用戶在資料載入過程中進行操作
         setReadOnly(true);
+        
+        // 清除現有數據，確保 UI 完全刷新
+        setRows([]);
+        setFilteredRows([]);
+        
+        // 標記無未保存變更
         setHasChanges(false);
+        
+        // 使用 fetchSurgeryData 函數重新載入並格式化數據
+        await fetchSurgeryData(setRows, setLoading, setError, true);
+        
+        console.log("數據重新載入完成");
         
         // 更新 mainGanttRef
         if (mainGanttRef && mainGanttRef.current) {
-          mainGanttRef.current.filteredRows = formattedData;
           mainGanttRef.current.readOnly = true;
           mainGanttRef.current.hasChanges = false;
         }
         
-        console.log("所有狀態更新完成");
-        
         // 顯示通知
         alert("手術排程已成功保存！");
+        
+        // 強制觸發 UI 重新渲染
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('ganttDataUpdated'));
+          
+          // 保存成功後重新整理頁面
+          window.location.reload();
+        }, 500);
         
       } catch (error) {
         console.error('重新載入數據失敗:', error);
@@ -277,13 +338,15 @@ function MainGantt({ rows, setRows, mainGanttRef }) {
           </div>
           
           <div className="gantt-buttons">
-            <button 
-              className={`edit-mode-button ${!readOnly ? 'active' : ''}`} 
-              onClick={toggleEditMode}
-              disabled={isSaving}
-            >
-              {readOnly ? '啟用移動修改' : '關閉移動修改'}
-            </button>
+            {Number(userRole) === 3 && (
+              <button 
+                className={`edit-mode-button ${!readOnly ? 'active' : ''}`} 
+                onClick={toggleEditMode}
+                disabled={isSaving}
+              >
+                {readOnly ? '啟用移動修改' : '關閉移動修改'}
+              </button>
+            )}
             <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
           </div>
         </div>
