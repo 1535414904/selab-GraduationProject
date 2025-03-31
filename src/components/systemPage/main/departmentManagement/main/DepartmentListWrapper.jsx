@@ -67,11 +67,11 @@ function DepartmentListWrapper({
     }
   };
 
-  const handleCheckboxChange = (id) => {
+  const handleCheckboxChange = (department) => {
     setSelectedDepartments((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((department) => department !== id)
-        : [...prevSelected, id]
+      prevSelected.some((dept) => dept.id === department.id)
+        ? prevSelected.filter((dept) => dept.id !== department.id)
+        : [...prevSelected, department]
     );
   };
 
@@ -93,7 +93,7 @@ function DepartmentListWrapper({
     if (selectAll) {
       setSelectedDepartments([]);
     } else {
-      setSelectedDepartments(filteredDepartments.map(dept => dept.id));
+      setSelectedDepartments(filteredDepartments);
     }
     setSelectAll(!selectAll);
   };
@@ -295,9 +295,9 @@ function DepartmentListWrapper({
                       >
                         <input
                           type="checkbox"
-                          checked={selectedDepartments.includes(department.id)}
+                          checked={selectedDepartments.some((dept) => dept.id === department.id)}
                           onClick={(e) => e.stopPropagation()}
-                          onChange={() => handleCheckboxChange(department.id)}
+                          onChange={() => handleCheckboxChange(department)}
                           className="checkbox"
                         />
                       </td>
