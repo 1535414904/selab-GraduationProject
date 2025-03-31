@@ -67,13 +67,23 @@ function DepartmentListWrapper({
     }
   };
 
-  const handleCheckboxChange = (department) => {
+  // 
+  // const handleCheckboxChange = (department) => {
+  //   setSelectedDepartments((prevSelected) =>
+  //     prevSelected.some((dept) => dept.id === department.id)
+  //       ? prevSelected.filter((dept) => dept.id !== department.id)
+  //       : [...prevSelected, department]
+  //   );
+  // };
+  //   // 這個是原本的寫法，會有一個問題，就是如果選取了兩個科別，然後取消選取其中一個，會導致另外一個也被取消選取。
+  const handleCheckboxChange = (id) => {
     setSelectedDepartments((prevSelected) =>
-      prevSelected.some((dept) => dept.id === department.id)
-        ? prevSelected.filter((dept) => dept.id !== department.id)
-        : [...prevSelected, department]
+      prevSelected.includes(id)
+        ? prevSelected.filter((deptId) => deptId !== id)
+        : [...prevSelected, id]
     );
   };
+
 
   const addRow = () => {
     setAddChiefSurgeons([...addChiefSurgeons, { id: "", name: "" }]);
@@ -93,7 +103,8 @@ function DepartmentListWrapper({
     if (selectAll) {
       setSelectedDepartments([]);
     } else {
-      setSelectedDepartments(filteredDepartments);
+      // setSelectedDepartments(filteredDepartments);
+      setSelectedDepartments(filteredDepartments.map((d) => d.id));
     }
     setSelectAll(!selectAll);
   };
@@ -246,6 +257,8 @@ function DepartmentListWrapper({
               <tr>
                 <th
                   className="selectable-cell"
+                  onClick={handleSelectAll} // 整個 th 點了也可以全選（可選）
+
                 >
                   <input
                     type="checkbox"
@@ -295,9 +308,10 @@ function DepartmentListWrapper({
                       >
                         <input
                           type="checkbox"
-                          checked={selectedDepartments.some((dept) => dept.id === department.id)}
+                          // checked={selectedDepartments.some((dept) => dept.id === department.id)}
+                          checked={selectedDepartments.includes(department.id)}
                           onClick={(e) => e.stopPropagation()}
-                          onChange={() => handleCheckboxChange(department)}
+                          onChange={() => handleCheckboxChange(department.id)}
                           className="checkbox"
                         />
                       </td>

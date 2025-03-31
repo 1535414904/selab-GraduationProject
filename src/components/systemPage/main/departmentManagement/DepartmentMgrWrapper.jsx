@@ -78,7 +78,7 @@ function DepartmentMgrWrapper({ reloadKey }) {
             alert("請選擇要刪除的科別");
             return;
         }
-    
+
         try {
             // 並行檢查所有選擇的科別是否有主治醫師
             const results = await Promise.all(
@@ -86,26 +86,27 @@ function DepartmentMgrWrapper({ reloadKey }) {
                     axios.get(`${BASE_URL}/api/system/department/${department.id}/chief-surgeons`)
                 )
             );
-    
+
             // 篩選出有主治醫師的科別
             const departmentsWithChiefs = selectedDepartments.filter((department, index) => results[index].data.length > 0);
-    
+
             if (departmentsWithChiefs.length > 0) {
                 alert(`以下科別仍有主治醫師，無法刪除：${departmentsWithChiefs.map(department => department.name).join(", ")}`);
+                setSelectedDepartments([]); // 取消勾選
                 return;
             }
-    
+
             const isConfirmed = window.confirm(`請確認是否刪除這 ${selectedDepartments.length} 筆科別？`);
             if (!isConfirmed) {
                 setSelectedDepartments([]); // 取消勾選
                 return;
             }
-    
+
             // 批量刪除科別
             await axios.delete(`${BASE_URL}/api/system/departments/delete`, {
                 data: selectedDepartments.map(department => department.id) // 傳送部門的 id
             });
-    
+
             // 重新獲取科別資料
             const response = await axios.get(`${BASE_URL}/api/system/departments`);
             setDepartments(response.data);
@@ -114,13 +115,14 @@ function DepartmentMgrWrapper({ reloadKey }) {
             console.error("刪除失敗：", error);
         }
     };
-    
-    
+
+
 
     const handleDelete = async (id, name) => {
         const response = await axios.get(`${BASE_URL}/api/system/department/${id}/chief-surgeons`);
         if (response.data.length > 0) {
             alert(`無法刪除科別 "${name}"，因為仍有主治醫師在此科別內。`);
+            setSelectedDepartments([]); // 取消勾選
             return;
         }
 
