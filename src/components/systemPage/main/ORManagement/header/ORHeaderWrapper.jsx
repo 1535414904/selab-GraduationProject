@@ -11,7 +11,12 @@ function ORHeaderWrapper({
   addOperatingRooms, setAddOperatingRooms
 }) {
   const addRow = () => {
-    setAddOperatingRooms([...addOperatingRooms, { id: "", name: "", departmentId: "1", roomType: "", status: "" }]);
+    const newOperatingRoom = {
+      id: "",
+      name: "",
+      uniqueId: Date.now()  // 使用當前時間戳作為唯一 ID
+    };
+    setAddOperatingRooms([...addOperatingRooms, newOperatingRoom]);
   };
 
   return (

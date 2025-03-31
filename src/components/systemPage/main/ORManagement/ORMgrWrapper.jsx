@@ -10,7 +10,7 @@ function ORMgrWrapper({ reloadKey }) {
     const [filterOperatingRoom, setFilterOperatingRoom] = useState({ id: "", name: "" });
     const [selectedOperatingRooms, setSelectedOperatingRooms] = useState([]);
     const [addOperatingRooms, setAddOperatingRooms] = useState([]);
-    const [emptyError, setEmptyError] = useState("");
+    const [emptyError, setEmptyError] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,7 +44,11 @@ function ORMgrWrapper({ reloadKey }) {
 
     const handleAdd = async (operatingRoom) => {
         if (!operatingRoom.id.trim()) {
-            setEmptyError("*手術房編號欄位不得為空");
+            setEmptyError((prevErrors) => ({
+                ...prevErrors,
+                [operatingRoom.uniqueId]: "*手術房編號欄位不得為空",
+            }));
+            return;
         } else {
             try {
                 await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
@@ -155,6 +159,7 @@ function ORMgrWrapper({ reloadKey }) {
                 setAddOperatingRooms={setAddOperatingRooms}
                 handleAdd={handleAdd}
                 emptyError={emptyError}
+                setEmptyError={setEmptyError}
             />
 
         </div>

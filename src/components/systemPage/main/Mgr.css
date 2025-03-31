@@ -211,6 +211,7 @@
 
 .system-table thead th {
   padding: 0px 10px;
+  white-space: nowrap;
 }
 
 .system-table thead tr,

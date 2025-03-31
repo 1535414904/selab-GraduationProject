@@ -5,11 +5,14 @@ import { BASE_URL } from "../../../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError }) {
-    const handleChange = (index, event) => {
+function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError, setEmptyError }) {
+    const handleChange = (uniqueId, event) => {
         const { name, value } = event.target;
         const updated = [...addOperatingRooms];
-        updated[index][name] = value;
+        const operatingRoom = updated.find(room => room.uniqueId === uniqueId);
+        if (operatingRoom) { 
+            operatingRoom[name] = value;
+        }
         setAddOperatingRooms(updated);
     };
     const [departments, setDepartments] = useState([]);
@@ -31,39 +34,44 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
         fetchData();
     }, []);
 
-    const handleDelete = (index) => {
-        const updated = addOperatingRooms.filter((department, idx) => idx !== index);
+    const handleDelete = (uniqueId) => {
+        const updated = addOperatingRooms.filter(operatingRoom => operatingRoom.uniqueId !== uniqueId);
         setAddOperatingRooms(updated);
+        setEmptyError((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[uniqueId];  // 根據 uniqueId 刪除錯誤
+            return newErrors;
+        });
     };
 
     return (
         <>
-            {addOperatingRooms.map((operatingRoom, index) => (
-                <tr className="editable-row" key={index}>
+            {addOperatingRooms.map((operatingRoom) => (
+                <tr className="editable-row" key={operatingRoom.uniqueId}>
                     <td></td>
                     <td>
                         <input
                             type="text"
                             name="id"
                             value={operatingRoom.id}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                             placeholder="請輸入手術房編號"
                         />
-                        <div className="error">{emptyError}</div>
+                        {emptyError[operatingRoom.uniqueId] && <span className="error">{emptyError[operatingRoom.uniqueId]}</span>}
                     </td>
                     <td>
                         <input
                             type="text"
                             name="name"
                             value={operatingRoom.name}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         />
                     </td>
                     <td>
                         <select
                             name="departmentId"
                             value={operatingRoom.departmentId}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         >
                             {departments.map((department) => (
                                 <option key={department.id} value={department.id}>
@@ -77,14 +85,14 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             type="text"
                             name="roomType"
                             value={operatingRoom.roomType}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         />
                     </td>
                     <td>
                         <select
                             name="status"
                             value={operatingRoom.status}
-                            onChange={(e) => handleChange(index, e)}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         >
                             <option value="1">開啟</option>
                             <option value="0">關閉</option>
@@ -104,13 +112,13 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             {/* 儲存按鈕 */}
                             <button className="action-button edit-button" onClick={() => {
                                 handleAdd(operatingRoom);
-                                if (operatingRoom.id.trim()) { handleDelete(index); }
+                                if (operatingRoom.id.trim()) { handleDelete(operatingRoom.uniqueId); }
                             }}>
                                 <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                             </button>
 
                             {/* 刪除按鈕 */}
-                            <button className="action-button delete-button" onClick={() => handleDelete(index)}>
+                            <button className="action-button delete-button" onClick={() => handleDelete(operatingRoom.uniqueId)}>
                                 <FontAwesomeIcon icon={faTrash} className="action-icon" />
                             </button>
                         </div>

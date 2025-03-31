@@ -13,7 +13,7 @@ function ORListWrapper({
     filterOperatingRoom, selectedOperatingRooms,
     setSelectedOperatingRooms, handleDelete,
     addOperatingRooms, setAddOperatingRooms,
-    handleAdd, emptyError, setEditingUser
+    handleAdd, emptyError, setEmptyError
 }) {
     const [filteredOperatingRooms, setFilteredOperatingRooms] = useState([]);
     const [editingOperatingRoom, setEditingOperatingRoom] = useState(null);
@@ -104,6 +104,7 @@ function ORListWrapper({
                         setAddOperatingRooms={setAddOperatingRooms}
                         handleAdd={handleAdd}
                         emptyError={emptyError}
+                        setEmptyError={setEmptyError}
                     />
                     {filteredOperatingRooms.length > 0 ? (
                         filteredOperatingRooms.map((operatingRoom) => (
