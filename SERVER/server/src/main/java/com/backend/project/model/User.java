@@ -3,8 +3,6 @@ package com.backend.project.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -26,7 +24,7 @@ public class User {
     private String unit;
 
     @Column(name = "role")
-    private int role;
+    private String role;
 
     @Column(name = "email")
     private String email;
@@ -43,10 +41,16 @@ public class User {
     @Column(name = "reset_code_attempts")
     private int resetCodeAttempts;
 
-    @JsonIgnore
+    // @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Surgery> surgeries;
 
+    // ===== 無參數建構子：設定預設值 =====
+    public User() {
+        this.resetPasswordCode = "000000";
+        this.resetCodeAttempts = 0;
+        this.password = "123";
+    }
     // ===== Getters and Setters =====
 
     public String getUsername(){
@@ -73,11 +77,11 @@ public class User {
         this.unit = unit;
     }
 
-    public int getRole(){
+    public String getRole(){
         return role;
     }
 
-    public void setRole(int role){
+    public void setRole(String role){
         this.role = role;
     }
 
@@ -121,12 +125,11 @@ public class User {
         this.resetCodeAttempts = resetCodeAttempts;
     }
 
-    @JsonIgnore
-    public List<Surgery> getSurgeries() {
-        return surgeries;
-    }
+    // public List<Surgery> getSurgeries() {
+    //     return surgeries;
+    // }
 
-    public void setSurgeries(List<Surgery> surgeries) {
-        this.surgeries = surgeries;
-    }
+    // public void setSurgeries(List<Surgery> surgeries) {
+    //     this.surgeries = surgeries;
+    // }
 }
