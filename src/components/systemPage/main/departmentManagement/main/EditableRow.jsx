@@ -49,7 +49,7 @@ function EditableRow({ key, department, handleSave, setIsEditing }) {
         <button
           className="action-button edit-button"
           onClick={() => {
-            handleSave(editedDepartment); // 儲存當前的編輯內容
+            handleSave(editedDepartment.id,editedDepartment); // 儲存當前的編輯內容
             setIsEditing(false); // 退出編輯模式
           }}
         >

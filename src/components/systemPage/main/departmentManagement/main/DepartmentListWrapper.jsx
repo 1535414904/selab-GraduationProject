@@ -27,6 +27,7 @@ function DepartmentListWrapper({
   const [expandedRow, setExpandedRow] = useState(null);
   const [addChiefSurgeons, setAddChiefSurgeons] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     if (!departments.length) return;
@@ -52,7 +53,10 @@ function DepartmentListWrapper({
     setEditingDepartment(department);
   };
 
-  const handleSave = async (updatedDepartment) => {
+  const handleSave = async (id, updatedDepartment) => {
+    const isConfirmed = window.confirm(`是否保存本次對科別編號${id}的修改？`);
+    if (!isConfirmed) return;
+
     try {
       await axios.put(`${BASE_URL}/api/system/department/${updatedDepartment.id}`, updatedDepartment);
       const response = await axios.get(`${BASE_URL}/api/system/departments`);
@@ -84,6 +88,22 @@ function DepartmentListWrapper({
       setTimeout(() => setShowPanel(false), 150);
     }
   }, [expandedRow]);
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedDepartments([]);
+    } else {
+      setSelectedDepartments(filteredDepartments.map(dept => dept.id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  useEffect(() => {
+    setSelectAll(
+      filteredDepartments.length > 0 &&
+      selectedDepartments.length === filteredDepartments.length
+    );
+  }, [selectedDepartments, filteredDepartments]);
 
   // 
   // 舊的 return 我怕做壞，所以先保留，壞了再改回來。
@@ -224,7 +244,16 @@ function DepartmentListWrapper({
           <table className="system-table">
             <thead>
               <tr>
-                <th>選取</th>
+                <th
+                  className="selectable-cell"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="checkbox"
+                  />
+                </th>
                 <th>科別編號</th>
                 <th>科別名稱</th>
                 <th>醫師人數</th>

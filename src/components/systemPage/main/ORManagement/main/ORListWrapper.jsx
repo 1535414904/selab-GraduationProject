@@ -58,8 +58,21 @@ function ORListWrapper({
         operatingRooms
     ]);
 
-    const handleEdit = (operatingRoom) => {
-        setEditingOperatingRoom(operatingRoom);
+    const handleEdit = async (operatingRoom) => {
+        try {
+            // 向 API 查詢該手術房是否包含手術
+            const response = await axios.get(`${BASE_URL}/api/system/operating-rooms/${operatingRoom.id}/surgery`);
+            
+            if (response.data.length > 0) {
+                // 這個手術房有手術，標記為不可修改 roomType
+                setEditingOperatingRoom({ ...operatingRoom, hasSurgeries: true });
+            } else {
+                // 沒有手術，可以正常編輯
+                setEditingOperatingRoom({ ...operatingRoom, hasSurgeries: false });
+            }
+        } catch (error) {
+            console.error("查詢手術房的手術失敗：", error);
+        }
     };
 
     const handleSave = async (updatedOperatingRoom) => {
@@ -111,7 +124,7 @@ function ORListWrapper({
                             editingOperatingRoom?.id === operatingRoom.id ? (
                                 <EditableRow
                                     key={operatingRoom.id}
-                                    operatingRoom={operatingRoom}
+                                    operatingRoom={editingOperatingRoom}
                                     handleSave={handleSave}
                                     setIsEditing={setEditingOperatingRoom}
                                 />
@@ -139,7 +152,7 @@ function ORListWrapper({
                                     <td>{operatingRoom.department.name}</td>
                                     <td>{operatingRoom.roomType}</td>
                                     {/* <td> {statusDisplayMap[operatingRoom.status]}</td> */}
-                                    <td className="text-center">
+                                    <td className="text-center p-0">
                                         <div className="flex justify-center items-center gap-2">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
