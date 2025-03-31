@@ -26,22 +26,6 @@ function ORMgrWrapper({ reloadKey }) {
         fetchData();
     }, []);
 
-    /*const addHandleSubmit = async () => {
-        const hasEmptyField = addOperatingRooms.some(operatingRoom => !operatingRoom.id.trim());
-        if (hasEmptyField) {
-            setEmptyError("*手術房編號欄位不得為空");
-        } else {
-            try {
-                await axios.post(`${BASE_URL}/api/system/operating-rooms/add`, addOperatingRooms);
-                const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
-                setOperatingRooms(response.data);
-                setEmptyError(null);
-            } catch (error) {
-                console.log("Error add data: ", error);
-            }
-        }
-    }*/
-
     const handleAdd = async (operatingRoom) => {
         if (!operatingRoom.id.trim()) {
             setEmptyError((prevErrors) => ({
