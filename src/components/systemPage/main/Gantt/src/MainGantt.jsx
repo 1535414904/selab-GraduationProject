@@ -335,13 +335,15 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           </div>
           
           <div className="gantt-buttons">
-            <button 
-              className={`edit-mode-button ${!readOnly ? 'active' : ''}`} 
-              onClick={toggleEditMode}
-              disabled={isSaving}
-            >
-              {readOnly ? '啟用移動修改' : '關閉移動修改'}
-            </button>
+            {Number(userRole) === 3 && (
+              <button 
+                className={`edit-mode-button ${!readOnly ? 'active' : ''}`} 
+                onClick={toggleEditMode}
+                disabled={isSaving}
+              >
+                {readOnly ? '啟用移動修改' : '關閉移動修改'}
+              </button>
+            )}
             <GeneratePDFButton timeScaleRef={timeScaleRef} ganttChartRef={ganttChartRef} />
           </div>
         </div>
