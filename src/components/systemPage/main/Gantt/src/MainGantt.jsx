@@ -222,6 +222,9 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
         // 強制觸發 UI 重新渲染
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('ganttDataUpdated'));
+          
+          // 保存成功後重新整理頁面
+          window.location.reload();
         }, 500);
         
       } catch (error) {
