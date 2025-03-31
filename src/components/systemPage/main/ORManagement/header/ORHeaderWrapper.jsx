@@ -14,6 +14,9 @@ function ORHeaderWrapper({
     const newOperatingRoom = {
       id: "",
       name: "",
+      departmentId: "",
+      roomType: "",
+      status: 1,
       uniqueId: Date.now()  // 使用當前時間戳作為唯一 ID
     };
     setAddOperatingRooms([...addOperatingRooms, newOperatingRoom]);

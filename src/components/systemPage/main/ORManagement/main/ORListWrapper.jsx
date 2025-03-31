@@ -89,11 +89,11 @@ function ORListWrapper({
         }
     };
 
-    const handleCheckboxChange = (id) => {
+    const handleCheckboxChange = (operatingRoom) => {
         setSelectedOperatingRooms((prevSelected) =>
-            prevSelected.includes(id)
-                ? prevSelected.filter(operatingRoomId => operatingRoomId !== id)
-                : [...prevSelected, id]
+            prevSelected.includes(operatingRoom)
+                ? prevSelected.filter(selectedRoom => selectedRoom.id !== operatingRoom.id)
+                : [...prevSelected, operatingRoom]
         );
     };
 
@@ -180,7 +180,7 @@ function ORListWrapper({
                                             <button onClick={() => handleEdit(operatingRoom)} className="action-button edit-button">
                                                 <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
                                             </button>
-                                            <button onClick={() => handleDelete(operatingRoom.name, operatingRoom.id)} className="action-button delete-button">
+                                            <button onClick={() => handleDelete(operatingRoom)} className="action-button delete-button">
                                                 <FontAwesomeIcon icon={faTrash} className="action-icon" />
                                             </button>
                                         </div>

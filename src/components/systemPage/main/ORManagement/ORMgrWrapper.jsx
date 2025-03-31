@@ -60,34 +60,7 @@ function ORMgrWrapper({ reloadKey }) {
             }
         }
     }
-
-    // const handleDeleteAll = async (selectedOperatingRooms) => {
-    //     if (selectedOperatingRooms.length === 0) {
-    //         alert("請選擇要刪除的手術房");
-    //         return;
-    //     }
-    //     try {
-    //         await axios.delete(`${BASE_URL}/api/system/operating-rooms/delete`, {
-    //             data: selectedOperatingRooms
-    //         });
-    //         const response = await axios.get(BASE_URL + "/api/system/operating-rooms");
-    //         setOperatingRooms(response.data);
-    //         setSelectedOperatingRooms([]);
-    //     } catch (error) {
-    //         console.error("Delete fail：", error);
-    //     }
-    // }
-
-    // const handleDelete = async (id) => {
-    //     try {
-    //         await axios.delete(`${BASE_URL}/api/system/operating-room/delete/${id}`);
-    //         const response = await axios.get(BASE_URL + "/api/system/operating-rooms");
-    //         setOperatingRooms(response.data);
-    //         setSelectedOperatingRooms([]);
-    //     } catch (error) {
-    //         console.error("Delete fail：", error);
-    //     }
-    // }
+    
     const handleDeleteAll = async (selectedOperatingRooms) => {
         if (selectedOperatingRooms.length === 0) {
             alert("請選擇要刪除的手術房");
@@ -114,12 +87,12 @@ function ORMgrWrapper({ reloadKey }) {
         }
     };
 
-    const handleDelete = async (name, id) => {
-        const isConfirmed = window.confirm(`請確認是否刪除手術房 ${name} ( ID: ${id} )？`);
+    const handleDelete = async (operatingRoom) => {
+        const isConfirmed = window.confirm(`請確認是否刪除手術房 ${operatingRoom.name} ( ID: ${operatingRoom.id} )？`);
         if (!isConfirmed) return;
 
         try {
-            await axios.delete(`${BASE_URL}/api/system/operating-room/delete/${id}`);
+            await axios.delete(`${BASE_URL}/api/system/operating-room/delete/${operatingRoom.id}`);
 
             // 重新獲取最新的手術房資料
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
