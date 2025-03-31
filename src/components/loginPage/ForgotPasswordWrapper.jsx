@@ -236,6 +236,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
           </div>
           {/* 信箱 */}
           <div>
+          <div className="relative">
             <input
               className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
               placeholder="電子信箱"
@@ -248,20 +249,34 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
                 <polyline points="22,6 12,13 2,6" />
               </svg>
             </div>
+          </div>
+
             {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
           </div>
 
           {/* 驗證碼輸入 */}
           {step === "verify" && (
             <div>
-              <input
-                className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
-                placeholder="驗證碼"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-              />
-              {error.verificationCode && <p className="text-sm text-red-600 mt-1">{error.verificationCode}</p>}
-              
+              <div className="relative">
+                <input
+                  className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
+                  placeholder="驗證碼"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="7" cy="17" r="3" />
+                    <path d="M10.6 14.6L20 5.2l-1.4-1.4L9.2 13.2v1.4h1.4z" />
+                    <path d="M20 5.2l1.4 1.4" />
+                  </svg>
+                </div>
+              </div>
+
+              {error.verificationCode && (
+                <p className="text-sm text-red-600 mt-1">{error.verificationCode}</p>
+              )}
+
               {/* 倒數計時器 */}
               {countdown > 0 && (
                 <p className="text-sm text-blue-600 mt-2">
@@ -278,6 +293,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
               )}
             </div>
           )}
+
 
           {/* 訊息提示 */}
           {message && (
