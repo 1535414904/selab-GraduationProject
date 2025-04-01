@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function AddRow({
@@ -61,8 +61,9 @@ function AddRow({
 
                             {/* 刪除按鈕 */}
                             <button className="action-button delete-button" onClick={() => handleDelete(index)}>
-                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                <FontAwesomeIcon icon={faTimes} className="action-icon" />
                             </button>
+
                         </div>
 
                     </td>

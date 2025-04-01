@@ -3,14 +3,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError, setEmptyError }) {
     const handleChange = (uniqueId, event) => {
         const { name, value } = event.target;
         const updated = [...addOperatingRooms];
         const operatingRoom = updated.find(room => room.uniqueId === uniqueId);
-        if (operatingRoom) { 
+        if (operatingRoom) {
             operatingRoom[name] = value;
         }
         setAddOperatingRooms(updated);
@@ -119,7 +119,7 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
 
                             {/* 刪除按鈕 */}
                             <button className="action-button delete-button" onClick={() => handleDelete(operatingRoom.uniqueId)}>
-                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                <FontAwesomeIcon icon={faTimes} className="action-icon" />
                             </button>
                         </div>
                     </td>
