@@ -8,7 +8,7 @@ import EditableRow from "./EditableRow";
 import AddRow from "./AddRow";
 import ChiefSurgeonListWrapper from "../chiefSurgeonManagement/ChiefSurgeonListWrapper";
 import "../../Mgr.css";
-
+import { useRef } from "react";
 function DepartmentListWrapper({
   departments,
   setDepartments,
@@ -20,7 +20,9 @@ function DepartmentListWrapper({
   setAddDepartments,
   handleAdd,
   emptyError,
-  setEmptyError
+  setEmptyError,
+  refreshKey,
+  setRefreshKey
 }) {
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [editingDepartment, setEditingDepartment] = useState(null);
@@ -28,6 +30,9 @@ function DepartmentListWrapper({
   const [addChiefSurgeons, setAddChiefSurgeons] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
+  const [selectedChiefIds, setSelectedChiefIds] = useState([]);
+  // const [refreshKey, setRefreshKey] = useState(0);
+  const chiefRef = useRef();
 
   useEffect(() => {
     if (!departments.length) return;
@@ -115,6 +120,31 @@ function DepartmentListWrapper({
       selectedDepartments.length === filteredDepartments.length
     );
   }, [selectedDepartments, filteredDepartments]);
+  const handleDeleteSelectedChiefSurgeons = async () => {
+    if (selectedChiefIds.length === 0) {
+      alert("請先選取要刪除的主治醫師");
+      return;
+    }
+
+    const confirmDelete = window.confirm(`確定要刪除 ${selectedChiefIds.length} 位主治醫師？`);
+    if (!confirmDelete) return;
+
+    try {
+      await Promise.all(
+        selectedChiefIds.map((id) =>
+          axios.delete(`${BASE_URL}/api/system/chief-surgeon/delete/${id}`)
+        )
+      );
+
+      const response = await axios.get(`${BASE_URL}/api/system/department/${filteredDepartments[expandedRow]?.id}/chief-surgeons`);
+      const responseDepartments = await axios.get(`${BASE_URL}/api/system/departments`);
+      setDepartments(responseDepartments.data);
+      // 傳給右邊的元件就會同步清空
+      setSelectedChiefIds([]);
+    } catch (error) {
+      console.error("批次刪除主治醫師失敗：", error);
+    }
+  };
 
   // 
   // 舊的 return 我怕做壞，所以先保留，壞了再改回來。
@@ -475,57 +505,6 @@ function DepartmentListWrapper({
           <div className={`h-full bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-2xl shadow-xl p-6 overflow-auto
       flex flex-col animate-border-pulse ${expandedRow !== null ? "animate-slide-in-right" : "animate-slide-out-right"}`}>
 
-            {/* 🔹 主治醫師區塊：標題 + 按鈕 */}
-            {/* <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold text-blue-800 text-left">
-                {filteredDepartments[expandedRow]?.name || ""} 醫師名單
-              </h2>
-              <div className="flex gap-2 aa">
-                <button
-                  className="account-button"
-                  onClick={addRow}
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    style={{ width: "1em", height: "1em" }}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                  新增
-                </button>
-                <button
-                  className="account-button mgr-cancel"
-                  onClick={() => handleDelete(selectedUsers)}
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    style={{ width: "1em", height: "1em" }}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                  刪除
-                </button>
-              </div>
-            </div> */}
-
             <div className="w-full flex justify-between items-center mb-4 border-b pb-2">
               <h2 className="text-xl font-semibold text-blue-800 text-left">
                 {filteredDepartments[expandedRow]?.name || ""} 醫師名單
@@ -552,7 +531,9 @@ function DepartmentListWrapper({
                   </svg>
                   新增
                 </button>
-                <button className="aa-button danger mgr-cancel flex items-center gap-2" onClick={() => handleDelete(selectedUsers)}>
+                <button
+                  className="aa-button danger mgr-cancel flex items-center gap-2"
+                  onClick={() => chiefRef.current?.handleDeleteSelectedChiefSurgeons()}                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -574,14 +555,21 @@ function DepartmentListWrapper({
               </div>
             </div>
             {/* 🔹 主治醫師表格 */}
-            {expandedRow !== null && (
+            {expandedRow !== null && filteredDepartments[expandedRow] && (
               <ChiefSurgeonListWrapper
+
+                ref={chiefRef}
+                key={`${filteredDepartments[expandedRow]?.id}-${refreshKey}`}
                 departmentId={filteredDepartments[expandedRow]?.id}
                 addChiefSurgeons={addChiefSurgeons}
                 setAddChiefSurgeons={setAddChiefSurgeons}
                 setDepartments={setDepartments}
                 setIsEditing={setIsEditing}
                 renderButtons={() => null}
+                selectedChiefIds={selectedChiefIds} // 👈 傳進去
+                setSelectedChiefIds={setSelectedChiefIds} // 👈 傳進去
+                refreshKey={refreshKey}
+                setRefreshKey={setRefreshKey}
               />
             )}
           </div>

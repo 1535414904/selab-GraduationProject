@@ -9,9 +9,9 @@ const ConfirmScheduleButton = ({ rows }) => {
     try {
       // 開始確認修改
       console.log('開始確認修改排班...');
-      
+
       const updatePromises = [];
-      
+
       // 遍歷每個手術房
       for (const roomIndex in rows) {
         const room = rows[roomIndex];
@@ -20,20 +20,20 @@ const ConfirmScheduleButton = ({ rows }) => {
           // 參數傳遞: rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex
           // 因為是確認操作，這裡源和目標都是同一個房間
           const updatePromise = updateSurgeryInDatabase(
-            rows, 
-            parseInt(roomIndex), 
-            parseInt(roomIndex), 
-            0, 
+            rows,
+            parseInt(roomIndex),
+            parseInt(roomIndex),
+            0,
             0
           );
-          
+
           updatePromises.push(updatePromise);
         }
       }
-      
+
       // 等待所有更新完成
       await Promise.all(updatePromises);
-      
+
       // 如果有臨時時間設定，則將其保存到 localStorage
       const tempSettings = getTimeSettings(true);
       if (tempSettings) {
@@ -42,10 +42,10 @@ const ConfirmScheduleButton = ({ rows }) => {
         // 清除臨時設定
         clearTempTimeSettings();
       }
-      
+
       // 通知用戶更新成功
       alert('排班已成功更新！');
-      
+
       // 重新載入頁面，確保所有組件都使用新的設定
       window.location.reload();
     } catch (error) {

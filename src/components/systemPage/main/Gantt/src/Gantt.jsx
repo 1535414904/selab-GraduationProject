@@ -15,8 +15,8 @@ import { BASE_URL } from "/src/config";
 import { clearTempTimeSettings } from "./components/Time/timeUtils";
 import ORSMButton from "./components/Time/ORSMButton";
 // 引入群組操作函數
-import { 
-  createGroup, 
+import {
+  createGroup,
   ungroup
 } from "./components/ROOM/GroupOperations";
 
@@ -50,7 +50,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         setLoading(false);
       }
     };
-    
+
     initializeData();
   }, []);
 
@@ -82,13 +82,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       isPinned: isPinned
     };
     setFilteredRows(updatedRows);
-    
+
     // 同時更新原始數據
-    const originalRoomIndex = rows.findIndex(r => 
-      r.roomId === updatedRows[roomIndex].roomId || 
+    const originalRoomIndex = rows.findIndex(r =>
+      r.roomId === updatedRows[roomIndex].roomId ||
       r.room === updatedRows[roomIndex].room
     );
-    
+
     if (originalRoomIndex !== -1) {
       const newRows = [...rows];
       newRows[originalRoomIndex] = {
@@ -102,28 +102,28 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   // 處理群組操作
   const handleGroupOperation = (roomIndex, selectedSurgeries, operation) => {
     if (readOnly) return; // 唯讀模式下不允許群組操作
-    
+
     const updatedRows = [...filteredRows];
     const roomData = [...updatedRows[roomIndex].data];
     const roomName = updatedRows[roomIndex].room || updatedRows[roomIndex].name || '手術室';
-    
+
     if (operation === 'create') {
       // 使用新的創建群組函數
       const result = createGroup(selectedSurgeries, roomData, roomIndex, roomName);
-      
+
       if (!result.success) {
         alert(result.message || '創建群組失敗');
         return;
       }
-      
+
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
         data: result.newRoomData
       };
-      
+
       setFilteredRows(updatedRows);
-      
+
     } else if (operation === 'ungroup') {
       // 使用新的解除群組函數
       const group = selectedSurgeries[0];
@@ -131,20 +131,20 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         alert('選擇的項目不是群組');
         return;
       }
-      
+
       const result = ungroup(group, roomData, roomName);
-      
+
       if (!result.success) {
         alert(result.message || '解除群組失敗');
         return;
       }
-      
+
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
         data: result.newRoomData
       };
-      
+
       setFilteredRows(updatedRows);
     }
   };
@@ -152,9 +152,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = async (surgery) => {
     if (surgery.isCleaningTime) return;
-    
+
     setModalError(null);
-    
+
     try {
       // 從後端獲取最新的手術詳細資料
       const response = await axios.get(`${BASE_URL}/api/surgeries/${surgery.applicationId}`, {
@@ -162,7 +162,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (response.data) {
         // 合併後端資料和甘特圖中的時間資訊
         const mergedData = {
@@ -192,29 +192,29 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const handleFilterChange = (filteredData) => {
     setFilteredRows(filteredData);
   };
-  
+
   // 處理拖拽結束事件，確保UI更新
   const onDragEndHandler = async (result) => {
     if (!result.destination) return;
-    
+
     console.log("排班管理甘特圖拖曳結束，更新界面");
-    
+
     // 首先嘗試處理群組拖曳
     const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
-    
+
     // 如果不是群組拖曳，則按一般手術拖曳處理
     if (!isGroupDrag) {
       await handleDragEnd(result, filteredRows, setFilteredRows);
     }
-    
+
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
   };
-  
+
   // 處理頁籤切換
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    
+
     // 如果切換到甘特圖頁籤，觸發重新加載
     if (tab === 'gantt') {
       // 讓甘特圖組件重新加載數據
@@ -231,17 +231,17 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
-      const today = new Date();
-      today.setDate(today.getDate() + 1); // 加一天變成明天的日期
-    
-      const formattedDate = today.toLocaleDateString("zh-TW", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-    
-      setCurrentDate(formattedDate);
-    }, []);
+    const today = new Date();
+    today.setDate(today.getDate() + 1); // 加一天變成明天的日期
+
+    const formattedDate = today.toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+    setCurrentDate(formattedDate);
+  }, []);
 
   // 初始化甘特圖
   useEffect(() => {
@@ -251,10 +251,10 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       }
       setIsInitialized(true);
     };
-    
+
     initializeGantt();
   }, [rows]);
-  
+
   // 監聽ganttTabActive事件
   useEffect(() => {
     const handleGanttTabActive = async () => {
@@ -268,7 +268,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         setLoading(false);
       }
     };
-    
+
     window.addEventListener('ganttTabActive', handleGanttTabActive);
     return () => {
       window.removeEventListener('ganttTabActive', handleGanttTabActive);
@@ -306,11 +306,11 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 上方資訊區塊 */}
       <div className="gantt-header">
         <div className="gantt-title">
-        <div className="gantt-date">
-          <h2 className="gantt-title-text">{currentDate}手術排程甘特圖</h2>
-          <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
+          <div className="gantt-date">
+            <h2 className="gantt-title-text">{currentDate}手術排程甘特圖</h2>
+            <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
+          </div>
         </div>
-      </div>
 
         {/* ✅ 手術室數量 & 確認修改按鈕 */}
         <div className="gantt-actions">
@@ -320,7 +320,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             </svg>
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
-          
+
           <ConfirmScheduleButton rows={filteredRows} setRows={setRows} />
           <ORSMButton />
         </div>
@@ -329,13 +329,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 頁籤選單 */}
       <div className="gantt-tabs">
         <ul className="gantt-tab-list">
-          <li 
+          <li
             className={`gantt-tab ${activeTab === 'gantt' ? 'gantt-tab-active' : ''}`}
             onClick={() => handleTabChange('gantt')}
           >
             手術排程甘特圖
           </li>
-          <li 
+          <li
             className={`gantt-tab ${activeTab === 'timeSettings' ? 'gantt-tab-active' : ''}`}
             onClick={() => handleTabChange('timeSettings')}
           >
@@ -348,12 +348,12 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       <div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`}>
         {/* ✅ 使用提示 - 添加收合功能 */}
         <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
-          <svg 
-            className="gantt-tips-icon" 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            width="20" 
-            height="20" 
+          <svg
+            className="gantt-tips-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
             fill="currentColor"
           >
             <circle cx="12" cy="12" r="10" fill="#3B82F6" />
@@ -363,15 +363,15 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           <div className="gantt-tips-content">
             <div className="tips-header">
               <p className="gantt-tips-title">使用提示</p>
-              <button 
-                className="tips-toggle-button" 
+              <button
+                className="tips-toggle-button"
                 onClick={toggleTips}
                 aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
               >
                 {tipsCollapsed ? "展開" : "收合"}
               </button>
             </div>
-            
+
             {!tipsCollapsed && (
               <ul className="gantt-tips-list">
                 <li>可以橫向滾動查看不同時間段的排程</li>
@@ -385,9 +385,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         </div>
 
         {/* ✅ 篩選器放在提示下方 */}
-        <GanttFilter 
-          originalRows={rows} 
-          onFilteredDataChange={handleFilterChange} 
+        <GanttFilter
+          originalRows={rows}
+          onFilteredDataChange={handleFilterChange}
         />
 
         {/* ✅ 手術排程內容 */}
@@ -400,13 +400,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                     <div ref={ganttChartRef} className="gantt-chart-container">
                       <div className="gantt-chart">
                         {filteredRows.map((room, roomIndex) => (
-                          <div 
-                            key={room.room || roomIndex} 
+                          <div
+                            key={room.room || roomIndex}
                             className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
                           >
-                            <RoomSection 
-                              room={room} 
-                              roomIndex={roomIndex} 
+                            <RoomSection
+                              room={room}
+                              roomIndex={roomIndex}
                               onPinStatusChange={handleRoomPinStatusChange}
                               readOnly={readOnly}
                               onSurgeryClick={handleSurgeryClick}
@@ -433,9 +433,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
 
         {/* 手術詳細資訊模態視窗 */}
         {selectedSurgery && (
-          <SurgeryModal 
-            surgery={selectedSurgery} 
-            onClose={handleCloseModal} 
+          <SurgeryModal
+            surgery={selectedSurgery}
+            onClose={handleCloseModal}
             error={modalError}
           />
         )}
@@ -449,19 +449,19 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             ...room,
             data: room.data ? [...room.data] : []
           })), isPreview); // 傳遞 isPreview 參數
-          
+
           // 強制觸發重新渲染
           setRows([]);
           setTimeout(() => {
             setRows(updatedRows);
             setFilteredRows(updatedRows);
           }, 0);
-          
+
           // 切換到甘特圖頁籤
           setActiveTab('gantt');
-        }} 
-        initialTimeSettings={initialTimeSettings}
-        setInitialTimeSettings={setInitialTimeSettings}/>
+        }}
+          initialTimeSettings={initialTimeSettings}
+          setInitialTimeSettings={setInitialTimeSettings} />
       </div>
     </div>
   );

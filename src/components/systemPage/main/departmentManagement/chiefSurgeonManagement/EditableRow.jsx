@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
-function EditableRow({ key, chiefSurgeon, handleSave }) {
+function EditableRow({ key, chiefSurgeon, handleSave, onCancel }) {
     const [editedChiefSurgeon, setEditedChiefSurgeon] = useState({
         id: chiefSurgeon.id,
         name: chiefSurgeon.name,
@@ -47,6 +47,17 @@ function EditableRow({ key, chiefSurgeon, handleSave }) {
                 >
                     <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                 </button>
+                {/* 取消按鈕 */}
+                <button
+                    className="action-button delete-button"
+                    onClick={() => {
+                        setEditedChiefSurgeon({ ...chiefSurgeon }); // 還原原始資料
+                        onCancel(); // 呼叫父元件的取消動作（例如退出編輯模式）
+                    }}
+                >
+                    <FontAwesomeIcon icon={faTimes} className="action-icon" />
+                </button>
+
             </td>
         </tr>
     )

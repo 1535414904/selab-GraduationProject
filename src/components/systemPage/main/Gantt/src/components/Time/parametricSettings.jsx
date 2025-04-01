@@ -23,7 +23,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
   useEffect(() => {
     // 獲取所有關閉的手術房
     fetchClosedRooms();
-    
+
     // 從localStorage讀取提示收合狀態
     const savedTipsState = localStorage.getItem('parameterTipsCollapsed');
     if (savedTipsState) {
@@ -135,51 +135,51 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
 
     // 從closedRooms中找出被選中的手術房完整信息
     const selectedRooms = closedRooms.filter(room => selectedClosedRooms.includes(room.id));
-    
+
     // 將選中的關閉手術房信息和原有的保留手術房合併
     const newReservedRooms = [...reservedRooms, ...selectedRooms];
-    const uniqueRooms = newReservedRooms.filter((room, index, self) => 
+    const uniqueRooms = newReservedRooms.filter((room, index, self) =>
       index === self.findIndex(r => r.id === room.id)
     );
-    
+
     // 更新保留手術房列表
     setReservedRooms(uniqueRooms);
-    
+
     // 將選中的關閉手術房信息存儲到localStorage，供ganttData.jsx使用
     localStorage.setItem("reservedClosedRooms", JSON.stringify(uniqueRooms));
-    
+
     alert(`已選擇 ${selectedRooms.length} 個關閉手術房加入本次排班`);
-    
+
     // 清空選中列表
     setSelectedClosedRooms([]);
-    
+
     // 通知父組件更新
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true);
     }
   };
-  
+
   // 移除選中的已保留手術房
   const removeSelectedReservedRooms = () => {
     if (selectedReservedRooms.length === 0) {
       alert("請至少選擇一個要移除的保留手術房");
       return;
     }
-    
+
     // 從保留的手術房中移除選中的手術房
     const updatedReservedRooms = reservedRooms.filter(room => !selectedReservedRooms.includes(room.id));
-    
+
     // 更新保留手術房列表
     setReservedRooms(updatedReservedRooms);
-    
+
     // 將更新後的保留手術房信息存儲到localStorage
     localStorage.setItem("reservedClosedRooms", JSON.stringify(updatedReservedRooms));
-    
+
     alert(`已移除 ${selectedReservedRooms.length} 個保留手術房`);
-    
+
     // 清空選中列表
     setSelectedReservedRooms([]);
-    
+
     // 通知父組件更新
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true);
@@ -202,7 +202,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
         overtimeEndTime: timeSettings.overtimeEndTime,
         cleaningTime: timeSettings.cleaningTime
       };
-  
+
       const response = await axios.post(`${BASE_URL}/api/system/algorithm/time-settings/export`, payload);
       console.log("CSV 產生結果：", response.data);
       alert("參數設定已更新，您可以在甘特圖中預覽變更。");
@@ -222,34 +222,34 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
   return (
     <div className="time-settings-container">
       <h3 className="time-settings-title">參數設定</h3>
-      
+
       {/* 使用提示區域 - 添加收合功能 */}
       <div className={`parameter-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
-        <svg 
-          className="parameter-tips-icon" 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 24 24" 
-          width="20" 
-          height="20" 
+        <svg
+          className="parameter-tips-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
           fill="currentColor"
         >
           <circle cx="12" cy="12" r="10" fill="#3B82F6" />
           <circle cx="12" cy="7" r="1.5" fill="white" />
           <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
         </svg>
-        
+
         <div className="parameter-tips-content">
           <div className="tips-header">
             <p className="parameter-tips-title">參數設定使用說明</p>
-            <button 
-              className="tips-toggle-button" 
+            <button
+              className="tips-toggle-button"
               onClick={toggleTips}
               aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
             >
               {tipsCollapsed ? "展開" : "收合"}
             </button>
           </div>
-          
+
           {!tipsCollapsed && (
             <ul className="parameter-tips-list">
               <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間清潔所需時間</li>
@@ -261,7 +261,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
           )}
         </div>
       </div>
-      
+
       {/* 左右兩欄佈局容器 */}
       <div className="parameters-layout">
         {/* 左側：時間設定部分 */}
@@ -271,55 +271,49 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
             <div className="time-settings-form">
               <div className="time-settings-item">
                 <label>手術開始時間：</label>
-                <div className="input-container">
-                  <input
-                    type="time"
-                    value={minutesToTimeString(timeSettings.surgeryStartTime)}
-                    onChange={(e) => handleTimeChange("surgeryStartTime", e.target.value)}
-                    className="time-input"
-                  />
-                </div>
+
+                <input
+                  type="time"
+                  value={minutesToTimeString(timeSettings.surgeryStartTime)}
+                  onChange={(e) => handleTimeChange("surgeryStartTime", e.target.value)}
+                  className="time-input"
+                />
+
               </div>
               <div className="time-settings-item">
                 <label>常規結束時間：</label>
-                <div className="input-container">
-                  <input
-                    type="time"
-                    value={minutesToTimeString(timeSettings.regularEndTime)}
-                    onChange={(e) => handleTimeChange("regularEndTime", e.target.value)}
-                    className="time-input"
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={minutesToTimeString(timeSettings.regularEndTime)}
+                  onChange={(e) => handleTimeChange("regularEndTime", e.target.value)}
+                  className="time-input"
+                />
               </div>
               <div className="time-settings-item">
                 <label>加班結束時間：</label>
-                <div className="input-container">
-                  <input
-                    type="time"
-                    value={minutesToTimeString(timeSettings.overtimeEndTime)}
-                    onChange={(e) => handleTimeChange("overtimeEndTime", e.target.value)}
-                    className="time-input"
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={minutesToTimeString(timeSettings.overtimeEndTime)}
+                  onChange={(e) => handleTimeChange("overtimeEndTime", e.target.value)}
+                  className="time-input"
+                />
               </div>
               <div className="time-settings-item">
                 <label>清潔時間 (分鐘)：</label>
-                <div className="input-container">
-                  <input
-                    type="number"
-                    min="5"
-                    max="120"
-                    value={timeSettings.cleaningTime}
-                    onChange={(e) => handleCleaningTimeChange(parseInt(e.target.value))}
-                    className="number-input"
-                  />
-                </div>
+                <input
+                  type="number"
+                  min="5"
+                  max="120"
+                  value={timeSettings.cleaningTime}
+                  onChange={(e) => handleCleaningTimeChange(parseInt(e.target.value))}
+                  className="number-input"
+                />
               </div>
-              
+
               {/* 將確認按鈕移到時間設定區域內 */}
               <div className="time-settings-button-container">
-                <button 
-                  onClick={applyTimeSettings} 
+                <button
+                  onClick={applyTimeSettings}
                   className="time-settings-button"
                   type="button"
                 >
@@ -329,13 +323,13 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
             </div>
           </div>
         </div>
-        
+
         {/* 右側：保留手術房部分 */}
         <div className="parameters-column">
           <div className="settings-section">
             <h4 className="settings-section-title">保留手術房</h4>
             <p className="settings-description">可選擇將目前關閉的手術房加入本次排班（不會改變手術房管理中的狀態）</p>
-            
+
             {/* 整合的手術房列表區域 */}
             <div className="operating-rooms-container">
               {/* 已保留的手術房列表 */}
@@ -359,7 +353,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                   </div>
                 </div>
               )}
-              
+
               {/* 可選擇的關閉手術房列表 */}
               {loading ? (
                 <div className="loading-rooms">正在載入關閉的手術房...</div>
@@ -385,20 +379,20 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                   </div>
                 </div>
               )}
-              
+
               {/* 整合的按鈕區域 */}
               <div className="rooms-buttons-container">
-                <button 
-                  onClick={confirmSelectedRooms} 
+                <button
+                  onClick={confirmSelectedRooms}
                   className="confirm-rooms-button"
                   disabled={selectedClosedRooms.length === 0}
                 >
                   確認加入選中的手術房
                 </button>
-                
+
                 {reservedRooms.length > 0 && (
-                  <button 
-                    onClick={removeSelectedReservedRooms} 
+                  <button
+                    onClick={removeSelectedReservedRooms}
                     className="remove-rooms-button"
                     disabled={selectedReservedRooms.length === 0}
                   >

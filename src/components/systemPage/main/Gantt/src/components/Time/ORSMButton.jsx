@@ -6,19 +6,23 @@ const ORSMButton = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleRunAlgorithm = async (event) => {
-    event.preventDefault();  // 防止表單提交時刷新頁面
-    setIsLoading(true);
+        event.preventDefault();  // 防止表單提交時刷新頁面
+        setIsLoading(true);
 
-    try {
-        // 呼叫後端 API 執行 .bat 檔案
-        const response = await axios.get(`${BASE_URL}/api/system/algorithm/run`);
-        window.alert(response.data);
-    } catch (error) {
-        window.alert('錯誤: ' + error.message);  // 顯示錯誤訊息
-    } finally {
-        setIsLoading(false);  // 完成後關閉加載狀態
-    }
-};
+        try {
+            const response = await axios.get(`${BASE_URL}/api/system/algorithm/run`);
+            const result = response.data;
+            if (typeof result === "string" && result.includes("<html")) {
+                alert("⚠️ 錯誤：後端可能回傳了錯誤頁，請檢查是否 .bat 檔執行失敗");
+                console.warn("返回 HTML：", result);
+            } else {
+                alert(result);
+            }
+        } catch (error) {
+            console.error("執行錯誤：", error);
+            alert("錯誤：" + error.message);
+        }
+    };
 
 
     return (

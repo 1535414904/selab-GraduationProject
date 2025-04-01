@@ -554,7 +554,7 @@ table {
   font-weight: bold;
 
   padding: 0.3% 3%;
-  /* cursor: pointer;  */
+  cursor: pointer; 
 
   /* transition: all 0.2s ease; */
 }

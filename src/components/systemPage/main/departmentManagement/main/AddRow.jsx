@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { faFloppyDisk, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError, setEmptyError }) {
@@ -12,7 +12,7 @@ function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError, setE
         }
         setAddDepartments(updated);
     };
-    
+
 
     const handleDelete = (uniqueId) => {
         const updated = addDepartments.filter(department => department.uniqueId !== uniqueId);
@@ -68,7 +68,7 @@ function AddRow({ addDepartments, setAddDepartments, handleAdd, emptyError, setE
 
                             {/* 刪除按鈕 */}
                             <button className="action-button delete-button" onClick={() => handleDelete(department.uniqueId)}>
-                                <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                <FontAwesomeIcon icon={faTimes} className="action-icon" />
                             </button>
                         </div>
                     </td>
