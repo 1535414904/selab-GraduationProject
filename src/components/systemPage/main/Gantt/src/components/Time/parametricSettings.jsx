@@ -120,7 +120,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     }
   };
 
-  // 處理清潔時間變更
+  // 處理銜接時間變更
   const handleCleaningTimeChange = (minutes) => {
     const updatedSettings = { ...timeSettings, cleaningTime: minutes };
     setTimeSettings(updatedSettings);
@@ -252,7 +252,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
 
           {!tipsCollapsed && (
             <ul className="parameter-tips-list">
-              <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間清潔所需時間</li>
+              <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間銜接所需時間</li>
               <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排班，但不會更改手術房管理中的狀態</li>
               <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排班</li>
               <li><strong>確認時間設定</strong>：僅將時間參數設定應用到甘特圖中</li>
@@ -299,7 +299,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                 />
               </div>
               <div className="time-settings-item">
-                <label>清潔時間 (分鐘)：</label>
+                <label>銜接時間 (分鐘)：</label>
                 <input
                   type="number"
                   min="5"

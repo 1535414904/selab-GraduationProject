@@ -9,7 +9,7 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     overtimeEndTime: 1200, // 預設值 1200 分鐘 = 20:00 PM (從00:00開始計算)
     cleaningTime: 45,      // 預設值 45 分鐘
   });
-  
+
   // 為了解決拖曳後甘特圖顯示偏差問題，新增一個key來強制重新渲染
   const [renderKey, setRenderKey] = useState(0);
 
@@ -36,22 +36,22 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
-    // 新增：額外監聽拖曳和清潔時間變更的自定義事件
+
+    // 新增：額外監聽拖曳和銜接時間變更的自定義事件
     const handleDragOrCleaningChange = () => {
       updateTimeSettings();
     };
-    
+
     window.addEventListener('ganttDragEnd', handleDragOrCleaningChange);
     window.addEventListener('cleaningTimeChange', handleDragOrCleaningChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('ganttDragEnd', handleDragOrCleaningChange);
       window.removeEventListener('cleaningTimeChange', handleDragOrCleaningChange);
     };
   }, [updateTimeSettings]);
-  
+
   // 將時間設定轉換為分鐘
   const startTime = timeSettings.surgeryStartTime; // 手術開始時間
   const endTime = 32 * 60; // 擴展到凌晨8:00 (24:00 + 8:00)，保留不變
@@ -66,29 +66,29 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   // 同步滾動處理
   const syncScroll = useCallback((event) => {
     const scrollLeft = event.target.scrollLeft;
-    
+
     // 直接操作兩個容器的滾動位置
     if (timeScaleRef.current?.parentElement) {
       timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
     }
-    
+
     if (contentRef.current) {
       contentRef.current.scrollLeft = scrollLeft;
     }
   }, []);
-  
+
   const handleScroll = (event) => {
     syncScroll(event);
   };
-  
+
   useEffect(() => {
     const timeScaleContainer = timeScaleRef.current?.parentElement;
     const contentContainer = contentRef.current;
-  
+
     if (timeScaleContainer && contentContainer) {
       timeScaleContainer.addEventListener('scroll', handleScroll);
       contentContainer.addEventListener('scroll', handleScroll);
-  
+
       return () => {
         timeScaleContainer.removeEventListener('scroll', handleScroll);
         contentContainer.removeEventListener('scroll', handleScroll);
@@ -106,7 +106,7 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   const handleWheel = useCallback((event) => {
     event.preventDefault();
     const scrollAmount = event.deltaY;
-    
+
     if (timeScaleRef.current) {
       const currentScroll = timeScaleRef.current.parentElement.scrollLeft;
       const newScrollLeft = currentScroll + scrollAmount;
@@ -138,23 +138,23 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     if (hour === 24 && minute === 0) {
       return "24:00";
     }
-    
+
     if (hour >= 24) {
       hour = hour - 24;
     }
-    
+
     return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
   }, []);
 
   // 生成時間間隔
   const timeIntervals = [];
   const totalIntervals = (endTime - startTime) / 15;
-  
+
   for (let i = 0; i <= totalIntervals; i++) {
     const totalMinutes = startTime + i * 15;
     const hour = Math.floor(totalMinutes / 60);
     const minute = totalMinutes % 60;
-    
+
     timeIntervals.push({
       time: formatTime(hour, minute),
       type: minute === 0 ? "hour" : minute === 30 ? "half" : "quarter",
@@ -184,13 +184,12 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
               >
                 {(interval.type === "hour" || interval.isStartTime || interval.is24Hour) && (
                   <div
-                    className={`time-mark-label ${
-                      interval.isStartTime
+                    className={`time-mark-label ${interval.isStartTime
                         ? "time-mark-start"
                         : interval.is24Hour
-                        ? "time-mark-24hour-label"
-                        : ""
-                    }`}
+                          ? "time-mark-24hour-label"
+                          : ""
+                      }`}
                     style={{ left: interval.isStartTime ? "0" : "50%" }}
                   >
                     {interval.time}

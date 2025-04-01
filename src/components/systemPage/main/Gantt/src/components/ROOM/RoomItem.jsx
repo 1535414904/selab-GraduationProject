@@ -5,13 +5,13 @@ import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
 
-function RoomItem({ 
-  item, 
-  fixedHeight, 
-  isDragging, 
-  isPinned, 
-  roomName, 
-  readOnly = false, 
+function RoomItem({
+  item,
+  fixedHeight,
+  isDragging,
+  isPinned,
+  roomName,
+  readOnly = false,
   onSurgeryClick,
   isSelected = false,
   isGroupMode = false,
@@ -30,7 +30,7 @@ function RoomItem({
       e.preventDefault();
       return;
     }
-    
+
     // 如果是解除模式且是群組項目，則呼叫解除函數
     if (isUngroupMode && item.isGroup) {
       if (onSurgeryClick) {
@@ -38,20 +38,20 @@ function RoomItem({
       }
       return;
     }
-    
-    // 如果是群組模式，則直接呼叫選擇函數（忽略清潔時間項目）
+
+    // 如果是群組模式，則直接呼叫選擇函數（忽略銜接時間項目）
     if (isGroupMode) {
-      // 在群組模式下，清潔時間項目不可選
+      // 在群組模式下，銜接時間項目不可選
       if (item.isCleaningTime) {
         return;
       }
-      
+
       if (onSurgeryClick) {
         onSurgeryClick(item);
       }
       return;
     }
-    
+
     // 如果有外部點擊處理函數，則使用它
     if (onSurgeryClick && !item.isCleaningTime && item.applicationId) {
       onSurgeryClick({
@@ -61,12 +61,12 @@ function RoomItem({
       });
       return;
     }
-    
+
     // 否則使用內部模態視窗邏輯（用於舊版本兼容）
     if (!item.isCleaningTime && item.applicationId) {
       setLoading(true);
       setError(null);
-      
+
       try {
         // 從後端獲取最新的手術詳細資料
         const response = await axios.get(`${BASE_URL}/api/surgeries/${item.applicationId}`, {
@@ -74,7 +74,7 @@ function RoomItem({
             'Content-Type': 'application/json',
           }
         });
-        
+
         if (response.data) {
           // 合併後端資料和甘特圖中的時間資訊
           const mergedData = {
@@ -94,19 +94,19 @@ function RoomItem({
         } else {
           // 如果沒有獲取到資料，使用現有的項目資料
           setSurgeryDetails({
-            ...item, 
+            ...item,
             isPinned,
             operatingRoomName: roomName || item.operatingRoomName
           });
         }
-        
+
         setIsModalOpen(true);
       } catch (error) {
         console.error('獲取手術詳細資料時發生錯誤:', error);
         setError(`獲取手術詳細資料失敗: ${error.message}`);
         // 發生錯誤時，使用現有的項目資料，但確保包含手術室名稱
         setSurgeryDetails({
-          ...item, 
+          ...item,
           isPinned,
           operatingRoomName: roomName || item.operatingRoomName
         });
@@ -122,7 +122,7 @@ function RoomItem({
     if (isSelected) {
       return "bg-blue-200 border-blue-500";
     }
-    
+
     switch (item.color) {
       case "green":
         return readOnly ? "bg-green-400" : "bg-green-400 hover:bg-green-300";
@@ -152,12 +152,12 @@ function RoomItem({
   const getInteractionStyle = () => {
     // 解除模式，只有群組可點擊
     if (isUngroupMode) {
-      return item.isGroup 
+      return item.isGroup
         ? { cursor: 'pointer', border: '2px solid #EF4444', borderRadius: '0.5rem' }
         : { cursor: 'default' };
     }
-    
-    // 群組模式，非清潔時間可點擊
+
+    // 群組模式，非銜接時間可點擊
     if (isGroupMode && !item.isCleaningTime) {
       return {
         cursor: 'pointer',
@@ -165,16 +165,15 @@ function RoomItem({
         borderRadius: '0.5rem'
       };
     }
-    
+
     return {};
   };
 
   return (
     <>
       <div
-        className={`flex flex-col justify-center items-center text-xs p-1 ${isSelected ? 'border-2 border-blue-500' : 'border-2 border-gray-300'} rounded-2xl ${colorClass()} ${
-          isDragging ? "bg-orange-400 opacity-50" : ""
-        } transform transition-transform duration-100 ${(!isMainPage && isPinned) || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (!isMainPage && isPinned ? 'cursor-not-allowed' : (isUngroupMode && item.isGroup) ? 'cursor-pointer' : (isGroupMode) ? 'cursor-pointer' : (item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'))} relative`}
+        className={`flex flex-col justify-center items-center text-xs p-1 ${isSelected ? 'border-2 border-blue-500' : 'border-2 border-gray-300'} rounded-2xl ${colorClass()} ${isDragging ? "bg-orange-400 opacity-50" : ""
+          } transform transition-transform duration-100 ${(!isMainPage && isPinned) || readOnly ? '' : 'active:scale-110'} ${loading ? 'cursor-wait' : readOnly ? 'cursor-default' : (!isMainPage && isPinned ? 'cursor-not-allowed' : (isUngroupMode && item.isGroup) ? 'cursor-pointer' : (isGroupMode) ? 'cursor-pointer' : (item.isCleaningTime ? 'cursor-move' : 'cursor-pointer'))} relative`}
         style={{
           width,
           height: fixedHeight,
@@ -198,14 +197,14 @@ function RoomItem({
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-10 rounded-xl"></div>
           </div>
         )}
-        
+
         {/* 解除模式下的群組標記 */}
         {isUngroupMode && item.isGroup && (
           <div className="absolute top-0 right-0 w-full h-full flex items-center justify-center pointer-events-none">
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-red-100 opacity-20 rounded-xl"></div>
           </div>
         )}
-        
+
         {/* 群組標記 - 只在非首頁時顯示 */}
         {!isMainPage && item.isGroup && (
           <div className="absolute top-1 left-1 text-white" style={{ zIndex: 3 }}>
@@ -214,7 +213,7 @@ function RoomItem({
             </svg>
           </div>
         )}
-        
+
         <div>{item.doctor}</div>
         <div>{item.surgery}</div>
         <div>
@@ -223,9 +222,9 @@ function RoomItem({
       </div>
 
       {/* 只有在沒有外部點擊處理函數時才使用內部模態視窗 */}
-      {isModalOpen && !onSurgeryClick && 
+      {isModalOpen && !onSurgeryClick &&
         createPortal(
-          <SurgeryModal surgery={{...surgeryDetails || item, isPinned}} onClose={() => setIsModalOpen(false)} error={error} />,
+          <SurgeryModal surgery={{ ...surgeryDetails || item, isPinned }} onClose={() => setIsModalOpen(false)} error={error} />,
           document.body
         )
       }

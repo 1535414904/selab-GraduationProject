@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import "../styles.css";
 
-// 從外部引入清潔時間顏色
+// 從外部引入銜接時間顏色
 export const getCleaningColor = () => "blue";
 
 const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
@@ -31,17 +31,17 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   // 修改處：若手術資料中未指定手術室，則嘗試使用 row.name 或 row.room，再無則預設「未指定手術室」
   const flattenedRows = Array.isArray(originalRows)
     ? originalRows.flatMap((row) => {
-        if (row.data && Array.isArray(row.data)) {
-          return row.data
-            .filter((surgery) => !surgery.isCleaningTime)
-            .map((surgery) => ({
-              ...surgery,
-              operatingRoomName:
-                surgery.operatingRoomName || row.name || row.room || "未指定手術室",
-            }));
-        }
-        return row.isCleaningTime ? [] : row;
-      })
+      if (row.data && Array.isArray(row.data)) {
+        return row.data
+          .filter((surgery) => !surgery.isCleaningTime)
+          .map((surgery) => ({
+            ...surgery,
+            operatingRoomName:
+              surgery.operatingRoomName || row.name || row.room || "未指定手術室",
+          }));
+      }
+      return row.isCleaningTime ? [] : row;
+    })
     : [];
 
   // 2) 動態蒐集各欄位可供選擇的值，並按照字母順序 (A→Z) 排序
@@ -62,7 +62,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     .map((s) => s.estimatedSurgeryTime)
     .filter(Boolean)
     .map(Number);
-  
+
   const minEstimatedTime = estimatedTimes.length > 0 ? Math.min(...estimatedTimes) : 0;
   const maxEstimatedTime = estimatedTimes.length > 0 ? Math.max(...estimatedTimes) : 100;
 
@@ -108,7 +108,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // 計算清潔結束時間的輔助函式
+  // 計算銜接時間時間的輔助函式
   const calculateCleaningEndTime = (
     surgeryEndTime,
     cleaningDurationMinutes = 45
@@ -122,20 +122,20 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     ).padStart(2, "0")}`;
   };
 
-  // 依手術室分組，並為每個手術添加清潔時間
+  // 依手術室分組，並為每個手術添加銜接時間
   const groupByRoom = (surgeries) => {
     const roomGroups = {};
     const result = [];
-  
+
     // 建立房間名稱清單，並排序（A → Z）
     const roomNames = Array.isArray(originalRows)
       ? Array.from(
-          new Set(
-            originalRows.map((row) => row.room || row.name || "未指定手術室")
-          )
-        ).sort((a, b) => a.localeCompare(b))
+        new Set(
+          originalRows.map((row) => row.room || row.name || "未指定手術室")
+        )
+      ).sort((a, b) => a.localeCompare(b))
       : [];
-  
+
     // 初始化每個房間區塊
     roomNames.forEach((roomName) => {
       roomGroups[roomName] = {
@@ -145,7 +145,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         data: [],
       };
     });
-  
+
     // 排序手術資料（先依房間名，再依時間）
     const sortedSurgeries = [...surgeries].sort((a, b) => {
       const roomCompare = (a.operatingRoomName || "").localeCompare(
@@ -154,15 +154,15 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       if (roomCompare !== 0) return roomCompare;
       return (a.startTime || "").localeCompare(b.startTime || "");
     });
-  
-    // 填入手術資料與清潔時間
+
+    // 填入手術資料與銜接時間
     sortedSurgeries.forEach((surgery) => {
       const roomName = surgery.operatingRoomName || "未指定手術室";
-  
+
       const surgeryColor = surgery.isFilteredOut
         ? "rgba(0, 128, 0, 0.5)"
         : surgery.color || "green";
-  
+
       const surgeryData = {
         ...surgery,
         surgery: surgery.surgeryName
@@ -178,16 +178,16 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
           surgery.applicationId ||
           `temp-${Math.random().toString(36).substr(2, 9)}`,
       };
-  
+
       roomGroups[roomName]?.data.push(surgeryData);
-  
+
       const cleaningColor = surgery.isFilteredOut
         ? "rgba(0, 0, 255, 0.3)"
         : getCleaningColor();
-  
+
       const cleaningData = {
         id: `cleaning-${surgeryData.applicationId}`,
-        doctor: "清潔時間",
+        doctor: "銜接時間",
         surgery: "整理中",
         duration: 45,
         isCleaningTime: true,
@@ -198,18 +198,18 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         associatedSurgeryId: surgeryData.applicationId,
         applicationId: `cleaning-${surgeryData.applicationId}`,
       };
-  
+
       roomGroups[roomName]?.data.push(cleaningData);
     });
-  
+
     // 將房間按排序好的名稱加入結果
     roomNames.forEach((roomName) => {
       result.push(roomGroups[roomName]);
     });
-  
+
     return result;
   };
-  
+
   // 5) 篩選邏輯：不刪除手術，而是標記 isFilteredOut
   const applyFilters = () => {
     if (!flattenedRows || flattenedRows.length === 0) {
@@ -239,7 +239,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       ) {
         meetsFilter = false;
       }
-      
+
       // 使用預估時間範圍進行篩選，而不是多選值
       if (
         (timeRange.min !== "" || timeRange.max !== "") &&
@@ -253,7 +253,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
           meetsFilter = false;
         }
       }
-      
+
       if (
         filterValues.anesthesiaMethod?.length > 0 &&
         !filterValues.anesthesiaMethod.includes(s.anesthesiaMethod)
@@ -297,7 +297,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   const handleAddFilter = (selected) => {
     if (selected && !selectedFilters.find((f) => f.value === selected.value)) {
       setSelectedFilters([...selectedFilters, selected]);
-      
+
       // 如果選擇了預估時間，初始化時間範圍
       if (selected.value === "estimatedSurgeryTime") {
         setTimeRange({ min: String(minEstimatedTime), max: String(maxEstimatedTime) });
@@ -329,7 +329,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     const updatedValues = { ...filterValues };
     delete updatedValues[filterKey];
     setFilterValues(updatedValues);
-    
+
     // 如果移除的是預估時間，重置時間範圍
     if (filterKey === "estimatedSurgeryTime") {
       setTimeRange({ min: "", max: "" });
@@ -347,9 +347,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     <>
       <div
         ref={filterRef}
-        className={`filter-panel-container ${
-          isOpen ? "filter-panel-open" : "filter-panel-closed"
-        }`}
+        className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"
+          }`}
       >
         <div className="filter-panel">
           <div className="filter-header">
