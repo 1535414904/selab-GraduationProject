@@ -1,13 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import SurgeryFilter from "../SurgeryFilter";  // 引入新建立的篩選器元件
+import { useEffect, useState } from "react";
+import axios from 'axios';
 
 function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOperatingRoom, addOperatingRooms, setAddOperatingRooms, handleDelete }) {
   const addRow = () => {
     // 假設新增的資料格式，請依照需求修改
     setAddOperatingRooms(prev => [...prev, { id: "", name: "", department: "", roomType: "", status: 1 }]);
   };
-
   return (
     <div className="header-wrapper">
       <div className="title">
@@ -34,12 +35,24 @@ function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOp
           filterOperatingRoom={filterOperatingRoom}
           setFilterOperatingRoom={setFilterOperatingRoom}
         />
-        {/* <button className="account-button department-right-button" onClick={addRow}>
-          新增
+
+        <button className="account-button" onClick={addRow} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            style={{ width: "1em", height: "1em" }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+            />
+          </svg>
+          新增手術csv檔
         </button>
-        <button className="account-button mgr-cancel" onClick={() => handleDelete()}>
-          刪除
-        </button> */}
       </div>
     </div>
   );
