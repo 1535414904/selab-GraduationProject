@@ -7,7 +7,7 @@ import axios from "axios";
 import MainWrapper from "./main/MainWrapper";
 
 
-function SystemWrapper({fullTogglePage, nowUsername}) {
+function SystemWrapper({ fullTogglePage, nowUsername }) {
 
   const [user, setUser] = useState([]);
   const [error, setError] = useState("");
@@ -26,20 +26,20 @@ function SystemWrapper({fullTogglePage, nowUsername}) {
         setError("Can not find the user.")
       }
     };
-  
+
     if (nowUsername) {
       fetchUserData();
     }
   }, [nowUsername]);
-  
+
 
   if (error) {
     return <div className="error">Error: {error}</div>;
   }
 
   return <div className="system-wrapper">
-    <HeaderWrapper fullTogglePage={fullTogglePage} user={user} toggleMainPage={setMainState} setReloadKey={setReloadKey}/>
-    <MainWrapper user={user} mainState={mainState} onUpdateUser={setUser} reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername}/>
+    <HeaderWrapper fullTogglePage={fullTogglePage} user={user} toggleMainPage={setMainState} setReloadKey={setReloadKey} />
+    <MainWrapper user={user} mainState={mainState} onUpdateUser={setUser} reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />
   </div>
 }
 

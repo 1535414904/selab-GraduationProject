@@ -32,11 +32,10 @@ public class ChiefSurgeonController {
 
     @PostMapping("/system/{departmentId}/chief-surgeon/add")
     public ResponseEntity<ChiefSurgeon> addChiefSurgeon(
-        @PathVariable String departmentId,
-        @RequestBody ChiefSurgeon chiefSurgeon) {
+            @PathVariable String departmentId,
+            @RequestBody ChiefSurgeon chiefSurgeon) {
         return ResponseEntity.ok(chiefSurgeonService.addChiefSurgeon(departmentId, chiefSurgeon));
     }
-    
 
     @PostMapping("/system/{departmentId}/chief-surgeons/add")
     public ResponseEntity<List<ChiefSurgeon>> addChiefSurgeons(
