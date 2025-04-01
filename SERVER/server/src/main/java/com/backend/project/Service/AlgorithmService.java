@@ -7,8 +7,15 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +27,9 @@ import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.SurgeryRepository;
 import com.backend.project.model.Surgery;
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 
 @Service
 public class AlgorithmService {
@@ -31,6 +40,8 @@ public class AlgorithmService {
     private String TIME_TABLE_FILE_PATH;
 
     private String ORSM_FILE_PATH = "ORSM 2025";
+
+    private String ORSM_GUIDELINES_FILE_PATH = "ORSM 2025/Guidelines";
 
     private final SurgeryRepository surgeryRepository;
 
@@ -50,6 +61,12 @@ public class AlgorithmService {
             Process process = processBuilder.start();
             process.waitFor(); // 等待執行完成
         } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            copyGuidelines();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -102,6 +119,42 @@ public class AlgorithmService {
         }
     }
 
+    public void copyGuidelines() throws IOException {
+        // 取得時間戳，例如：20250401_153045
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+        // 取得來源 CSV 檔案路徑
+        Path inputPath = Paths.get(ORSM_GUIDELINES_FILE_PATH, "Guidelines.csv");
+
+        // 產生新的檔名，例如：20250401_153045_Guidelines.csv
+        String outputFileName = timestamp + "_" + inputPath.getFileName().toString();
+
+        // 目標 CSV 檔案路徑（存放在相同資料夾內）
+        Path outputPath = inputPath.getParent().resolve(outputFileName);
+        
+
+        // 使用 OpenCSV 來讀取與寫入 CSV
+        try (
+            Reader reader = Files.newBufferedReader(inputPath, Charset.forName("Big5"));
+                CSVReader csvReader = new CSVReader(reader);
+
+                Writer writer = Files.newBufferedWriter(outputPath, Charset.forName("Big5"));
+                CSVWriter csvWriter = new CSVWriter(writer)) {
+            String[] nextLine;
+            while (true) {
+                try {
+                    if ((nextLine = csvReader.readNext()) == null)
+                        break;
+                    csvWriter.writeNext(nextLine);
+                } catch (CsvValidationException e) {
+                    System.err.println("CSV 讀取錯誤: " + e.getMessage());
+                }
+            }
+        }
+
+        System.out.println("Guidelines.csv 已成功複製為：" + outputPath);
+    }
+
     public void exportArgumentsToCsv(
             String startTime,
             String normalTime,
@@ -128,11 +181,12 @@ public class AlgorithmService {
                     (bridgeTime.isEmpty() ? "60" : bridgeTime)
             };
             for (String line : data) {
-                csvWriter.writeNext(new String[]{line}); // 每次寫入一個值，換行處理
+                csvWriter.writeNext(new String[] { line }); // 每次寫入一個值，換行處理
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }
