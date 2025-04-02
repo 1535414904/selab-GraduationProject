@@ -1,13 +1,13 @@
-C:\Users\yongj\Desktop\selab-GraduationProject\SERVER\server\ORSM 2025\PdfFiles\各房原始GA排程匯總(綜覽).pdf,排程圖示結果儲存路徑 (全部手術房間 (未展開))
-C:\Users\yongj\Desktop\selab-GraduationProject\SERVER\server\ORSM 2025\PdfFiles\各房原始GA排程匯總(展開).pdf,排程圖示結果儲存路徑 (單一手術房間 (展開))
-510,開始繪圖時間(510表示上午8:30、540表示上午9:00)
+C:\Users\yongj\Desktop\selab-GraduationProject\SERVER\server\ORSM 2025\PdfFiles\預測GA分刀結果(各房)(綜覽).pdf,排程圖示結果儲存路徑 (全部手術房間 (未展開))
+C:\Users\yongj\Desktop\selab-GraduationProject\SERVER\server\ORSM 2025\PdfFiles\預測GA分刀結果(各房)(展開).pdf,排程圖示結果儲存路徑 (單一手術房間 (展開))
+570,開始繪圖時間(510表示上午8:30、540表示上午9:00)
 1050,每日允許可用的最大常規期間(分鐘)
 1200,每日允許可用的最大超時期間(分鐘)
-45,兩檯手術之間的銜接期間(分鐘)
+80,兩檯手術之間的銜接期間(分鐘)
 
 手術房間名稱,剩餘可用時間,手術串列
-B1 (一般),1170,不哈哈(10_0~160_), 嘻嘻嘻(2_205~1080_)
-B2 (一般),1960,吱吱吱(12_0~95_), 不哈哈(4_140~290_)
+B1 (一般),1135,不哈哈(10_0~160_), 嘻嘻嘻(2_240~1115_)
+B2 (一般),1925,吱吱吱(12_0~95_), 不哈哈(4_175~325_)
 C2 (鉛牆),2070,吱吱吱(6_0~180_)
 
 手術總數：5
