@@ -22,6 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.csv
+*.xlsx
+*jpg
+*pdf
+*.png
 
+# IntelliJ
+SERVER/server/ORSM 2025/SchedulingResults/*.csv
+SERVER\server\ORSM 2025\TimeTable\*.csv
+SERVER\server\ORSM 2025\PdfFiles\*.pdf
+SERVER\server\ORSM 2025\PdfFiles\*.jpg
 SERVER/server/src/main/resources/application.properties
 SERVER/server/pom.xml
