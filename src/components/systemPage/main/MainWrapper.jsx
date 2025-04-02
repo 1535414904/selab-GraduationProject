@@ -11,6 +11,8 @@ import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
 import SurgeryMgrWrapper from "./surgeryManagement/surgeryMgrWrapper";
 import { Route, Routes } from "react-router-dom";
+import axios from "axios";
+import { BASE_URL } from "../../../config";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, nowUsername }) {
   const [rows, setRows] = useState([]);
@@ -31,8 +33,28 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
   });
 
   useEffect(() => {
-    console.log("initialTimeSettings", initialTimeSettings);
-  }, [initialTimeSettings]);
+    // 發送請求獲取後端時間設定數據
+    const fetchTimeSettings = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/system/algorithm/time-settings`); // 你的 API 地址
+        const data = response.data;
+
+        if (data) {
+          // 設置 initialTimeSettings 狀態為後端回傳的數據
+          setInitialTimeSettings({
+            surgeryStartTime: data.surgeryStartTime || 510,
+            regularEndTime: data.regularEndTime || 1050,
+            overtimeEndTime: data.overtimeEndTime || 1200,
+            cleaningTime: data.cleaningTime || 45,
+          });
+        }
+      } catch (error) {
+        console.error("獲取時間設定失敗:", error);
+      }
+    };
+
+    fetchTimeSettings();
+  }, []);  // 空依賴陣列，表示這個 effect 只會在組件首次渲染時執行一次
 
   const onDragEnd = (result) => {
     if (!result.destination) return;

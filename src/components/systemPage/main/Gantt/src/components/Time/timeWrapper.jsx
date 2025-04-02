@@ -1,5 +1,7 @@
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import { getTimeSettings } from './timeUtils';
+import axios from "axios";
+import { BASE_URL } from "../../../../../../../config";
 
 const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   // 新增時間設定狀態
@@ -14,18 +16,38 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   const [renderKey, setRenderKey] = useState(0);
 
   // 從時間設定中獲取設定
-  const updateTimeSettings = useCallback(() => {
-    // 使用臨時設定（排班管理頁面）或正式設定（主頁）
-    const settings = getTimeSettings(useTempSettings);
-    setTimeSettings(settings);
-    // 強制重新渲染時間軸和內容
-    setRenderKey(prevKey => prevKey + 1);
-  }, [useTempSettings]);
+  const updateTimeSettings = useCallback(async () => {
+    // 從後端獲取時間設定
+    const settings = await fetchTimeSettings();
+    
+    if (settings) {
+      setTimeSettings(settings);  // 更新 timeSettings 為後端資料
+    } else {
+      // 如果後端獲取失敗，使用預設值
+      setTimeSettings({
+        surgeryStartTime: 510,
+        regularEndTime: 1050,
+        overtimeEndTime: 1200,
+        cleaningTime: 45,
+      });
+    }
+  }, []);
 
   // 初始化時載入設定
   useEffect(() => {
     updateTimeSettings();
   }, [updateTimeSettings]);
+
+  const fetchTimeSettings = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/system/algorithm/time-settings`);  // 修改為你的 API 地址
+      console.log('API 回應內容:', response.data);  // 輸出回應數據查看
+      return response.data;  // 返回後端回應的數據
+    } catch (error) {
+      console.error('獲取時間設定失敗:', error);
+      return null;  // 如果獲取失敗，返回 null
+    }
+  };
 
   // 監聽 localStorage 變更
   useEffect(() => {

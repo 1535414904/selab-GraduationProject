@@ -48,4 +48,14 @@ public class AlgorithmController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("生成 CSV 失敗：" + e.getMessage());
         }
     }
+
+    @GetMapping("/system/algorithm/time-settings")
+    public ResponseEntity<TimeSettingsDTO> getTimeSettings() {
+        try {
+            TimeSettingsDTO timeSettings = algorithmService.getTimeSettingsFromCsv();
+            return ResponseEntity.ok(timeSettings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
