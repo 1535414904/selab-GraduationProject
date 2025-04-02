@@ -5,6 +5,7 @@ import HeaderWrapper from "./header/HeaderWrapper";
 import "./SystemPage.css";
 import axios from "axios";
 import MainWrapper from "./main/MainWrapper";
+import { useNavigate } from "react-router-dom";
 
 
 function SystemWrapper({ fullTogglePage, nowUsername }) {
@@ -13,6 +14,7 @@ function SystemWrapper({ fullTogglePage, nowUsername }) {
   const [error, setError] = useState("");
   const [mainState, setMainState] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,13 +34,16 @@ function SystemWrapper({ fullTogglePage, nowUsername }) {
     }
   }, [nowUsername]);
 
+  useEffect(() => {
+    console.log("user", user);
+  }, [user]);
 
   if (error) {
     return <div className="error">Error: {error}</div>;
   }
 
   return <div className="system-wrapper">
-    <HeaderWrapper fullTogglePage={fullTogglePage} user={user} toggleMainPage={setMainState} setReloadKey={setReloadKey} />
+    <HeaderWrapper fullTogglePage={() => navigate("/")} user={user} toggleMainPage={setMainState} setReloadKey={setReloadKey} />
     <MainWrapper user={user} mainState={mainState} onUpdateUser={setUser} reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />
   </div>
 }

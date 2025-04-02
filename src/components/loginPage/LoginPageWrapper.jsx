@@ -4,13 +4,15 @@ import "./LoginPage.css"
 import { useState } from "react";
 import ForgotPasswordWrapper from "./ForgotPasswordWrapper";
 import ChangePasswordWrapper from "./ChangePasswordWrapper";
+import { useNavigate } from "react-router-dom";
 
-function LoginPageWrapper({fullTogglePage, nowUsername, setNowUsername}) {
+function LoginPageWrapper({nowUsername, setNowUsername}) {
     const [pageState, setPageState] = useState("loginPage");
+    const navigate = useNavigate();
 
     return <>
         {pageState === "loginPage" && (
-            <LoginWrapper togglePage={setPageState} fullTogglePage={fullTogglePage} setNowUsername={setNowUsername}/>
+            <LoginWrapper togglePage={setPageState} fullTogglePage={() => navigate("/system")} setNowUsername={setNowUsername}/>
         )}
         {pageState === "forgotPasswordPage" && (
             <ForgotPasswordWrapper togglePage={setPageState} setNowUsername={setNowUsername}/>
