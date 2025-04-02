@@ -120,6 +120,7 @@ function DepartmentListWrapper({
       selectedDepartments.length === filteredDepartments.length
     );
   }, [selectedDepartments, filteredDepartments]);
+  
   const handleDeleteSelectedChiefSurgeons = async () => {
     if (selectedChiefIds.length === 0) {
       alert("請先選取要刪除的主治醫師");

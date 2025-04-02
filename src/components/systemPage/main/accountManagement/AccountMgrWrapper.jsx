@@ -10,15 +10,12 @@ import AccountFilter from "./AccountFilter";
 function AccountMgrWrapper({ reloadKey }) {
     const [users, setUsers] = useState([]);
     const [username, setUsername] = useState("");
-    const [name, setName] = useState("");
-    const [unit, setUnit] = useState("");
-    const [role, setRole] = useState("");
     const [filterUser, setFilterUser] = useState({
         username: "", name: "", unit: "", role: null
     })
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [addUsers, setAddUsers] = useState([]);
-    const [emptyError, setEmptyError] = useState(null);
+    const [emptyError, setEmptyError] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,19 +36,43 @@ function AccountMgrWrapper({ reloadKey }) {
 
     const handleAdd = async (user) => {
         if (!user.username.trim()) {
-            setEmptyError("*帳號欄位不得為空");
-        } else {
-            try {
-                console.log("User:", user);
-                await axios.post(`${BASE_URL}/api/system/user/add`, user);
-                const response = await axios.get(BASE_URL + "/api/system/users");
-                setUsers(response.data);
-                setEmptyError(null);
-            } catch (error) {
-                console.log("Error add data: ", error);
-            }
+            setEmptyError((prevErrors) => ({
+                ...prevErrors,
+                [user.uniqueId]: "*帳號欄位不得為空",
+            }));
+            return;
         }
+
+        const isDuplicate = users.some(existingUser => existingUser.username === user.username);
+        if (isDuplicate) {
+            setEmptyError((prevErrors) => ({
+                ...prevErrors,
+                [user.uniqueId]: `帳號 "${user.username}" 已存在，請使用其他帳號`,
+            }));
+            return;
+        }
+
+        try {
+            console.log("User:", user);
+            await axios.post(`${BASE_URL}/api/system/user/add`, user);
+            const response = await axios.get(BASE_URL + "/api/system/users");
+            setUsers(response.data);
+            cleanAddRow(user.uniqueId); // 刪除新增的使用者
+        } catch (error) {
+            console.log("Error add data: ", error);
+        }
+
     }
+
+    const cleanAddRow = (uniqueId) => {
+        const updated = addUsers.filter((user) => user.uniqueId !== uniqueId);
+        setAddUsers(updated);
+        setEmptyError((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[uniqueId]; // 根據 uniqueId 刪除錯誤
+            return newErrors;
+        });
+    };
 
     const handleDeleteAll = async (selectedUsers) => {
         if (selectedUsers.length === 0) {
@@ -93,19 +114,7 @@ function AccountMgrWrapper({ reloadKey }) {
     return (
         <div key={reloadKey} className="mgr-wrapper">
             <AccountHeaderWrapper
-                users={users}
-                setUsers={setUsers}
-                username={username}
-                setUsername={setUsername}
-                name={name}
-                setName={setName}
-                unit={unit}
-                setUnit={setUnit}
-                role={role}
-                setRole={setRole}
                 selectedUsers={selectedUsers}
-                setSelectedUsers={setSelectedUsers}
-                setEmptyError={setEmptyError}
                 handleDelete={handleDeleteAll}
                 addUsers={addUsers}
                 setAddUsers={setAddUsers}
@@ -114,9 +123,6 @@ function AccountMgrWrapper({ reloadKey }) {
                 users={users}
                 setUsers={setUsers}
                 username={username}
-                name={name}
-                unit={unit}
-                role={role}
                 filterUser={filterUser}
                 selectedUsers={selectedUsers}
                 setSelectedUsers={setSelectedUsers}
@@ -125,6 +131,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 setAddUsers={setAddUsers}
                 handleAdd={handleAdd}
                 emptyError={emptyError}
+                setEmptyError={setEmptyError}
             />
             <AccountFilter
                 users={users}

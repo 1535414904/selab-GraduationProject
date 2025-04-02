@@ -1,7 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import DepartmentFilter from "../DepartmentFilter";
-//import "../Mgr.css";
-
 function DepartmentHeaderWrapper({
   departments,
   setDepartments,
