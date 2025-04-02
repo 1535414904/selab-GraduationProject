@@ -601,7 +601,7 @@ table {
 
 .table-departments th:last-child,
 .table-departments td:last-child {
-  width: 10%;
+  width: auto;
 }
 
 .table-departments th:nth-child(2),
@@ -622,18 +622,12 @@ table {
 
 .table-accounts th:last-child,
 .table-accounts td:last-child {
-  width: 10%;
+  width: auto;
 }
 
-.table-accounts th:nth-child(2),
-.table-accounts th:nth-child(3),
-.table-accounts th:nth-child(4),
-.table-accounts th:nth-child(5),
-.table-accounts td:nth-child(2),
-.table-accounts td:nth-child(3),
-.table-accounts td:nth-child(4),
-.table-accounts td:nth-child(5) {
-  width: 15%; /* 一般中間欄 */
+.table-accounts th:not(:first-child):not(:last-child):not(:nth-child(6)),
+.table-accounts td:not(:first-child):not(:last-child):not(:nth-child(6)) {
+  width: 15%; /* 剩下 85% / 5 */
 }
 
 /* 第六欄特別大一點 */
@@ -651,35 +645,19 @@ table {
 
 .table-operatingroom th:last-child,
 .table-operatingroom td:last-child {
-  width: 10%;
+  width: auto;
 }
 
-.table-operatingroom th:nth-child(2),
-.table-operatingroom th:nth-child(3),
-.table-operatingroom th:nth-child(4),
-.table-operatingroom th:nth-child(5),
-.table-operatingroom th:nth-child(6),
-.table-operatingroom td:nth-child(2),
-.table-operatingroom td:nth-child(3),
-.table-operatingroom td:nth-child(4),
-.table-operatingroom td:nth-child(5),
-.table-operatingroom td:nth-child(6) {
-  width: 17%;  /* 剩下 85% / 5 */
+.table-operatingroom th:not(:first-child):not(:last-child),
+.table-operatingroom td:not(:first-child):not(:last-child) {
+  width: 17%;
 }
-
 
 /* ========== 手術管理（7欄，但第一欄不算） ========== */
 /* 手術管理（第6欄佔一半，第7欄固定10%，其餘欄平均） */
-.table-surgeries th:nth-child(1),
-.table-surgeries td:nth-child(1),
-.table-surgeries th:nth-child(2),
-.table-surgeries td:nth-child(2),
-.table-surgeries th:nth-child(3),
-.table-surgeries td:nth-child(3),
-.table-surgeries th:nth-child(4),
-.table-surgeries td:nth-child(4),
-.table-surgeries th:nth-child(5),
-.table-surgeries td:nth-child(5) {
+
+.table-surgeries th::not(:nth-child(6)):not(:nth-child(7))
+.table-surgeries td::not(:nth-child(6)):not(:nth-child(7)) {
   width: 8%;
 }
 
