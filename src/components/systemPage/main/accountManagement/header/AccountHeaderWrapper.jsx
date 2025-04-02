@@ -1,23 +1,15 @@
-/* eslint-disable react/prop-types */
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { BASE_URL } from "../../../../../config";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-
-function AccountHeaderWrapper({ users, setUsers,
-    username, setUsername,
-    name, setName,
-    unit, setUnit,
-    role, setRole,
-    pageState, toggleState,
-    deleteMode, setDeleteMode,
-    selectedUsers, setSelectedUsers,
-    addHandleSubmit, setEmptyError,
-    handleDelete, addUsers, setAddUsers }) {
+function AccountHeaderWrapper({ selectedUsers, handleDelete, addUsers, setAddUsers }) {
 
     const addRow = () => {
-        setAddUsers([...addUsers, { username: "", name: "", unit: "", role: 1, email: "" }]);
+        const newUser = {
+            username: "",
+            name: "",
+            unit: "",
+            role: 1,
+            email: "",
+            uniqueId: Date.now() // 使用當前時間戳作為唯一識別碼
+        };
+        setAddUsers([...addUsers, newUser]);
     };
 
     return (

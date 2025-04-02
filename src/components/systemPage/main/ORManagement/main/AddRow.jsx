@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFloppyDisk, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError, setEmptyError }) {
     const handleChange = (uniqueId, event) => {
@@ -51,21 +51,24 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                     <td></td>
                     <td>
                         <input
+                            className={`${emptyError[`${operatingRoom.uniqueId}-id`] ? "err-input" : ""}`}
                             type="text"
                             name="id"
                             value={operatingRoom.id}
                             onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                             placeholder="請輸入手術房編號"
                         />
-                        {emptyError[operatingRoom.uniqueId] && <span className="error">{emptyError[operatingRoom.uniqueId]}</span>}
+                        {emptyError[`${operatingRoom.uniqueId}-id`] && <span className="error">{emptyError[`${operatingRoom.uniqueId}-id`]}</span>}
                     </td>
                     <td>
                         <input
+                            className={`${emptyError[`${operatingRoom.uniqueId}-name`] ? "err-input" : ""}`}
                             type="text"
                             name="name"
                             value={operatingRoom.name}
                             onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         />
+                        {emptyError[`${operatingRoom.uniqueId}-name`] && <span className="error">{emptyError[`${operatingRoom.uniqueId}-name`]}</span>}
                     </td>
                     <td>
                         <select
@@ -112,7 +115,6 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             {/* 儲存按鈕 */}
                             <button className="action-button edit-button" onClick={() => {
                                 handleAdd(operatingRoom);
-                                if (operatingRoom.id.trim()) { handleDelete(operatingRoom.uniqueId); }
                             }}>
                                 <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                             </button>

@@ -13,10 +13,6 @@ import { FaUser, FaUserAlt, FaUserCog, FaUserEdit } from "react-icons/fa";
 function AccountListWrapper({
     users,
     setUsers,
-    username,
-    name,
-    unit,
-    role,
     filterUser,
     selectedUsers,
     setSelectedUsers,
@@ -24,7 +20,8 @@ function AccountListWrapper({
     addUsers,
     setAddUsers,
     handleAdd,
-    emptyError
+    emptyError,
+    setEmptyError
 }) {
 
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -59,7 +56,7 @@ function AccountListWrapper({
         const sortedUsers = newFilteredUsers.sort((a, b) => b.role - a.role);
 
         setFilteredUsers(sortedUsers);
-    }, [filterUser.name, filterUser.role, filterUser.unit, filterUser.username, role, unit, users]);
+    }, [filterUser.name, filterUser.role, filterUser.unit, filterUser.username, users]);
 
     const handleEdit = (user) => {
         console.log("🔍 現在正在編輯的使用者：", user);
@@ -104,6 +101,7 @@ function AccountListWrapper({
                         setAddUsers={setAddUsers}
                         handleAdd={handleAdd}
                         emptyError={emptyError}
+                        setEmptyError={setEmptyError}
                     />
                     {filteredUsers.length > 0 ? (
                         filteredUsers.map(user => (
