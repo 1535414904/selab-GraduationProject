@@ -52,7 +52,7 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
 
   return (
     <div className="mgr-list">
-      <table className="system-table">
+      <table className="system-table table-surgeries">
         <thead>
           <tr>
             <th>手術房編號</th>
@@ -61,7 +61,7 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
             <th>所屬科別</th>
             <th>預期可用時間點</th>
             <th>預約狀況</th>
-            <th></th>
+            <th>動作</th>
           </tr>
         </thead>
         <tbody>
@@ -78,9 +78,12 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
                   <SurgeryItems operatingRoom={operatingRoom} operatingRooms={operatingRooms} setReloadKey={setReloadKey} />
                 </td>
                 <td>
-                  <button className="action-button add-button" onClick={() => setAddingSurgery(operatingRoom.id)}>
-                    <FontAwesomeIcon icon={faPlus} className="action-icon" />
-                  </button>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <button className="action-button add-button" onClick={() => setAddingSurgery(operatingRoom.id)}>
+                      <FontAwesomeIcon icon={faPlus} className="action-icon" />
+                    </button>
+                  </div>
+
                 </td>
               </tr>
             );

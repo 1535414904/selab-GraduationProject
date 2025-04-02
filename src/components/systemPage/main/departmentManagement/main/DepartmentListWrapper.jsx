@@ -282,7 +282,8 @@ function DepartmentListWrapper({
       {/* 左欄：科別表格 */}
       <div className={`${expandedRow !== null ? "w-full md:w-3/4 pr-0" : "w-full"}`}>
         <div className="mgr-list">
-          <table className="system-table">
+          <table className="system-table table-departments">
+
             <thead>
               <tr>
                 <th

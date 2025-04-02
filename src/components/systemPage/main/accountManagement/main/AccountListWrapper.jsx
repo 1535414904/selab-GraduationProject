@@ -86,7 +86,7 @@ function AccountListWrapper({
 
     return (
         <div className="mgr-list">
-            <table className="system-table">
+            <table className="system-table table-accounts">
                 <thead>
                     <tr>
                         <th>選取</th>
@@ -165,8 +165,8 @@ function AccountListWrapper({
                                     <td>
                                         <div className="inline-flex items-center gap-2">
                                             {user.role == 1 ? (<FaUserAlt fill="#22c55e" size={22} />)
-                                                : user.role == 2 ? (<FaUserEdit fill="#3b82f6" size={30}/>)
-                                                    : (<FaUserCog fill="#ef4444" size={30}/>)}
+                                                : user.role == 2 ? (<FaUserEdit fill="#3b82f6" size={30} />)
+                                                    : (<FaUserCog fill="#ef4444" size={30} />)}
                                             <span>{roleDisplayMap[user.role]}</span>
                                         </div>
                                     </td>

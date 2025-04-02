@@ -119,7 +119,7 @@ function ORListWrapper({
 
     return (
         <div className="mgr-list">
-            <table className="system-table">
+            <table className="system-table table-operatingroom">
                 <thead>
                     <tr>
                         <th
@@ -183,8 +183,8 @@ function ORListWrapper({
                                     {/* <td> {statusDisplayMap[operatingRoom.status]}</td> */}
                                     <td className="text-center p-0">
                                         <div className="flex justify-center items-center gap-2">
-                                            {operatingRoom.status ? (<BsLightbulbFill fill="#facc15" size={30}/>)
-                                                : (<BsFillLightbulbOffFill fill="#9ca3af" size={30}/>)}
+                                            {operatingRoom.status ? (<BsLightbulbFill fill="#facc15" size={30} />)
+                                                : (<BsFillLightbulbOffFill fill="#9ca3af" size={30} />)}
                                             <span>{statusDisplayMap[operatingRoom.status]}</span>
                                         </div>
                                     </td>
