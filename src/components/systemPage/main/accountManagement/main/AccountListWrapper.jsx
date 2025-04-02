@@ -164,17 +164,12 @@ function AccountListWrapper({
                                     <td>{user.unit}</td>
                                     <td>
                                         <div className="inline-flex items-center gap-2">
-                                            {user.role == 1 ? (<FaUserAlt fill="#22c55e" size={25} />)
+                                            {user.role == 1 ? (<FaUserAlt fill="#22c55e" size={22} />)
                                                 : user.role == 2 ? (<FaUserEdit fill="#3b82f6" size={30}/>)
                                                     : (<FaUserCog fill="#ef4444" size={30}/>)}
                                             <span>{roleDisplayMap[user.role]}</span>
                                         </div>
                                     </td>
-
-
-
-
-
 
                                     <td>{user.email}</td>
                                     <td>
