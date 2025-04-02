@@ -8,7 +8,7 @@ import { Route, Routes } from "react-router-dom";
 
 function App() {
   // const [pageState, setPageState] = useState("systemPage");
-  const [nowUsername, setNowUsername] = useState("");
+  const [nowUsername, setNowUsername] = useState("OuO");
   // const [mainState, setMainState] = useState("mainPage");
   // const [reloadKey, setReloadKey] = useState(0);
 
@@ -47,7 +47,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPageWrapper nowUsername={nowUsername} setNowUsername={handleSetNowUsername} />} />
-      <Route path="/system" element={<SystemWrapper nowUsername={nowUsername} />} />
+      <Route path="/system/*" element={<SystemWrapper nowUsername={nowUsername} />} />
     </Routes>
   );
 }

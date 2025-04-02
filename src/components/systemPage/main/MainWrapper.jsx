@@ -10,6 +10,7 @@ import { DragDropContext } from "react-beautiful-dnd";
 import { handleDragEnd } from "./Gantt/src/components/DragDrop/dragEndHandler";
 import ORMgrWrapper from "./ORManagement/ORMgrWrapper";
 import SurgeryMgrWrapper from "./surgeryManagement/surgeryMgrWrapper";
+import { Route, Routes } from "react-router-dom";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, nowUsername }) {
   const [rows, setRows] = useState([]);
@@ -40,7 +41,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
     if (mainState === "mainPage" && mainGanttRef.current) {
       // 從 mainGanttRef 中獲取最新的狀態
       const { setHasChanges, filteredRows, setFilteredRows, readOnly } = mainGanttRef.current;
-      
+
       console.log("用戶角色:", user.role);  // 除錯用
       console.log("用戶名稱:", user.username);  // 除錯用
 
@@ -138,51 +139,15 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
           }
         `}</style>
         <div className="flex-grow p-4 md:p-6">
-          {mainState === "mainPage" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} user={user} />
-            </div>
-          )}
-
-          {mainState === "userProfile" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <UserProfile user={user} onUpdateUser={onUpdateUser} />
-            </div>
-          )}
-
-          {mainState === "accountMgr" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <AccountMgrWrapper
-                user={user}
-                onUpdateUser={onUpdateUser}
-                reloadKey={reloadKey}
-              />
-            </div>
-          )}
-
-          {mainState === "departmentMgr" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <DepartmentMgrWrapper reloadKey={reloadKey} />
-            </div>
-          )}
-
-          {mainState === "ORMgr" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <ORMgrWrapper reloadKey={reloadKey} />
-            </div>
-          )}
-
-          {mainState === "surgeryMgr" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <SurgeryMgrWrapper reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />
-            </div>
-          )}
-
-          {mainState === "shiftMgr" && (
-            <div className="transition-all duration-300 ease-in-out">
-              <Gantt rows={rows} setRows={setRows} initialTimeSettings={initialTimeSettings} setInitialTimeSettings={setInitialTimeSettings} />
-            </div>
-          )}
+          <Routes>
+            <Route path="/main" element={<MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} user={user} />} />
+            <Route path="/user-profile" element={<UserProfile user={user} onUpdateUser={onUpdateUser} />} />
+            <Route path="/account-mgr" element={<AccountMgrWrapper user={user} onUpdateUser={onUpdateUser} reloadKey={reloadKey} />} />
+            <Route path="/department-mgr" element={<DepartmentMgrWrapper reloadKey={reloadKey} />} />
+            <Route path="/OR-mgr" element={<ORMgrWrapper reloadKey={reloadKey} />} />
+            <Route path="/surgery-mgr" element={<SurgeryMgrWrapper reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />} />
+            <Route path="/shift-mgr" element={<Gantt rows={rows} setRows={setRows} initialTimeSettings={initialTimeSettings} setInitialTimeSettings={setInitialTimeSettings} />} />
+          </Routes>
         </div>
       </div>
     </DragDropContext>
