@@ -12,7 +12,7 @@ function LoginPageWrapper({nowUsername, setNowUsername}) {
 
     return <>
         {pageState === "loginPage" && (
-            <LoginWrapper togglePage={setPageState} fullTogglePage={() => navigate("/system")} setNowUsername={setNowUsername}/>
+            <LoginWrapper togglePage={setPageState} fullTogglePage={() => navigate("/system/main")} setNowUsername={setNowUsername}/>
         )}
         {pageState === "forgotPasswordPage" && (
             <ForgotPasswordWrapper togglePage={setPageState} setNowUsername={setNowUsername}/>

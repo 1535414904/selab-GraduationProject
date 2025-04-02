@@ -6,9 +6,15 @@ import { BASE_URL } from "../../../../../config";
 import axios from "axios";
 
 function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setReloadKey }) {
+    const getTomorrowDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toISOString().split("T")[0]; // yyyy-MM-dd 格式
+    };
+
     const [addSurgery, setAddSurgery] = useState({
         applicationId: "",
-        date: "",
+        date: getTomorrowDate(),
         medicalRecordNumber: "",
         patientName: "",
         surgeryName: "",
@@ -22,7 +28,7 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
         chiefSurgeonId: ""
     })
     const [chiefSurgeons, setChiefSurgeons] = useState([]);
-    const [emptyError, setEmptyError] = useState("");
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         console.log(addSurgery);
@@ -30,7 +36,6 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setAddSurgery({
             ...addSurgery,
             [name]: name === "estimatedSurgeryTime" ? Number(value) || 0 : value
@@ -56,7 +61,6 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
             if (!addSurgery.operatingRoomId) return;
 
             const selectedDepartmentId = operatingRooms.find(room => room.id === addSurgery.operatingRoomId)?.department.id;
-
             if (!selectedDepartmentId) return;
 
             try {
@@ -70,20 +74,26 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
         fetchChiefSurgeons();
     }, [addSurgery.operatingRoomId, operatingRooms]);
 
-    const handleAdd = async (surgery) => {
-        if (!surgery.applicationId.trim()) {
-            setEmptyError("*申請序號欄位不得為空");
-        } else {
-            try {
-                await axios.post(`${BASE_URL}/api/system/surgery/add`, surgery);
-                setEmptyError(null);
-                setReloadKey((prevKey) => prevKey + 1);
-                onClose();
-            } catch (error) {
-                console.error("Error add data: ", error);
-            }
+    const validateForm = () => {
+        let newErrors = {};
+        if (!addSurgery.applicationId.trim()) newErrors.applicationId = "* 申請編號不得為空";
+        if (!addSurgery.chiefSurgeonId) newErrors.chiefSurgeonId = "* 主刀醫師不得為空";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleAdd = async () => {
+        if (!validateForm()) return;
+
+        try {
+            await axios.post(`${BASE_URL}/api/system/surgery/add`, addSurgery);
+            setReloadKey(prevKey => prevKey + 1);
+            onClose();
+        } catch (error) {
+            console.error("Error adding data: ", error);
         }
-    }
+    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -113,9 +123,10 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
                         <h3>基本資訊</h3>
                         <p>
                             <strong>申請編號：</strong>
-                            <input type="text" name="applicationId" value={addSurgery.applicationId}
+                            <input className={`${errors.applicationId ? "err-input" : ""}`} type="text" name="applicationId" value={addSurgery.applicationId}
                                 onChange={handleChange} />
                         </p>
+                        {errors.applicationId && <span className="error ml-27">{errors.applicationId}</span>}
                         <p>
                             <strong>病歷號碼：</strong>
                             <input type="text" name="medicalRecordNumber" value={addSurgery.medicalRecordNumber}
@@ -127,9 +138,7 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
                                 onChange={handleChange} />
                         </p>
                         <p>
-                            <strong>手術日期：</strong>
-                            <input type="text" name="date" value={addSurgery.date}
-                                onChange={handleChange} />
+                            <strong>手術日期：</strong> {addSurgery.date || "未指定"}
                         </p>
                     </div>
 
@@ -143,11 +152,12 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
                         <p>
                             <strong>主刀醫師：</strong>
                             <Select
-                                className=""
+                                className={`${errors.applicationId ? "err-input" : ""}`}
                                 options={chiefSurgeons.map((chiefSurgeon) => ({ value: chiefSurgeon.id, label: chiefSurgeon.name }))}
                                 onChange={handleChiefSurgeonChange}
                             />
                         </p>
+                        {errors.chiefSurgeonId && <span className="error ml-27">{errors.chiefSurgeonId}</span>}
                         <p>
                             <strong>手術房：</strong>
                             <Select

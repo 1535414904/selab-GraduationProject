@@ -309,6 +309,7 @@ td {
 }
 
 .surgeries-list {
+  height: 100%;
   display: flex;
   overflow-x: auto;
   max-width: 100%;
@@ -367,6 +368,12 @@ td {
 /* 用於被選到的用戶會變色 */
 .selected {
   background-color: #EBF5FF;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.err-input {
+  border: 1px solid red !important;
+  background-color: #FEE2E2 !important;
   transition: background-color 0.2s ease-in-out;
 }
 

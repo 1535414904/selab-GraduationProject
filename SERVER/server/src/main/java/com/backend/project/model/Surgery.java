@@ -20,16 +20,66 @@ public class Surgery {
     @Column(name = "application_id")
     private String applicationId;
 
+    @Column(name = "date")
+    private Date date;
+
+    @Column(name = "medical_record_number")
+    private String medicalRecordNumber;
+
+    @Column(name = "patient_name")
+    private String patientName;
+
+    @Column(name = "surgery_name")
+    private String surgeryName;
+
+    @Column(name = "anesthesia_method")
+    private String anesthesiaMethod;
+
+    @Column(name = "surgery_reason")
+    private String surgeryReason;
+
+    @Column(name = "priority_sequence")
+    private int prioritySequence;
+
+    @Column(name = "special_or_requirements")
+    private String specialOrRequirements;
+
+    @Column(name = "estimated_surgery_time")
+    private Integer estimatedSurgeryTime;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "chief_surgeon_employee_id")
+    private ChiefSurgeon chiefSurgeon;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "username")
+    private User user;
+
+    @Transient
+    private String username;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "operating_room_id")
+    private OperatingRoom operatingRoom;
+
+    @Transient
+    private String operatingRoomId;
+
+    @Transient
+    private String chiefSurgeonId;
+
+    @Column(name = "department_name")
+    private String departmentName;
+
+    // ===== Getters and Setters =====
+
     public String getApplicationId() {
         return applicationId;
     }
 
-    public void setId(String applicationId) {
+    public void setApplicationId(String applicationId) {
         this.applicationId = applicationId;
     }
-
-    @Column(name = "date")
-    private Date date;
 
     public Date getDate() {
         return date;
@@ -39,9 +89,6 @@ public class Surgery {
         this.date = date;
     }
 
-    @Column(name = "medical_record_number")
-    private String medicalRecordNumber;
-
     public String getMedicalRecordNumber() {
         return medicalRecordNumber;
     }
@@ -49,9 +96,6 @@ public class Surgery {
     public void setMedicalRecordNumber(String medicalRecordNumber) {
         this.medicalRecordNumber = medicalRecordNumber;
     }
-
-    @Column(name = "patient_name")
-    private String patientName;
 
     public String getPatientName() {
         return patientName;
@@ -61,9 +105,6 @@ public class Surgery {
         this.patientName = patientName;
     }
 
-    @Column(name = "surgery_name")
-    private String surgeryName;
-
     public String getSurgeryName() {
         return surgeryName;
     }
@@ -71,9 +112,6 @@ public class Surgery {
     public void setSurgeryName(String surgeryName) {
         this.surgeryName = surgeryName;
     }
-
-    @Column(name = "anesthesia_method")
-    private String anesthesiaMethod;
 
     public String getAnesthesiaMethod() {
         return anesthesiaMethod;
@@ -83,9 +121,6 @@ public class Surgery {
         this.anesthesiaMethod = anesthesiaMethod;
     }
 
-    @Column(name = "surgery_reason")
-    private String surgeryReason;
-
     public String getSurgeryReason() {
         return surgeryReason;
     }
@@ -93,9 +128,6 @@ public class Surgery {
     public void setSurgeryReason(String surgeryReason) {
         this.surgeryReason = surgeryReason;
     }
-
-    @Column(name = "priority_sequence")
-    private int prioritySequence;
 
     public int getPrioritySequence() {
         return prioritySequence;
@@ -105,9 +137,6 @@ public class Surgery {
         this.prioritySequence = prioritySequence;
     }
 
-    @Column(name = "special_or_requirements")
-    private String specialOrRequirements;
-
     public String getSpecialOrRequirements() {
         return specialOrRequirements;
     }
@@ -115,9 +144,6 @@ public class Surgery {
     public void setSpecialOrRequirements(String specialOrRequirements) {
         this.specialOrRequirements = specialOrRequirements;
     }
-
-    @Column(name = "estimated_surgery_time")
-    private Integer estimatedSurgeryTime;
 
     public Integer getEstimatedSurgeryTime() {
         return estimatedSurgeryTime;
@@ -127,10 +153,6 @@ public class Surgery {
         this.estimatedSurgeryTime = estimatedSurgeryTime;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "chief_surgeon_employee_id")
-    private ChiefSurgeon chiefSurgeon;
-
     public ChiefSurgeon getChiefSurgeon() {
         return chiefSurgeon;
     }
@@ -138,10 +160,6 @@ public class Surgery {
     public void setChiefSurgeon(ChiefSurgeon chiefSurgeon) {
         this.chiefSurgeon = chiefSurgeon;
     }
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "username")
-    private User user;
 
     public User getUser() {
         return user;
@@ -151,9 +169,6 @@ public class Surgery {
         this.user = user;
     }
 
-    @Transient
-    private String username;
-
     public String getUsername() {
         return username;
     }
@@ -161,10 +176,6 @@ public class Surgery {
     public void setUsername(String username) {
         this.username = username;
     }
-    
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "operating_room_id")
-    private OperatingRoom operatingRoom;
 
     public OperatingRoom getOperatingRoom() {
         return operatingRoom;
@@ -174,9 +185,6 @@ public class Surgery {
         this.operatingRoom = operatingRoom;
     }
 
-    @Transient
-    private String operatingRoomId;
-
     public String getOperatingRoomId() {
         return operatingRoomId;
     }
@@ -185,9 +193,6 @@ public class Surgery {
         this.operatingRoomId = operatingRoomId;
     }
 
-    @Transient
-    private String chiefSurgeonId;
-
     public String getChiefSurgeonId() {
         return chiefSurgeonId;
     }
@@ -195,9 +200,6 @@ public class Surgery {
     public void setChiefSurgeonId(String chiefSurgeonId) {
         this.chiefSurgeonId = chiefSurgeonId;
     }
-
-    @Column(name = "department_name")
-    private String departmentName;
 
     public String getDepartmentName() {
         return departmentName;

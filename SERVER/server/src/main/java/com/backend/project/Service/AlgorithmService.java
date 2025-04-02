@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.SurgeryRepository;
+import com.backend.project.Dto.TimeSettingsDTO;
 import com.backend.project.model.Surgery;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -189,4 +191,38 @@ public class AlgorithmService {
         }
     }
 
+    public TimeSettingsDTO getTimeSettingsFromCsv() {
+        TimeSettingsDTO dto = new TimeSettingsDTO();
+
+        try (CSVReader csvReader = new CSVReader(new FileReader(ORSM_FILE_PATH + "/Arguments4Exec.csv", StandardCharsets.UTF_8))) {
+            String[] nextLine;
+            int lineNumber = 0;
+
+            // 讀取 CSV 檔案每一行
+            while ((nextLine = csvReader.readNext()) != null) {
+                // 跳過註解行（以 # 開頭的行）
+                if (nextLine[0].startsWith("#")) {
+                    continue;
+                }
+
+                // 根據行號設定 DTO 的欄位
+                if (lineNumber == 0) {
+                    dto.setSurgeryStartTime(Integer.parseInt(nextLine[0].trim()));
+                } else if (lineNumber == 1) {
+                    dto.setRegularEndTime(Integer.parseInt(nextLine[0].trim()));
+                } else if (lineNumber == 2) {
+                    dto.setOvertimeEndTime(Integer.parseInt(nextLine[0].trim()));
+                } else if (lineNumber == 3) {
+                    dto.setCleaningTime(Integer.parseInt(nextLine[0].trim()));
+                }
+
+                lineNumber++;
+            }
+        } catch (IOException | CsvValidationException e) {
+            e.printStackTrace();
+            return null; // 如果發生錯誤，返回 null
+        }
+
+        return dto;
+    }
 }

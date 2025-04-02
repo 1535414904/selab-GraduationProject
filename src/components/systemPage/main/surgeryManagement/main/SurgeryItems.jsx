@@ -85,8 +85,8 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
         <div className="surgeries-list">
             {surgeries.map(surgery => (
                 <div key={surgery.applicationId} className="surgery-item" onClick={() => setSelectedSurgery(surgery)}>
-                    <div>{surgery.medicalRecordNumber}</div>
-                    <div>{surgery.patientName}</div>
+                    <div>{surgery.medicalRecordNumber || "未指定"}</div>
+                    <div>{surgery.patientName || "未指定"}</div>
                 </div>
             ))}
             {selectedSurgery && (
