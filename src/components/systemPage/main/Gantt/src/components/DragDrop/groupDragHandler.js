@@ -168,11 +168,11 @@ export const updateGroupColors = (roomData) => {
   
   roomData.forEach(item => {
     if (item.isGroup && item.surgeries && item.surgeries.length > 0) {
-      // 找出非清潔時間的手術
+      // 找出非銜接時間的手術
       const surgeries = item.surgeries.filter(s => !s.isCleaningTime);
       
       if (surgeries.length > 0) {
-        // 獲取最後一個非清潔時間手術
+        // 獲取最後一個非銜接時間手術
         const lastSurgery = surgeries[surgeries.length - 1];
         
         // 根據結束時間確定顏色

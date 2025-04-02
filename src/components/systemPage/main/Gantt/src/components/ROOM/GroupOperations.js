@@ -21,10 +21,10 @@ export const minutesToTime = (minutes) => {
   return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 };
 
-// 輔助函數：計算清潔時間長度（分鐘）
+// 輔助函數：計算銜接時間長度（分鐘）
 export const getCleaningDuration = (useTempSettings = false) => {
   const timeSettings = getTimeSettings(useTempSettings);
-  return timeSettings.cleaningTime || 45; // 預設45分鐘清潔時間
+  return timeSettings.cleaningTime || 45; // 預設45分鐘銜接時間
 };
 
 // 建立唯一ID
@@ -32,11 +32,11 @@ export const generateUniqueId = (prefix) => {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 };
 
-// 創建清潔時間項目
+// 創建銜接時間項目
 export const createCleaningTimeItem = (startTime, endTime, roomName, id) => {
   return {
     id: id || generateUniqueId('cleaning'),
-    doctor: '清潔時間',
+    doctor: '銜接時間',
     surgery: '整理中',
     startTime,
     endTime,
@@ -65,7 +65,7 @@ export const checkTimeContinuity = (items) => {
   return true;
 };
 
-// 檢查項目是否連續（包含清潔時間）
+// 檢查項目是否連續（包含銜接時間）
 export const checkConsecutiveItems = (items, roomData) => {
   if (!items || items.length < 2) return false;
   
@@ -78,12 +78,12 @@ export const checkConsecutiveItems = (items, roomData) => {
   for (let i = 1; i < selectedIndices.length; i++) {
     const diff = selectedIndices[i] - selectedIndices[i-1];
     
-    // 不連續且不是中間隔了清潔時間的情況
+    // 不連續且不是中間隔了銜接時間的情況
     if (diff !== 1 && diff !== 2) {
       return false;
     }
     
-    // 如果索引差距為2，檢查中間是否為清潔時間
+    // 如果索引差距為2，檢查中間是否為銜接時間
     if (diff === 2 && !roomData[selectedIndices[i-1] + 1].isCleaningTime) {
       return false;
     }
@@ -112,8 +112,8 @@ export const getRangeItems = (selectedItems, roomData) => {
     return [];
   }
   
-  // 獲取範圍內的所有項目（包括中間的清潔時間）
-  // 確保最後一個手術後的清潔時間也被包含
+  // 獲取範圍內的所有項目（包括中間的銜接時間）
+  // 確保最後一個手術後的銜接時間也被包含
   let endIndex = lastIndex;
   if (lastIndex < roomData.length - 1 && roomData[lastIndex + 1].isCleaningTime) {
     endIndex = lastIndex + 1;
@@ -129,22 +129,22 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     return { success: false, message: '請至少選擇兩個手術項目' };
   }
   
-  // 過濾出非清潔時間的項目
+  // 過濾出非銜接時間的項目
   const nonCleaningItems = selectedItems.filter(item => !item.isCleaningTime);
   
   if (nonCleaningItems.length < 2) {
-    return { success: false, message: '請至少選擇兩個非清潔時間的手術項目' };
+    return { success: false, message: '請至少選擇兩個非銜接時間的手術項目' };
   }
   
   // 檢查是否連續
   if (!checkConsecutiveItems(selectedItems, roomData)) {
-    return { success: false, message: '只能將連續的手術進行群組（可以包含中間的清潔時間）' };
+    return { success: false, message: '只能將連續的手術進行群組（可以包含中間的銜接時間）' };
   }
   
   // 獲取範圍內的所有項目
   const rangeItems = getRangeItems(selectedItems, roomData);
   
-  // 檢查範圍內是否包含未選中的非清潔時間項目
+  // 檢查範圍內是否包含未選中的非銜接時間項目
   const nonCleaningInRange = rangeItems.filter(item => !item.isCleaningTime);
   const allNonCleaningSelected = nonCleaningInRange.every(item => 
     nonCleaningItems.some(selected => selected.id === item.id)
@@ -166,13 +166,13 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
   const firstItem = sortedItems[0];
   const lastItem = sortedItems[sortedItems.length - 1];
   
-  // 檢查最後一個項目後是否有清潔時間，如果有則併入群組
+  // 檢查最後一個項目後是否有銜接時間，如果有則併入群組
   let lastEndTime = lastItem.endTime;
   const lastItemIndex = roomData.findIndex(item => item.id === lastItem.id);
   if (lastItemIndex < roomData.length - 1 && roomData[lastItemIndex + 1].isCleaningTime) {
     lastEndTime = roomData[lastItemIndex + 1].endTime;
     
-    // 確保該清潔時間也被加入到 rangeItems 中
+    // 確保該銜接時間也被加入到 rangeItems 中
     if (!rangeItems.some(item => item.id === roomData[lastItemIndex + 1].id)) {
       rangeItems.push(roomData[lastItemIndex + 1]);
     }
@@ -183,7 +183,7 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
   });
   
-  // 獲取最後一個非清潔項目的顏色
+  // 獲取最後一個非銜接項目的顏色
   const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
     return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
   })[0];
@@ -198,7 +198,7 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     endTime: lastEndTime,
     color: groupColor,
     isGroup: true,
-    surgeries: allGroupItems, // 包含範圍內的所有項目，包括清潔時間
+    surgeries: allGroupItems, // 包含範圍內的所有項目，包括銜接時間
     isCleaningTime: false,
     operatingRoomName: roomName,
     // 添加必要的引用信息，用於拖曳時保持關係
@@ -234,11 +234,11 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
   
   // 檢查群組前是否有手術，若有則確保銜接時間正確
   if (firstIndex > 0 && !roomData[firstIndex - 1].isCleaningTime) {
-    // 前一個項目是手術，需要在群組前添加清潔時間
+    // 前一個項目是手術，需要在群組前添加銜接時間
     const prevSurgery = roomData[firstIndex - 1];
     const cleaningStartTime = prevSurgery.endTime;
     
-    // 創建清潔時間項目並插入
+    // 創建銜接時間項目並插入
     const cleaningItem = createCleaningTimeItem(
       cleaningStartTime,
       firstItem.startTime,
@@ -247,11 +247,11 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     
     newRoomData.splice(firstIndex - 1, 0, cleaningItem);
   } else if (firstIndex > 0) {
-    // 前一個項目是清潔時間，需要調整其結束時間
+    // 前一個項目是銜接時間，需要調整其結束時間
     const prevCleaning = {...roomData[firstIndex - 1]};
     prevCleaning.endTime = firstItem.startTime;
     
-    // 更新清潔時間
+    // 更新銜接時間
     const prevIndex = newRoomData.findIndex(item => item.id === prevCleaning.id);
     if (prevIndex !== -1) {
       newRoomData[prevIndex] = prevCleaning;
@@ -351,42 +351,42 @@ export const ensureTimeConsistency = (roomData, startIndex, roomName) => {
     const currentItem = roomData[i];
     const nextItem = roomData[i + 1];
     
-    // 如果當前項目不是清潔時間且下一個項目不是清潔時間，則需要添加清潔時間
+    // 如果當前項目不是銜接時間且下一個項目不是銜接時間，則需要添加銜接時間
     if (!currentItem.isCleaningTime && !nextItem.isCleaningTime) {
-      // 計算清潔時間長度（分鐘）
+      // 計算銜接時間長度（分鐘）
       const cleaningDuration = getCleaningDuration(true);
       
-      // 創建清潔時間項目
+      // 創建銜接時間項目
       const cleaningItem = createCleaningTimeItem(
         currentItem.endTime,
         nextItem.startTime,
         roomName
       );
       
-      // 插入清潔時間
+      // 插入銜接時間
       roomData.splice(i + 1, 0, cleaningItem);
-      i++; // 跳過新插入的清潔時間
+      i++; // 跳過新插入的銜接時間
     }
-    // 如果當前項目是清潔時間且下一個項目也是清潔時間，合併它們
+    // 如果當前項目是銜接時間且下一個項目也是銜接時間，合併它們
     else if (currentItem.isCleaningTime && nextItem.isCleaningTime) {
       currentItem.endTime = nextItem.endTime;
       roomData.splice(i + 1, 1); // 移除下一個項目
       i--; // 重新檢查當前項目
     }
-    // 如果時間不連續，調整清潔時間的結束時間
+    // 如果時間不連續，調整銜接時間的結束時間
     else if (currentItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
       currentItem.endTime = nextItem.startTime;
     }
     // 如果普通項目時間不連續，調整結束時間
     else if (!currentItem.isCleaningTime && !nextItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
-      // 插入清潔時間
+      // 插入銜接時間
       const cleaningItem = createCleaningTimeItem(
         currentItem.endTime,
         nextItem.startTime,
         roomName
       );
       roomData.splice(i + 1, 0, cleaningItem);
-      i++; // 跳過新插入的清潔時間
+      i++; // 跳過新插入的銜接時間
     }
   }
   
@@ -407,8 +407,8 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   // 更新群組開始時間（如果有前一個項目）
   if (prevItem) {
     const newStartTime = prevItem.isCleaningTime 
-      ? prevItem.endTime  // 如果前一個是清潔時間，使用其結束時間
-      : minutesToTime(timeToMinutes(prevItem.endTime) + getCleaningDuration(true)); // 否則加上清潔時間
+      ? prevItem.endTime  // 如果前一個是銜接時間，使用其結束時間
+      : minutesToTime(timeToMinutes(prevItem.endTime) + getCleaningDuration(true)); // 否則加上銜接時間
       
     if (newStartTime !== updatedGroup.startTime) {
       updatedGroup.startTime = newStartTime;
@@ -420,8 +420,8 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   if (nextItem) {
     // 如果有後一個項目，調整結束時間
     const newEndTime = nextItem.isCleaningTime
-      ? nextItem.startTime  // 如果後一個是清潔時間，調整到其開始時間
-      : minutesToTime(timeToMinutes(nextItem.startTime) - getCleaningDuration(true)); // 否則減去清潔時間
+      ? nextItem.startTime  // 如果後一個是銜接時間，調整到其開始時間
+      : minutesToTime(timeToMinutes(nextItem.startTime) - getCleaningDuration(true)); // 否則減去銜接時間
       
     if (newEndTime !== updatedGroup.endTime) {
       updatedGroup.endTime = newEndTime;
@@ -442,11 +442,11 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
     
     // 更新群組內部時間
     if (updatedGroup.surgeries && updatedGroup.surgeries.length > 0) {
-      // 獲取非清潔時間的項目
+      // 獲取非銜接時間的項目
       const nonCleaningItems = updatedGroup.surgeries.filter(item => !item.isCleaningTime);
       
       if (nonCleaningItems.length > 0) {
-        // 計算原始總持續時間（不包括清潔時間）
+        // 計算原始總持續時間（不包括銜接時間）
         let originalTotalDuration = 0;
         for (const item of nonCleaningItems) {
           originalTotalDuration += timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
@@ -467,7 +467,7 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
           // 計算項目的持續時間
           let itemDuration = 0;
           if (!item.isCleaningTime) {
-            // 非清潔時間項目，按比例縮放
+            // 非銜接時間項目，按比例縮放
             const originalDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
             itemDuration = Math.round(originalDuration * scaleFactor);
             
@@ -477,7 +477,7 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
             // 更新項目顏色
             item.color = getColorByEndTime(minutesToTime(currentTime + itemDuration), false, true);
           } else {
-            // 清潔時間固定
+            // 銜接時間固定
             itemDuration = getCleaningDuration(true);
           }
           
@@ -491,7 +491,7 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
           const lastSurgery = updatedGroup.surgeries[updatedGroup.surgeries.length - 1];
           lastSurgery.endTime = updatedGroup.endTime;
           
-          // 更新群組顏色基於最後一個非清潔時間項目
+          // 更新群組顏色基於最後一個非銜接時間項目
           const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
             return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
           })[0];

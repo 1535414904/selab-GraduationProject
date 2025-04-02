@@ -16,7 +16,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
     e.stopPropagation();
     const newPinnedStatus = !isPinned;
     setIsPinned(newPinnedStatus);
-    
+
     // 通知父組件釘選狀態已更改
     if (onPinStatusChange) {
       onPinStatusChange(roomIndex, newPinnedStatus);
@@ -41,17 +41,17 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
       }
       return;
     }
-    
+
     if (!isGroupMode) return;
-    
-    // 忽略清潔時間項目
+
+    // 忽略銜接時間項目
     if (surgery.isCleaningTime) {
       return;
     }
-    
+
     // 檢查手術是否已經被選中
     const index = selectedSurgeries.findIndex(s => s.id === surgery.id);
-    
+
     if (index === -1) {
       // 如果未選中，添加到選中列表
       setSelectedSurgeries([...selectedSurgeries, surgery]);
@@ -69,12 +69,12 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
       alert('請至少選擇兩個手術以創建群組');
       return;
     }
-    
+
     // 調用父組件的群組操作函數
     if (onGroupOperation) {
       onGroupOperation(roomIndex, selectedSurgeries, 'create');
     }
-    
+
     // 重置狀態
     setSelectedSurgeries([]);
     setIsGroupMode(false);
@@ -91,17 +91,17 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
   // 新增：處理群組項目點擊解除
   const handleUngroupItem = (surgery) => {
     if (!isUngroupMode) return;
-    
+
     if (!surgery.isGroup) {
       alert('請選擇一個群組進行解除');
       return;
     }
-    
+
     // 調用父組件的群組操作函數
     if (onGroupOperation) {
       onGroupOperation(roomIndex, [surgery], 'ungroup');
     }
-    
+
     // 重置狀態
     setIsUngroupMode(false);
   };
@@ -120,7 +120,7 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
         {!readOnly && !isMainPage && (
           <div className="room-actions" style={{ display: 'flex', alignItems: 'center' }}>
             {/* 釘選按鈕 */}
-            <span 
+            <span
               className="room-pin-button"
               onClick={handlePinClick}
               title={isPinned ? "取消釘選" : "釘選此手術房"}
@@ -141,14 +141,14 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
             </span>
 
             {/* 群組按鈕 */}
-            <span 
+            <span
               className="room-group-button"
               onClick={handleGroupClick}
               title="群組操作"
-              style={{ 
-                marginRight: '8px', 
-                display: 'flex', 
-                alignItems: 'center', 
+              style={{
+                marginRight: '8px',
+                display: 'flex',
+                alignItems: 'center',
                 cursor: 'pointer',
                 color: isGroupMode || isUngroupMode ? '#3B82F6' : 'currentColor'
               }}
@@ -157,21 +157,21 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
               </svg>
             </span>
-            
+
             {/* 群組選項 - 當點擊群組按鈕後顯示 */}
             {groupOptions && (
-              <div className="room-group-options" style={{ 
-                display: 'flex', 
+              <div className="room-group-options" style={{
+                display: 'flex',
                 alignItems: 'center',
-                background: '#f3f4f6', 
+                background: '#f3f4f6',
                 padding: '2px 8px',
                 borderRadius: '4px'
               }}>
-                <button 
+                <button
                   onClick={enableGroupMode}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
+                  style={{
+                    background: 'none',
+                    border: 'none',
                     cursor: 'pointer',
                     padding: '4px 8px',
                     color: '#3B82F6'
@@ -179,11 +179,11 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 >
                   建立
                 </button>
-                <button 
+                <button
                   onClick={handleUngroup}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
+                  style={{
+                    background: 'none',
+                    border: 'none',
                     cursor: 'pointer',
                     padding: '4px 8px',
                     color: '#EF4444'
@@ -193,23 +193,23 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 </button>
               </div>
             )}
-            
+
             {/* 群組模式下選定後的操作按鈕 */}
             {isGroupMode && selectedSurgeries.length > 0 && (
-              <div className="room-group-actions" style={{ 
-                display: 'flex', 
+              <div className="room-group-actions" style={{
+                display: 'flex',
                 alignItems: 'center',
-                background: '#f3f4f6', 
+                background: '#f3f4f6',
                 padding: '2px 8px',
                 borderRadius: '4px',
                 marginLeft: '8px'
               }}>
                 <span>{`已選擇 ${selectedSurgeries.length} 個項目`}</span>
-                <button 
+                <button
                   onClick={handleCreateGroup}
-                  style={{ 
-                    background: '#3B82F6', 
-                    border: 'none', 
+                  style={{
+                    background: '#3B82F6',
+                    border: 'none',
                     cursor: 'pointer',
                     padding: '2px 8px',
                     borderRadius: '4px',
@@ -219,14 +219,14 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 >
                   群組
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setSelectedSurgeries([]);
                     setIsGroupMode(false);
                   }}
-                  style={{ 
-                    background: '#EF4444', 
-                    border: 'none', 
+                  style={{
+                    background: '#EF4444',
+                    border: 'none',
                     cursor: 'pointer',
                     padding: '2px 8px',
                     borderRadius: '4px',
@@ -238,23 +238,23 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 </button>
               </div>
             )}
-            
+
             {/* 解除模式提示 */}
             {isUngroupMode && (
-              <div className="room-ungroup-hint" style={{ 
-                display: 'flex', 
+              <div className="room-ungroup-hint" style={{
+                display: 'flex',
                 alignItems: 'center',
-                background: '#f3f4f6', 
+                background: '#f3f4f6',
                 padding: '2px 8px',
                 borderRadius: '4px',
                 marginLeft: '8px'
               }}>
                 <span style={{ color: '#EF4444' }}>點擊群組項目進行解除</span>
-                <button 
+                <button
                   onClick={() => setIsUngroupMode(false)}
-                  style={{ 
-                    background: '#EF4444', 
-                    border: 'none', 
+                  style={{
+                    background: '#EF4444',
+                    border: 'none',
                     cursor: 'pointer',
                     padding: '2px 8px',
                     borderRadius: '4px',
@@ -270,9 +270,9 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
         )}
       </h3>
       <div className="room-content">
-        <DroppableContainer 
-          room={room} 
-          roomIndex={roomIndex} 
+        <DroppableContainer
+          room={room}
+          roomIndex={roomIndex}
           isPinned={isPinned}
           roomName={room.room}
           readOnly={readOnly}

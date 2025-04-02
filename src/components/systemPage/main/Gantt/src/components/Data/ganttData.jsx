@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { addMinutesToTime ,getTimeSettings} from '../Time/timeUtils';
+import { addMinutesToTime, getTimeSettings } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 
@@ -8,7 +8,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
   setError(null);
   try {
     console.log('開始獲取手術房數據...', isMainPage ? '(主頁模式)' : '(排班管理模式)');
-    
+
     // 1. 先獲取所有手術房
     const operatingRoomsResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms`, {
       headers: {
@@ -21,7 +21,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
     }
 
     console.log('收到的手術房數據:', operatingRoomsResponse.data);
-    
+
     // 過濾掉status為0(關閉)的手術房
     const closedRooms = operatingRoomsResponse.data.filter(room => room.status === 0);
     if (closedRooms.length > 0) {
@@ -32,7 +32,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
     } else {
       console.log('沒有處於關閉狀態的手術房');
     }
-    
+
     // 從localStorage獲取用戶選中的關閉手術房 - 只在排班管理頁面使用，主頁不使用
     let reservedClosedRooms = [];
     if (!isMainPage) {
@@ -48,36 +48,36 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
     } else {
       console.log('主頁模式下不使用保留手術房');
     }
-    
+
     // 過濾出開啟的手術房
     const openRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
-    
+
     // 合併開啟的手術房和選定的關閉手術房（如果不是主頁模式）
     const filteredOperatingRooms = isMainPage ? openRooms : [...openRooms, ...reservedClosedRooms];
-    
+
     console.log('過濾後的手術房數據' + (isMainPage ? ' (僅開啟狀態)' : ' (包含保留的關閉手術房)') + ':', filteredOperatingRooms);
-    
+
     // 2. 準備存儲所有手術房及其手術的數據
     const allRoomsWithSurgeries = [];
-    
+
     // 3. 對每個手術房獲取相關手術
     for (const room of filteredOperatingRooms) {
       try {
         console.log(`獲取手術房 ${room.id} 的手術數據...`);
-        
+
         const surgeriesResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms/${room.id}/surgery`, {
           headers: {
             'Content-Type': 'application/json',
           }
         });
-        
+
         // 創建手術房對象，包含其手術
         const roomWithSurgeries = {
           roomId: room.id,
           room: room.name,
           data: []
         };
-        
+
         // 處理該手術房的手術
         if (surgeriesResponse.data && surgeriesResponse.data.length > 0) {
           // 根據 prioritySequence 對手術排序
@@ -93,9 +93,9 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
             // 如果都沒有優先順序，維持原來的順序
             return 0;
           });
-          
+
           console.log('排序後的手術數據:', sortedSurgeries);
-          
+
           sortedSurgeries.forEach(surgery => {
             // 手術項目，加入科別 specialty
             const surgeryItem = {
@@ -122,10 +122,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
               prioritySequence: surgery.prioritySequence || 999 // 保存優先順序
             };
             console.log('手術項目:', surgeryItem);
-            // 清潔時間項目
+            // 銜接時間項目
             const cleaningItem = {
               id: `cleaning-${surgery.applicationId}`,
-              doctor: '清潔時間',
+              doctor: '銜接時間',
               surgery: '整理中',
               duration: 45,
               isCleaningTime: true,
@@ -135,10 +135,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
             roomWithSurgeries.data.push(surgeryItem, cleaningItem);
           });
         }
-        
+
         // 即使沒有手術，也添加手術房（顯示空手術房）
         allRoomsWithSurgeries.push(roomWithSurgeries);
-        
+
       } catch (roomError) {
         console.error(`獲取手術房 ${room.id} 的手術數據時發生錯誤:`, roomError);
         // 繼續處理下一個手術房，不中斷整個流程
@@ -149,7 +149,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
         });
       }
     }
-    
+
     // 4. 計算每個手術房中手術的時間和顏色
     const formattedData = formatRoomData(allRoomsWithSurgeries);
     console.log('格式化後的數據:', formattedData);
@@ -168,31 +168,31 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
 // 格式化手術房數據，計算時間和顏色
 export const formatRoomData = (roomsWithSurgeries, useTempSettings = false) => {
   try {
-    // 從時間設定中獲取起始時間和清潔時間，指定是否使用臨時設定
+    // 從時間設定中獲取起始時間和銜接時間，指定是否使用臨時設定
     const timeSettings = getTimeSettings(useTempSettings);
     const startHour = Math.floor(timeSettings.surgeryStartTime / 60);
     const startMinute = timeSettings.surgeryStartTime % 60;
     const initialTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
-    
+
     // 計算時間和顏色
     roomsWithSurgeries.forEach(room => {
       if (room.data && room.data.length > 0) {
         let currentTime = initialTime;
-        
+
         room.data.forEach((item) => {
           item.startTime = currentTime;
           item.endTime = addMinutesToTime(currentTime, item.duration);
-          
-          item.color = item.isCleaningTime 
-            ? getCleaningColor() 
+
+          item.color = item.isCleaningTime
+            ? getCleaningColor()
             : getColorByEndTime(item.endTime, false, useTempSettings);
-          
-          // 使用設定中的清潔時間
+
+          // 使用設定中的銜接時間
           if (item.isCleaningTime) {
             item.duration = timeSettings.cleaningTime;
             item.endTime = addMinutesToTime(item.startTime, timeSettings.cleaningTime);
           }
-          
+
           currentTime = item.endTime;
         });
       }
