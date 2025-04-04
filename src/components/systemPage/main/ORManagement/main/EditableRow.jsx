@@ -83,6 +83,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     onChange={handleChange}
                 /> */}
                 <select
+                    className={`${operatingRoom.hasSurgeries ? "err-input" : ""}`}
                     name="roomType"
                     value={editedOperatingRoom.roomType}
                     onChange={handleChange}
@@ -91,7 +92,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     <option value="普通房">普通房</option>
                     <option value="鉛牆房">鉛牆房</option>
                 </select>
-                {operatingRoom.hasSurgeries && <span className="error">不可更改</span>}
+                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
             </td>
             <td>
                 <select name="status" value={editedOperatingRoom.status}
