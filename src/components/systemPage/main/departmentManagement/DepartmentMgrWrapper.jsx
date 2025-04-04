@@ -13,6 +13,8 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
     const [selectedDepartments, setSelectedDepartments] = useState([]);
     const [addDepartments, setAddDepartments] = useState([]);
     const [emptyError, setEmptyError] = useState({});
+    const [isOpen, setIsOpen] = useState(false);
+
     //const [idforChiefSurgeons, setIdforChiefSurgeons] = useState("");
 
     useEffect(() => {
@@ -232,8 +234,44 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
         }
     };
 
+    // return (
+    //     <div key={reloadKey} className="mgr-wrapper relative overflow-hidden">
+    //         <DepartmentHeaderWrapper
+    //             departments={departments}
+    //             setDepartments={setDepartments}
+    //             filterDepartment={filterDepartment}
+    //             setFilterDepartment={setFilterDepartment}
+    //             selectedDepartments={selectedDepartments}
+    //             setSelectedDepartments={setSelectedDepartments}
+    //             setEmptyError={setEmptyError}
+    //             handleDelete={handleDeleteAll}
+    //             addDepartments={addDepartments}
+    //             setAddDepartments={setAddDepartments}
+    //         />
+    //         <DepartmentListWrapper
+    //             departments={departments}
+    //             setDepartments={setDepartments}
+    //             filterDepartment={filterDepartment}
+    //             selectedDepartments={selectedDepartments}
+    //             setSelectedDepartments={setSelectedDepartments}
+    //             handleDelete={handleDelete}
+    //             addDepartments={addDepartments}
+    //             setAddDepartments={setAddDepartments}
+    //             handleAdd={handleAdd}
+    //             emptyError={emptyError}
+    //             setEmptyError={setEmptyError}
+    //             refreshKey={refreshKey}
+    //             setRefreshKey={setRefreshKey}
+    //         />
+    //         <DepartmentFilter
+    //             departments={departments}
+    //             filterDepartment={filterDepartment}
+    //             setFilterDepartment={setFilterDepartment}
+    //         />
+    //     </div>
+    // )
     return (
-        <div key={reloadKey} className="mgr-wrapper">
+        <div key={reloadKey} className="mgr-wrapper relative overflow-hidden">
             <DepartmentHeaderWrapper
                 departments={departments}
                 setDepartments={setDepartments}
@@ -246,28 +284,54 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
                 addDepartments={addDepartments}
                 setAddDepartments={setAddDepartments}
             />
-            <DepartmentListWrapper
-                departments={departments}
-                setDepartments={setDepartments}
-                filterDepartment={filterDepartment}
-                selectedDepartments={selectedDepartments}
-                setSelectedDepartments={setSelectedDepartments}
-                handleDelete={handleDelete}
-                addDepartments={addDepartments}
-                setAddDepartments={setAddDepartments}
-                handleAdd={handleAdd}
-                emptyError={emptyError}
-                setEmptyError={setEmptyError}
-                refreshKey={refreshKey}
-                setRefreshKey={setRefreshKey}
-            />
-            <DepartmentFilter
-                departments={departments}
-                filterDepartment={filterDepartment}
-                setFilterDepartment={setFilterDepartment}
-            />
+
+            <div className="flex w-full transition-all duration-500 ease-in-out">
+                {/* 篩選器滑入區塊 */}
+                {isOpen && (
+                    <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+                        <DepartmentFilter
+                            isOpen={isOpen}
+                            departments={departments}
+                            filterDepartment={filterDepartment}
+                            setFilterDepartment={setFilterDepartment}
+                            onClose={() => setIsOpen(false)}
+                        />
+                    </div>
+                )}
+
+                {/* 表格內容會自動收縮 */}
+                <div className={`flex-1 transition-all duration-500 ease-in-out relative`}>
+                    {!isOpen && (
+                        <button
+                            onClick={() => setIsOpen(true)}
+                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+                        >
+                            篩選
+                        </button>
+                    )}
+
+                    <div className="p-4">
+                        <DepartmentListWrapper
+                            departments={departments}
+                            setDepartments={setDepartments}
+                            filterDepartment={filterDepartment}
+                            selectedDepartments={selectedDepartments}
+                            setSelectedDepartments={setSelectedDepartments}
+                            handleDelete={handleDelete}
+                            addDepartments={addDepartments}
+                            setAddDepartments={setAddDepartments}
+                            handleAdd={handleAdd}
+                            emptyError={emptyError}
+                            setEmptyError={setEmptyError}
+                            refreshKey={refreshKey}
+                            setRefreshKey={setRefreshKey}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
-    )
+    );
+
 }
 
 export default DepartmentMgrWrapper;

@@ -1,9 +1,18 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Select from "react-select";
 
-function AccountFilter({ users, filterUser, setFilterUser }) {
-  const [isOpen, setIsOpen] = useState(false);
+function AccountFilter({ isOpen, users, filterUser, setFilterUser, onClose }) {
   const filterRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        // onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleChange = (e) => {
     setFilterUser((prevState) => ({
@@ -41,136 +50,65 @@ function AccountFilter({ users, filterUser, setFilterUser }) {
     { value: "1", label: "查看者" },
   ];
 
-  useEffect(() => {
-    console.log(filterUser);
-  }, [filterUser]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (filterRef.current && !filterRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
   return (
-    <>
-      <div
-        ref={filterRef}
-        className={`filter-panel-container ${
-          isOpen ? "filter-panel-open" : "filter-panel-closed"
-        }`}
-      >
-        <div className="filter-panel">
-          <div className="filter-header">
-            <h3 className="filter-title">篩選條件</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="filter-close-btn"
-            >
-              ✕
-            </button>
-          </div>
+    <div
+      ref={filterRef}
+      className={`h-full w-72 bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-r-2xl shadow-xl p-6 overflow-auto flex flex-col 
+        ${isOpen ? "animate-slide-in-from-left" : "animate-slide-out-to-left"}`}
+    >
+      <div className="flex justify-between items-center mb-4 border-b pb-2">
+        <h3 className="text-xl font-semibold text-blue-800">篩選條件</h3>
+        <button onClick={onClose} className="text-blue-500 hover:text-red-500 text-xl font-bold ">✕</button>
+      </div>
 
-          <div className="filter-content">
-            <input
-              type="text"
-              name="username"
-              className="filter-input"
-              placeholder="請輸入帳號..."
-              value={filterUser.username}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="filter-content">
-            <input
-              type="text"
-              name="name"
-              className="filter-input"
-              placeholder="請輸入姓名..."
-              value={filterUser.name}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="filter-content">
-            <Select
-              className="filter-select"
-              options={users.map((user) => ({
-                value: user.unit,
-                label: user.unit,
-              }))}
-              onChange={handleUnitChange}
-              placeholder="選擇單位..."
-              value={
-                users.find((user) => user.unit === filterUser.unit)
-                  ? { value: filterUser.unit, label: filterUser.unit }
-                  : null
+      <div className="flex flex-col gap-4">
+        <input
+          type="text"
+          name="username"
+          className="filter-input"
+          placeholder="請輸入帳號..."
+          value={filterUser.username}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="name"
+          className="filter-input"
+          placeholder="請輸入姓名..."
+          value={filterUser.name}
+          onChange={handleChange}
+        />
+        <Select
+          className="filter-select"
+          options={[...new Set(users.map(u => u.unit))].map(unit => ({ value: unit, label: unit }))}
+          onChange={handleUnitChange}
+          placeholder="選擇單位..."
+          value={filterUser.unit ? { value: filterUser.unit, label: filterUser.unit } : null}
+          isClearable
+        />
+        <Select
+          className="filter-select"
+          options={roleOptions}
+          onChange={handleRoleChange}
+          placeholder="選擇權限..."
+          value={
+            filterUser.role
+              ? {
+                value: filterUser.role,
+                label: roleOptions.find((option) => option.value === filterUser.role)?.label,
               }
-              isClearable={true}
-            />
-          </div>
-
-          <div className="filter-content">
-            <Select
-              className="filter-select"
-              options={roleOptions}
-              onChange={handleRoleChange}
-              placeholder="選擇權限..."
-              value={
-                filterUser.role
-                  ? {
-                      value: filterUser.role,
-                      label: roleOptions.find(
-                        (option) => option.value === filterUser.role
-                      )?.label,
-                    }
-                  : null
-              }
-              isClearable={true}
-            />
-          </div>
-
-          <div className="filter-content">
-            <button
-              onClick={clearFilters}
-              className="clear-filters-btn"
-              style={{
-                backgroundColor: "#3b82f6",
-                color: "white",
-                padding: "8px 16px",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                marginTop: "12px",
-                fontWeight: "500",
-                width: "100%",
-              }}
-            >
-              清除所有篩選條件
-            </button>
-          </div>
-        </div>
-
+              : null
+          }
+          isClearable
+        />
         <button
-          className="filter-toggle-btn" 
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={clearFilters}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 font-semibold"
         >
-          篩選
+          清除所有篩選條件
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
