@@ -19,15 +19,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.backend.project.Dao.OperatingRoomRepository;
 import com.backend.project.Dao.SurgeryRepository;
 import com.backend.project.Dto.TimeSettingsDTO;
+import com.backend.project.model.OperatingRoom;
 import com.backend.project.model.Surgery;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -47,8 +51,11 @@ public class AlgorithmService {
 
     private final SurgeryRepository surgeryRepository;
 
-    public AlgorithmService(SurgeryRepository surgeryRepository) {
+    private final OperatingRoomRepository operatingRoomRepository;
+
+    public AlgorithmService(SurgeryRepository surgeryRepository, OperatingRoomRepository operatingRoomRepository) {
         this.surgeryRepository = surgeryRepository;
+        this.operatingRoomRepository = operatingRoomRepository;
     }
 
     public void runBatchFile() {
@@ -120,6 +127,45 @@ public class AlgorithmService {
             e.printStackTrace();
         }
     }
+
+    public void exportOperatingRoomToCsv() {
+    List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
+    String filePath = ORSM_FILE_PATH + "/Room.csv";
+    
+    Set<String> roomNamesOfAll = new HashSet<>();
+    Set<String> roomNames4Orth = new HashSet<>();
+    
+    // 加入手術房
+    for (OperatingRoom room : operatingRooms) {
+        roomNamesOfAll.add(room.getName());
+        if ("鉛牆房".equals(room.getRoomType())) {
+            roomNames4Orth.add(room.getName());
+        }
+    }
+    
+    try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+         BufferedWriter writer = new BufferedWriter(osw);
+         CSVWriter csvWriter = new CSVWriter(writer,
+                 CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
+                 CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
+                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                 CSVWriter.DEFAULT_LINE_END)) {
+
+        // 寫入 UTF-8 BOM
+        osw.write("\uFEFF");
+
+        // 寫入 roomNamesOfAll
+        csvWriter.writeNext(new String[]{"# roomNamesOfAll"});
+        csvWriter.writeNext(new String[]{String.join(",", roomNamesOfAll)});
+        
+        // 寫入 roomNames4Orth
+        csvWriter.writeNext(new String[]{"# roomNames4Orth"});
+        csvWriter.writeNext(new String[]{String.join(",", roomNames4Orth)});
+        
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
 
     public void copyGuidelines() throws IOException {
         // 取得時間戳，例如：20250401_153045
