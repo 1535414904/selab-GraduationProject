@@ -43,11 +43,11 @@ function ORHeaderWrapper({
         <h1>手術房管理</h1>
       </div>
       <div className="header-function">
-        <ORFilter
+        {/* <ORFilter
           operatingRooms={operatingRooms}
           filterOperatingRoom={filterOperatingRoom}
           setFilterOperatingRoom={setFilterOperatingRoom}
-        />
+        /> */}
         <button className="account-button" onClick={addRow} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -512,8 +512,8 @@ table {
   min-height: 40px;
 }
 
-/* 滑入動畫 */
-@keyframes slideInRight {
+/* 醫師 */
+/* @keyframes slideInRight {
   from {
     transform: translateX(100%);
     opacity: 0;
@@ -526,10 +526,10 @@ table {
 
 .animate-slide-in-right {
   animation: slideInRight 0.2 s ease-out forwards;
-}
+} */
 
 /* 滑出動畫 */
-@keyframes slideOutRight {
+/* @keyframes slideOutRight {
   from {
     transform: translateX(200%);
     opacity: 1;
@@ -542,7 +542,98 @@ table {
 
 .animate-slide-out-right {
   animation: slideOutRight 0.3s ease-in forwards;
+} */
+
+
+
+
+/* 篩選器 */
+/* @keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
+
+.animate-slide-in-from-right {
+  animation: slideInFromRight 0.3s ease-out forwards;
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-out-to-right {
+  animation: slideOutToRight 0.3s ease-in forwards;
+} */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in-from-left {
+  animation: slideInFromLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+.animate-slide-out-to-left {
+  animation: slideOutToLeft 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in-from-right {
+  animation: slideInFromRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+.animate-slide-out-to-right {
+  animation: slideOutToRight 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+
+
 
 /* 🔵 通用 aa 系列 icon + 文字 水平按鈕 */
 .aa-button {

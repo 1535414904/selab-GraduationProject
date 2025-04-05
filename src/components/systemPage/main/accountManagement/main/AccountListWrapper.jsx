@@ -83,6 +83,15 @@ function AccountListWrapper({
 
     return (
         <div className="mgr-list">
+            {/* // <div
+        //     ref={filterRef}
+        //     className="h-full bg-white/90 backdrop-blur-md border-r-2 border-blue-500 rounded-r-2xl shadow-xl p-6 overflow-auto animate-slide-in-left"
+        // >
+        //     <div className="flex justify-between items-center mb-4 border-b pb-2">
+        //         <h3 className="text-xl font-semibold text-blue-800">篩選條件</h3>
+        //         <button onClick={onClose} className="text-blue-500 hover:text-red-500 text-xl font-bold">✕</button>
+        //     </div> */}
+
             <table className="system-table table-accounts">
                 <thead>
                     <tr>

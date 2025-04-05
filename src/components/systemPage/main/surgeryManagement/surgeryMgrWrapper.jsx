@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import SurgeryHeaderWrapper from "./header/SurgeryHeaderWrapper";
-import SurgerListWrapper from "./main/SurgerListWrapper";
+import SurgeryListWrapper from "./main/SurgeryListWrapper";
 import axios from "axios";
 import { BASE_URL } from "../../../../config";
+import SurgeryFilter from "./SurgeryFilter";
+
 
 function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
   const [operatingRooms, setOperatingRooms] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
   // 新增篩選狀態，請依需求預設所有欄位（此處包含：id, name, department, roomType）
   const [filterOperatingRoom, setFilterOperatingRoom] = useState({
     id: "",
     name: "",
     department: "",
-    roomType: ""
+    roomType: "",
+    status: ""
   });
   const [addOperatingRooms, setAddOperatingRooms] = useState([]);
 
@@ -36,9 +41,27 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
     // 範例：實作批次刪除
   };
 
+  // return (
+  //   <div key={reloadKey} className="mgr-wrapper">
+  //     <SurgeryHeaderWrapper
+  //       operatingRooms={operatingRooms}
+  //       filterOperatingRoom={filterOperatingRoom}
+  //       setFilterOperatingRoom={setFilterOperatingRoom}
+  //       addOperatingRooms={addOperatingRooms}
+  //       setAddOperatingRooms={setAddOperatingRooms}
+  //       handleDelete={handleDelete}
+  //     />
+  //     <SurgerListWrapper
+  //       operatingRooms={operatingRooms}
+  //       filterOperatingRoom={filterOperatingRoom}
+  //       setReloadKey={setReloadKey}
+  //       nowUsername={nowUsername}
+  //     />
+  //   </div>
+  // );
   return (
-    <div key={reloadKey} className="mgr-wrapper">
-      <SurgeryHeaderWrapper 
+    <div key={reloadKey} className="mgr-wrapper relative overflow-hidden">
+      <SurgeryHeaderWrapper
         operatingRooms={operatingRooms}
         filterOperatingRoom={filterOperatingRoom}
         setFilterOperatingRoom={setFilterOperatingRoom}
@@ -46,12 +69,42 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
         setAddOperatingRooms={setAddOperatingRooms}
         handleDelete={handleDelete}
       />
-      <SurgerListWrapper 
-        operatingRooms={operatingRooms}
-        filterOperatingRoom={filterOperatingRoom}
-        setReloadKey={setReloadKey}
-        nowUsername={nowUsername}
-      />
+
+      <div className="flex w-full transition-all duration-500 ease-in-out">
+        {/* 篩選器滑入區塊 */}
+        {isOpen && (
+          <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+            <SurgeryFilter
+              isOpen={isOpen}
+              operatingRooms={operatingRooms}
+              filterOperatingRoom={filterOperatingRoom}
+              setFilterOperatingRoom={setFilterOperatingRoom}
+              onClose={() => setIsOpen(false)}
+            />
+          </div>
+        )}
+
+        {/* 主內容區塊 */}
+        <div className="flex-1 transition-all duration-500 ease-in-out relative">
+          {!isOpen && (
+            <button
+              onClick={() => setIsOpen(true)}
+              className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+            >
+              篩選
+            </button>
+          )}
+
+          <div className="p-4">
+            <SurgeryListWrapper
+              operatingRooms={operatingRooms}
+              filterOperatingRoom={filterOperatingRoom}
+              setReloadKey={() => { }}
+              nowUsername={nowUsername}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

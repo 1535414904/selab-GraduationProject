@@ -4,13 +4,15 @@ import ORHeaderWrapper from "./header/ORHeaderWrapper";
 import ORListWrapper from "./main/ORListWrapper";
 import axios from "axios";
 import { BASE_URL } from "../../../../config";
+import ORFilter from "./ORFilter";
 
 function ORMgrWrapper({ reloadKey }) {
     const [operatingRooms, setOperatingRooms] = useState([]);
-    const [filterOperatingRoom, setFilterOperatingRoom] = useState({ id: "", name: "" });
+    const [filterOperatingRoom, setFilterOperatingRoom] = useState({ id: "", name: "", department: "", roomType: "", status: "" });
     const [selectedOperatingRooms, setSelectedOperatingRooms] = useState([]);
     const [addOperatingRooms, setAddOperatingRooms] = useState([]);
     const [emptyError, setEmptyError] = useState({});
+    const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -20,53 +22,35 @@ function ORMgrWrapper({ reloadKey }) {
             } catch (error) {
                 console.error("Error fetching data: ", error);
             }
-
         };
-
         fetchData();
     }, []);
 
     const handleAdd = async (operatingRoom) => {
         let errors = {};
-
         // 確保錯誤訊息的 key 是唯一的
         const idErrorKey = `${operatingRoom.uniqueId}-id`;
         const nameErrorKey = `${operatingRoom.uniqueId}-name`;
-
         // 檢查是否為空
         if (!operatingRoom.id.trim()) {
             errors[idErrorKey] = "*手術房編號欄位不得為空";
-        } else {
-            // 只有在不為空的情況下，才檢查是否重複
-            const isDuplicateId = operatingRooms.some(existingRoom => existingRoom.id === operatingRoom.id);
-            if (isDuplicateId) {
-                errors[idErrorKey] = `手術房編號 "${operatingRoom.id}" 已存在，請使用其他編號`;
-            } else {
-                delete errors[idErrorKey]; // 清除錯誤訊息
-            }
+        } else if (operatingRooms.some(room => room.id === operatingRoom.id)) {
+            errors[idErrorKey] = `手術房編號 "${operatingRoom.id}" 已存在，請使用其他編號`;
         }
 
         if (!operatingRoom.name.trim()) {
             errors[nameErrorKey] = "*手術房名稱欄位不得為空";
-        } else {
-            // 只有在不為空的情況下，才檢查是否重複
-            const isDuplicateName = operatingRooms.some(existingRoom => existingRoom.name === operatingRoom.name);
-            if (isDuplicateName) {
-                errors[nameErrorKey] = `手術房名稱 "${operatingRoom.name}" 已存在，請使用其他名稱`;
-            } else {
-                delete errors[nameErrorKey]; // 清除錯誤訊息
-            }
+        } else if (operatingRooms.some(room => room.name === operatingRoom.name)) {
+            errors[nameErrorKey] = `手術房名稱 "${operatingRoom.name}" 已存在，請使用其他名稱`;
         }
 
-        // 如果有錯誤，設定錯誤訊息並中止新增
         if (Object.keys(errors).length > 0) {
-            setEmptyError(prevErrors => ({ ...prevErrors, ...errors }));
+            setEmptyError(prev => ({ ...prev, ...errors }));
             return;
         }
 
-        // 若無錯誤，清除該列的錯誤訊息
-        setEmptyError(prevErrors => {
-            const newErrors = { ...prevErrors };
+        setEmptyError(prev => {
+            const newErrors = { ...prev };
             delete newErrors[idErrorKey];
             delete newErrors[nameErrorKey];
             return newErrors;
@@ -76,40 +60,38 @@ function ORMgrWrapper({ reloadKey }) {
             await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
             setOperatingRooms(response.data);
-            cleanAddRow(operatingRoom.uniqueId); // 刪除新增的手術房
+            cleanAddRow(operatingRoom.uniqueId);
         } catch (error) {
             console.error("Error add data: ", error);
         }
     };
 
     const cleanAddRow = (uniqueId) => {
-        const updated = addOperatingRooms.filter(operatingRoom => operatingRoom.uniqueId !== uniqueId);
-        setAddOperatingRooms(updated);
-        setEmptyError((prevErrors) => {
-            const newErrors = { ...prevErrors };
-            delete newErrors[uniqueId];  // 根據 uniqueId 刪除錯誤
+        setAddOperatingRooms(prev => prev.filter(room => room.uniqueId !== uniqueId));
+        setEmptyError(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[uniqueId];
             return newErrors;
         });
-    }
+    };
 
-    const handleDeleteAll = async (selectedOperatingRooms) => {
-        if (selectedOperatingRooms.length === 0) {
+    const handleDeleteAll = async (selected) => {
+        if (selected.length === 0) {
             alert("請選擇要刪除的手術房");
             return;
         }
 
-        const isConfirmed = window.confirm(`請確認是否刪除這 ${selectedOperatingRooms.length} 間手術房？`);
-        if (!isConfirmed) {
-            setSelectedOperatingRooms([]); // 取消勾選
+        const confirmed = window.confirm(`請確認是否刪除這 ${selected.length} 間手術房？`);
+        if (!confirmed) {
+            setSelectedOperatingRooms([]);
             return;
         }
 
         try {
             await axios.delete(`${BASE_URL}/api/system/operating-rooms/delete`, {
-                data: selectedOperatingRooms
+                data: selected
             });
 
-            // 重新獲取最新的手術房資料
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
             setOperatingRooms(response.data);
             setSelectedOperatingRooms([]);
@@ -118,14 +100,12 @@ function ORMgrWrapper({ reloadKey }) {
         }
     };
 
-    const handleDelete = async (operatingRoom) => {
-        const isConfirmed = window.confirm(`請確認是否刪除手術房 ${operatingRoom.name} ( ID: ${operatingRoom.id} )？`);
-        if (!isConfirmed) return;
+    const handleDelete = async (room) => {
+        const confirmed = window.confirm(`請確認是否刪除手術房 ${room.name} (ID: ${room.id})？`);
+        if (!confirmed) return;
 
         try {
-            await axios.delete(`${BASE_URL}/api/system/operating-room/delete/${operatingRoom.id}`);
-
-            // 重新獲取最新的手術房資料
+            await axios.delete(`${BASE_URL}/api/system/operating-room/delete/${room.id}`);
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
             setOperatingRooms(response.data);
             setSelectedOperatingRooms([]);
@@ -133,18 +113,44 @@ function ORMgrWrapper({ reloadKey }) {
             console.error("刪除失敗：", error);
         }
     };
+    // return (
+    //     <div key={reloadKey} className="mgr-wrapper">
+    //         <ORHeaderWrapper
+    //             operatingRooms={operatingRooms}
+    //             setOperatingRooms={setOperatingRooms}
+    //             filterOperatingRoom={filterOperatingRoom}
+    //             setFilterOperatingRoom={setFilterOperatingRoom}
+    //             selectedOperatingRooms={selectedOperatingRooms}
+    //             setSelectedOperatingRooms={setSelectedOperatingRooms}
+    //             setEmptyError={setEmptyError}
+    //             handleDelete={handleDeleteAll}
+    //             addOperatingRooms={addOperatingRooms}
+    //             setAddOperatingRooms={setAddOperatingRooms}
+    //         />
+    //         <ORListWrapper
+    //             operatingRooms={operatingRooms}
+    //             setOperatingRooms={setOperatingRooms}
+    //             filterOperatingRoom={filterOperatingRoom}
+    //             selectedOperatingRooms={selectedOperatingRooms}
+    //             setSelectedOperatingRooms={setSelectedOperatingRooms}
+    //             handleDelete={handleDelete}
+    //             addOperatingRooms={addOperatingRooms}
+    //             setAddOperatingRooms={setAddOperatingRooms}
+    //             handleAdd={handleAdd}
+    //             emptyError={emptyError}
+    //             setEmptyError={setEmptyError}
+    //         />
+    //     </div>
+    // )
 
-    /*useEffect(() => {
-        console.log("現選擇之欲刪除手術房：", selectedOperatingRooms);
-    }, [selectedOperatingRooms])*/
 
     return (
-        <div key={reloadKey} className="mgr-wrapper">
+        <div key={reloadKey} className="mgr-wrapper relative overflow-hidden">
             <ORHeaderWrapper
                 operatingRooms={operatingRooms}
-                setOperatingRooms={setOperatingRooms}
+                // setOperatingRooms={setOperatingRooms}
                 filterOperatingRoom={filterOperatingRoom}
-                setFilterOperatingRoom={setFilterOperatingRoom}
+                // setFilterOperatingRoom={setFilterOperatingRoom}
                 selectedOperatingRooms={selectedOperatingRooms}
                 setSelectedOperatingRooms={setSelectedOperatingRooms}
                 setEmptyError={setEmptyError}
@@ -152,22 +158,51 @@ function ORMgrWrapper({ reloadKey }) {
                 addOperatingRooms={addOperatingRooms}
                 setAddOperatingRooms={setAddOperatingRooms}
             />
-            <ORListWrapper
-                operatingRooms={operatingRooms}
-                setOperatingRooms={setOperatingRooms}
-                filterOperatingRoom={filterOperatingRoom}
-                selectedOperatingRooms={selectedOperatingRooms}
-                setSelectedOperatingRooms={setSelectedOperatingRooms}
-                handleDelete={handleDelete}
-                addOperatingRooms={addOperatingRooms}
-                setAddOperatingRooms={setAddOperatingRooms}
-                handleAdd={handleAdd}
-                emptyError={emptyError}
-                setEmptyError={setEmptyError}
-            />
 
+            <div className="flex w-full transition-all duration-500 ease-in-out">
+                {/* 篩選器滑入區塊 */}
+                {isOpen && (
+                    <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+                        <ORFilter
+                            isOpen={isOpen}
+                            operatingRooms={operatingRooms}
+                            filterOperatingRoom={filterOperatingRoom}
+                            setFilterOperatingRoom={setFilterOperatingRoom}
+                            onClose={() => setIsOpen(false)}
+                        />
+                    </div>
+                )}
+
+                {/* 表格內容區塊 */}
+                <div className="flex-1 transition-all duration-500 ease-in-out relative">
+                    {!isOpen && (
+                        <button
+                            onClick={() => setIsOpen(true)}
+                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+                        >
+                            篩選
+                        </button>
+                    )}
+
+                    <div className="p-4">
+                        <ORListWrapper
+                            operatingRooms={operatingRooms}
+                            setOperatingRooms={setOperatingRooms}
+                            filterOperatingRoom={filterOperatingRoom}
+                            selectedOperatingRooms={selectedOperatingRooms}
+                            setSelectedOperatingRooms={setSelectedOperatingRooms}
+                            handleDelete={handleDelete}
+                            addOperatingRooms={addOperatingRooms}
+                            setAddOperatingRooms={setAddOperatingRooms}
+                            handleAdd={handleAdd}
+                            emptyError={emptyError}
+                            setEmptyError={setEmptyError}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
-    )
+    );
 }
 
 export default ORMgrWrapper;

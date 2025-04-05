@@ -61,6 +61,7 @@ public class AlgorithmService {
     public void runBatchFile() {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
         exportSurgeriesToCsv();
+        exportOperatingRoomToCsv();
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
         try {
@@ -129,43 +130,48 @@ public class AlgorithmService {
     }
 
     public void exportOperatingRoomToCsv() {
-    List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
-    String filePath = ORSM_FILE_PATH + "/Room.csv";
-    
-    Set<String> roomNamesOfAll = new HashSet<>();
-    Set<String> roomNames4Orth = new HashSet<>();
-    
-    // 加入手術房
-    for (OperatingRoom room : operatingRooms) {
-        roomNamesOfAll.add(room.getName());
-        if ("鉛牆房".equals(room.getRoomType())) {
-            roomNames4Orth.add(room.getName());
+        List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
+        String filePath = ORSM_FILE_PATH + "/room.csv";
+
+        Set<String> roomNamesOfAll = new HashSet<>();
+        Set<String> roomNames4Orth = new HashSet<>();
+
+        System.out.println("=== 加入手術房列表 ===");
+
+        for (OperatingRoom room : operatingRooms) {
+            roomNamesOfAll.add(room.getName());
+            System.out.println("加入手術房: " + room.getName());
+
+            if ("鉛牆房".equals(room.getRoomType())) {
+                roomNames4Orth.add(room.getName());
+                System.out.println("→ 鉛牆房: " + room.getName());
+            }
+        }
+
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+                BufferedWriter writer = new BufferedWriter(osw);
+                CSVWriter csvWriter = new CSVWriter(writer,
+                        CSVWriter.DEFAULT_SEPARATOR,
+                        CSVWriter.DEFAULT_QUOTE_CHARACTER, // 保留雙引號用於房號列表
+                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                        CSVWriter.DEFAULT_LINE_END)) {
+
+            // 寫入註解行（手動寫，不經過 CSVWriter，避免雙引號）
+            writer.write("# roomNamesOfAll");
+            writer.newLine();
+            csvWriter.writeNext(new String[] { String.join(",", roomNamesOfAll) });
+
+            writer.write("# roomNames4Orth");
+            writer.newLine();
+            csvWriter.writeNext(new String[] { String.join(",", roomNames4Orth) });
+
+            System.out.println("CSV 檔案已成功匯出至: " + filePath);
+
+        } catch (IOException e) {
+            System.err.println("匯出 CSV 時發生錯誤: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-    
-    try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
-         BufferedWriter writer = new BufferedWriter(osw);
-         CSVWriter csvWriter = new CSVWriter(writer,
-                 CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
-                 CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
-                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                 CSVWriter.DEFAULT_LINE_END)) {
-
-        // 寫入 UTF-8 BOM
-        osw.write("\uFEFF");
-
-        // 寫入 roomNamesOfAll
-        csvWriter.writeNext(new String[]{"# roomNamesOfAll"});
-        csvWriter.writeNext(new String[]{String.join(",", roomNamesOfAll)});
-        
-        // 寫入 roomNames4Orth
-        csvWriter.writeNext(new String[]{"# roomNames4Orth"});
-        csvWriter.writeNext(new String[]{String.join(",", roomNames4Orth)});
-        
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
 
     public void copyGuidelines() throws IOException {
         // 取得時間戳，例如：20250401_153045
@@ -179,11 +185,10 @@ public class AlgorithmService {
 
         // 目標 CSV 檔案路徑（存放在相同資料夾內）
         Path outputPath = inputPath.getParent().resolve(outputFileName);
-        
 
         // 使用 OpenCSV 來讀取與寫入 CSV
         try (
-            Reader reader = Files.newBufferedReader(inputPath, Charset.forName("Big5"));
+                Reader reader = Files.newBufferedReader(inputPath, Charset.forName("Big5"));
                 CSVReader csvReader = new CSVReader(reader);
 
                 Writer writer = Files.newBufferedWriter(outputPath, Charset.forName("Big5"));
@@ -240,7 +245,8 @@ public class AlgorithmService {
     public TimeSettingsDTO getTimeSettingsFromCsv() {
         TimeSettingsDTO dto = new TimeSettingsDTO();
 
-        try (CSVReader csvReader = new CSVReader(new FileReader(ORSM_FILE_PATH + "/Arguments4Exec.csv", StandardCharsets.UTF_8))) {
+        try (CSVReader csvReader = new CSVReader(
+                new FileReader(ORSM_FILE_PATH + "/Arguments4Exec.csv", StandardCharsets.UTF_8))) {
             String[] nextLine;
             int lineNumber = 0;
 
