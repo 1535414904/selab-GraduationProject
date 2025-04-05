@@ -102,28 +102,47 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   // 處理群組操作
   const handleGroupOperation = (roomIndex, selectedSurgeries, operation) => {
     if (readOnly) return; // 唯讀模式下不允許群組操作
-
+    
     const updatedRows = [...filteredRows];
     const roomData = [...updatedRows[roomIndex].data];
     const roomName = updatedRows[roomIndex].room || updatedRows[roomIndex].name || '手術室';
-
+    
     if (operation === 'create') {
       // 使用新的創建群組函數
       const result = createGroup(selectedSurgeries, roomData, roomIndex, roomName);
-
+      
       if (!result.success) {
         alert(result.message || '創建群組失敗');
         return;
       }
-
+      
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
         data: result.newRoomData
       };
-
-      setFilteredRows(updatedRows);
-
+      
+      // 同時更新原始數據
+      const originalRoomIndex = rows.findIndex(r => 
+        r.roomId === updatedRows[roomIndex].roomId || 
+        r.room === updatedRows[roomIndex].room
+      );
+      
+      if (originalRoomIndex !== -1) {
+        const newRows = [...rows];
+        newRows[originalRoomIndex] = {
+          ...newRows[originalRoomIndex],
+          data: result.newRoomData
+        };
+        setRows(newRows);
+      }
+      
+      // 強制更新 UI
+      setFilteredRows([]);
+      setTimeout(() => {
+        setFilteredRows(updatedRows);
+      }, 10);
+      
     } else if (operation === 'ungroup') {
       // 使用新的解除群組函數
       const group = selectedSurgeries[0];
@@ -131,22 +150,44 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         alert('選擇的項目不是群組');
         return;
       }
-
+      
       const result = ungroup(group, roomData, roomName);
-
+      
       if (!result.success) {
         alert(result.message || '解除群組失敗');
         return;
       }
-
+      
       // 更新手術室資料
       updatedRows[roomIndex] = {
         ...updatedRows[roomIndex],
         data: result.newRoomData
       };
-
-      setFilteredRows(updatedRows);
+      
+      // 同時更新原始數據
+      const originalRoomIndex = rows.findIndex(r => 
+        r.roomId === updatedRows[roomIndex].roomId || 
+        r.room === updatedRows[roomIndex].room
+      );
+      
+      if (originalRoomIndex !== -1) {
+        const newRows = [...rows];
+        newRows[originalRoomIndex] = {
+          ...newRows[originalRoomIndex],
+          data: result.newRoomData
+        };
+        setRows(newRows);
+      }
+      
+      // 強制更新 UI
+      setFilteredRows([]);
+      setTimeout(() => {
+        setFilteredRows(updatedRows);
+      }, 10);
     }
+    
+    // 觸發 DOM 更新
+    window.dispatchEvent(new CustomEvent('ganttDataUpdated'));
   };
 
   // 處理手術點擊事件，顯示詳細資訊

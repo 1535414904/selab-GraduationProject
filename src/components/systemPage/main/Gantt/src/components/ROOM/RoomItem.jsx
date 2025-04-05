@@ -132,6 +132,9 @@ function RoomItem({
         return readOnly ? "bg-red-500 text-white" : "bg-red-500 hover:bg-red-400 text-white";
       case "blue":
         return readOnly ? "bg-blue-600 text-purple-200" : "bg-blue-600 hover:bg-blue-500 text-purple-200";
+      case "group":
+      case "#ffa500":  // 橘色 hex 值
+        return readOnly ? "bg-orange-400" : "bg-orange-400 hover:bg-orange-300";
       default:
         return readOnly ? "bg-gray-200" : "bg-gray-200 hover:bg-gray-100";
     }

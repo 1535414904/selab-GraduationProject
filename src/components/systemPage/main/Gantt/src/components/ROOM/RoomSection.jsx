@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "./RoomItem";
 import DroppableContainer from "../DragDrop/DroppableContainer";
-import { createGroup, ungroup } from "./Group";
+import { createGroup, ungroup } from "./GroupOperations";
 
 function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onSurgeryClick, onGroupOperation, isMainPage = false }) {
   const [isPinned, setIsPinned] = useState(room.isPinned || false);

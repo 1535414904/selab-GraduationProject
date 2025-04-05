@@ -159,7 +159,7 @@
 }
 
 .row-even {
-  background-color: #f9fafb;
+  background-color: #e1e1e1;
 }
 
 .row-odd {
@@ -622,6 +622,33 @@ body {
   transition: all 0.2s ease-in-out;
   border-radius: 4px;
   cursor: pointer;
+  background-color: #999999; /* 預設灰色 */
+}
+
+/* 顏色定義 */
+.surgery-item[style*="background-color: #19ec9f"],
+.surgery-item[data-color="green"] {
+  background-color: #19ec9f !important;
+}
+
+.surgery-item[style*="background-color: #ebeb0a"],
+.surgery-item[data-color="yellow"] {
+  background-color: #ebeb0a !important;
+}
+
+.surgery-item[style*="background-color: #e63030"],
+.surgery-item[data-color="red"] {
+  background-color: #e63030 !important;
+}
+
+.surgery-item[style*="background-color: #362de9"],
+.surgery-item[data-color="blue"] {
+  background-color: #362de9 !important;
+}
+
+.surgery-item[style*="background-color: #ffa500"],
+.surgery-item[data-color="group"] {
+  background-color: #ffa500 !important;
 }
 
 .surgery-item:hover {
