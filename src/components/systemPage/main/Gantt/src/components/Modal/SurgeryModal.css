@@ -212,8 +212,54 @@
   justify-content: space-around;
   background-color: #ffffff;
   border-left: 4px solid #9b9b9b;
-  font-size: 1.5em;
-  padding: 0.2em;
+  padding: 1em;
+}
+
+.action-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-button {
+  border: none;
+  border-radius: 8px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-icon {
+  font-size: 1.25rem;
+}
+
+.action-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.edit-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #2563eb;
+}
+
+.delete-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #dc2626;
 }
 
 /* 時間顯示的特殊樣式 */

@@ -82,20 +82,26 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
     return (
         <>
             <div className="info-group action-group">
-                <button
-                    className="action-button edit-button"
-                    onClick={handleSaveClick}>
-                    <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
-                </button>
-                <button
-                    className="action-button delete-button"
-                    onClick={() => {
-                        setError(null);
-                        setEditingSurgery(null);
-                    }}
-                >
-                    <FontAwesomeIcon icon={faTimes} className="action-icon" />
-                </button>
+                <div className="action-container">
+                    <button
+                        className="action-button edit-button"
+                        onClick={handleSaveClick}>
+                        <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                    </button>
+                    <span className="action-label">儲存</span>
+                </div>
+                <div className="action-container">
+                    <button
+                        className="action-button delete-button"
+                        onClick={() => {
+                            setError(null);
+                            setEditingSurgery(null);
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faTimes} className="action-icon" />
+                    </button>
+                    <span className="action-label">取消</span>
+                </div>
             </div>
 
             <div className="info-group blue flex flex-col items-start text-left">
