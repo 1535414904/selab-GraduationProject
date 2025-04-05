@@ -195,6 +195,16 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     if (surgery.isCleaningTime) return;
 
     setModalError(null);
+    
+    console.log('點擊的手術:', surgery);
+    console.log('釘選狀態:', surgery.isPinned);
+    
+    // 如果是群組手術，直接顯示
+    if (surgery.isGroup && surgery.surgeries) {
+      console.log('這是一個群組手術', surgery);
+      setSelectedSurgery(surgery);
+      return;
+    }
 
     try {
       // 從後端獲取最新的手術詳細資料
@@ -216,8 +226,14 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           surgery: response.data.surgeryName ? `${response.data.surgeryName} (${response.data.patientName || '未知病患'})` : surgery.surgery,
           color: surgery.color,
           // 使用從父組件傳入的手術室名稱
-          operatingRoomName: surgery.operatingRoomName
+          operatingRoomName: surgery.operatingRoomName,
+          // 保留群組資訊
+          isGroup: surgery.isGroup,
+          surgeries: surgery.surgeries,
+          // 保留釘選狀態
+          isPinned: surgery.isPinned
         };
+        console.log('設置手術詳情，包含釘選狀態:', mergedData.isPinned);
         setSelectedSurgery(mergedData);
       } else {
         setSelectedSurgery(surgery);
