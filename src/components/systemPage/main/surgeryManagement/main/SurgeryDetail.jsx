@@ -26,12 +26,18 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDel
                     {editingSurgery ? (<EditableDetail surgery={surgery} setEditingSurgery={setEditingSurgery} operatingRooms={operatingRooms} handleSave={handleSave} />) : (
                         <>
                             <div className="info-group action-group">
-                                <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
-                                    <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
-                                </button>
-                                <button onClick={() => handleDelete(surgery.surgeryName, surgery.applicationId)} className="action-button delete-button">
-                                    <FontAwesomeIcon icon={faTrash} className="action-icon" />
-                                </button>
+                                <div className="action-container">
+                                    <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
+                                        <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                                    </button>
+                                    <span className="action-label">修改</span>
+                                </div>
+                                <div className="action-container">
+                                    <button onClick={() => handleDelete(surgery.surgeryName, surgery.applicationId)} className="action-button delete-button">
+                                        <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                    </button>
+                                    <span className="action-label">刪除</span>
+                                </div>
                             </div>
 
                             <div className="info-group blue flex flex-col items-start text-left">

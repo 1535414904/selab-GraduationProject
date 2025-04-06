@@ -10,7 +10,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 
   // 修改篩選條件順序，將科別移到最前面
   const filterOptions = [
-    { value: "specialty", label: "科別" },
+    { value: "departmentName", label: "科別" },
     { value: "surgeryName", label: "手術名稱" },
     { value: "chiefSurgeonName", label: "主刀醫師" },
     { value: "operatingRoomName", label: "手術室" },
@@ -84,7 +84,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
 
   // 新增科別，同樣按照字母順序排
   const availableSpecialties = Array.from(
-    new Set(flattenedRows.map((s) => s.specialty).filter(Boolean))
+    new Set(flattenedRows.map((s) => s.departmentName).filter(Boolean))
   ).sort((a, b) => a.localeCompare(b));
 
   // 3) 每次 originalRows、filterValues 或 timeRange 改變時，執行篩選（但不移除，只標記）
@@ -280,8 +280,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       }
       // 新增科別的篩選
       if (
-        filterValues.specialty?.length > 0 &&
-        !filterValues.specialty.includes(s.specialty)
+        filterValues.departmentName?.length > 0 &&
+        !filterValues.departmentName.includes(s.departmentName)
       ) {
         meetsFilter = false;
       }
@@ -442,14 +442,14 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
                     </div>
                   </div>
                 )}
-                {filter.value === "specialty" && (
+                {filter.value === "departmentName" && (
                   <Select
                     isMulti
                     options={availableSpecialties.map((v) => ({
                       value: v,
                       label: v,
                     }))}
-                    onChange={(selected) => handleFilterChange("specialty", selected)}
+                    onChange={(selected) => handleFilterChange("departmentName", selected)}
                     placeholder="選擇科別..."
                   />
                 )}

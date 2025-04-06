@@ -30,11 +30,11 @@ function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOp
         <h1>手術管理</h1>
       </div>
       <div className="header-function">
-        <SurgeryFilter
+        {/* <SurgeryFilter
           operatingRooms={operatingRooms}
           filterOperatingRoom={filterOperatingRoom}
           setFilterOperatingRoom={setFilterOperatingRoom}
-        />
+        /> */}
 
         <button className="account-button" onClick={addRow} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <svg

@@ -247,6 +247,13 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
 
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = (surgery) => {
+    console.log('主頁點擊的手術:', surgery);
+    
+    // 確保保留群組資訊
+    if (surgery.isGroup) {
+      console.log('這是一個群組手術，保留群組資訊');
+    }
+    
     setSelectedSurgery(surgery);
     setModalError(null);
   };

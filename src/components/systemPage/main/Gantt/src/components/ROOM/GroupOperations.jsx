@@ -1,5 +1,5 @@
 import { getTimeSettings } from '../Time/timeUtils';
-import { getColorByEndTime } from './colorUtils';
+import { getColorByEndTime, COLORS } from './colorUtils';
 
 // 輔助函數：將時間轉換為分鐘數
 export const timeToMinutes = (timeString) => {
@@ -166,15 +166,22 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
   const firstItem = sortedItems[0];
   const lastItem = sortedItems[sortedItems.length - 1];
   
+  // 找出第一個和最後一個項目在 roomData 中的索引
+  const firstIndex = roomData.findIndex(item => item.id === firstItem.id);
+  const lastIndex = roomData.findIndex(item => item.id === lastItem.id);
+  
+  if (firstIndex === -1 || lastIndex === -1) {
+    return { success: false, message: '找不到選中項目在房間資料中的位置' };
+  }
+  
   // 檢查最後一個項目後是否有銜接時間，如果有則併入群組
   let lastEndTime = lastItem.endTime;
-  const lastItemIndex = roomData.findIndex(item => item.id === lastItem.id);
-  if (lastItemIndex < roomData.length - 1 && roomData[lastItemIndex + 1].isCleaningTime) {
-    lastEndTime = roomData[lastItemIndex + 1].endTime;
+  if (lastIndex < roomData.length - 1 && roomData[lastIndex + 1].isCleaningTime) {
+    lastEndTime = roomData[lastIndex + 1].endTime;
     
     // 確保該銜接時間也被加入到 rangeItems 中
-    if (!rangeItems.some(item => item.id === roomData[lastItemIndex + 1].id)) {
-      rangeItems.push(roomData[lastItemIndex + 1]);
+    if (!rangeItems.some(item => item.id === roomData[lastIndex + 1].id)) {
+      rangeItems.push(roomData[lastIndex + 1]);
     }
   }
   
@@ -183,7 +190,7 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
   });
   
-  // 獲取最後一個非銜接項目的顏色
+  // 獲取最後一個非銜接時間項目的顏色
   const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
     return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
   })[0];
@@ -196,7 +203,7 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     surgery: '群組手術',
     startTime: firstItem.startTime,
     endTime: lastEndTime,
-    color: groupColor,
+    color: "group",
     isGroup: true,
     surgeries: allGroupItems, // 包含範圍內的所有項目，包括銜接時間
     isCleaningTime: false,
@@ -219,47 +226,37 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     }
   };
   
-  // 找出第一個和最後一個項目的索引
-  const firstIndex = roomData.findIndex(item => item.id === allGroupItems[0].id);
-  const lastIndex = roomData.findIndex(item => item.id === allGroupItems[allGroupItems.length - 1].id);
+  // ===== 全新的創建群組邏輯 =====
+  // 我們不再移除和添加項目，而是創建一個全新的房間數據陣列
+  const newRoomData = [];
   
-  // 標記要移除的項目
-  const itemsToRemove = new Set();
-  for (let i = firstIndex; i <= lastIndex; i++) {
-    itemsToRemove.add(i);
-  }
-  
-  // 建立新的房間資料，移除被群組的項目
-  const newRoomData = roomData.filter((_, index) => !itemsToRemove.has(index));
-  
-  // 檢查群組前是否有手術，若有則確保銜接時間正確
-  if (firstIndex > 0 && !roomData[firstIndex - 1].isCleaningTime) {
-    // 前一個項目是手術，需要在群組前添加銜接時間
-    const prevSurgery = roomData[firstIndex - 1];
-    const cleaningStartTime = prevSurgery.endTime;
+  // 遍歷原始房間數據
+  for (let i = 0; i < roomData.length; i++) {
+    const item = roomData[i];
     
-    // 創建銜接時間項目並插入
-    const cleaningItem = createCleaningTimeItem(
-      cleaningStartTime,
-      firstItem.startTime,
-      roomName
-    );
+    // 檢查這個項目是否是被選中的項目或其相關的銜接時間
+    const isSelectedItem = selectedItems.some(selected => selected.id === item.id);
+    const isPreviousItemSelected = i > 0 && selectedItems.some(selected => selected.id === roomData[i-1].id);
+    const isCleaningAfterSelected = item.isCleaningTime && isPreviousItemSelected;
     
-    newRoomData.splice(firstIndex - 1, 0, cleaningItem);
-  } else if (firstIndex > 0) {
-    // 前一個項目是銜接時間，需要調整其結束時間
-    const prevCleaning = {...roomData[firstIndex - 1]};
-    prevCleaning.endTime = firstItem.startTime;
+    // 如果是第一個被選中的項目，插入群組
+    if (i === firstIndex) {
+      newRoomData.push(groupItem);
+    }
     
-    // 更新銜接時間
-    const prevIndex = newRoomData.findIndex(item => item.id === prevCleaning.id);
-    if (prevIndex !== -1) {
-      newRoomData[prevIndex] = prevCleaning;
+    // 如果不是被選中的項目或其相關的銜接時間，則保留原始項目
+    if (!isSelectedItem && !isCleaningAfterSelected) {
+      newRoomData.push(item);
     }
   }
   
-  // 在原位置插入群組
-  newRoomData.splice(firstIndex, 0, groupItem);
+  // 如果房間數據為空，或者第一個被選中的項目是第一個項目，直接在開頭插入群組
+  if (roomData.length === 0 || firstIndex === -1) {
+    newRoomData.unshift(groupItem);
+  }
+  
+  // 確保時間連續性
+  ensureTimeConsistency(newRoomData, 0, roomName);
   
   return {
     success: true,
