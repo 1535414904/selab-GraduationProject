@@ -1,4 +1,7 @@
-function AccountHeaderWrapper({ selectedUsers, handleDelete, addUsers, setAddUsers }) {
+import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+function AccountHeaderWrapper({ selectedUsers, handleDelete, addUsers, setAddUsers, handleAddAll }) {
 
     const addRow = () => {
         const newUser = {
@@ -66,6 +69,13 @@ function AccountHeaderWrapper({ selectedUsers, handleDelete, addUsers, setAddUse
                     </svg>
                     新增
                 </button>
+
+                {addUsers.length > 0 && (
+                    <button className="account-button" onClick={() => handleAddAll(addUsers)} style={{ display: "flex", alignItems: "center", gap: "8px" }} >
+                        <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                        一鍵保存
+                    </button>
+                )}
 
                 <button className="account-button mgr-cancel" onClick={() => handleDelete(selectedUsers)} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     {/* <svg

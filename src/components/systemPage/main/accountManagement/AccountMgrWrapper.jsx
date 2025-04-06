@@ -267,7 +267,6 @@ import AccountFilter from "./AccountFilter";
 
 function AccountMgrWrapper({ reloadKey }) {
     const [users, setUsers] = useState([]);
-    const [username, setUsername] = useState("");
     const [filterUser, setFilterUser] = useState({
         username: "", name: "", unit: "", role: null
     });
@@ -316,6 +315,51 @@ function AccountMgrWrapper({ reloadKey }) {
             const response = await axios.get(BASE_URL + "/api/system/users");
             setUsers(response.data);
             cleanAddRow(user.uniqueId);
+        } catch (error) {
+            console.log("Error add data: ", error);
+        }
+    };
+
+    const handleAddAll = async (newUsers) => {
+        const errors = {};
+        const existingUsernames = new Set(users.map(u => u.username.trim()));
+        const seenUsernames = new Set();
+    
+        // 每次先重設錯誤
+        const newEmptyError = {};
+    
+        newUsers.forEach(user => {
+            const trimmedUsername = user.username?.trim();
+    
+            if (!trimmedUsername) {
+                newEmptyError[user.uniqueId] = "*帳號欄位不得為空";
+                return;
+            }
+    
+            if (existingUsernames.has(trimmedUsername)) {
+                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 已存在，請使用其他帳號`;
+                return;
+            }
+    
+            if (seenUsernames.has(trimmedUsername)) {
+                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 重複，請修改後再新增`;
+                return;
+            }
+    
+            seenUsernames.add(trimmedUsername); // 無誤才加入
+        });
+    
+        setEmptyError(newEmptyError); // 這裡會更新所有錯誤訊息（同時也會清除已修正的）
+    
+        if (Object.keys(newEmptyError).length > 0) {
+            return; // 有錯誤就中止
+        }
+    
+        try {
+            await axios.post(`${BASE_URL}/api/system/users/add`, newUsers);
+            const response = await axios.get(`${BASE_URL}/api/system/users`);
+            setUsers(response.data);
+            setAddUsers([]); // 清空新增暫存區
         } catch (error) {
             console.log("Error add data: ", error);
         }
@@ -375,6 +419,7 @@ function AccountMgrWrapper({ reloadKey }) {
                 handleDelete={handleDeleteAll}
                 addUsers={addUsers}
                 setAddUsers={setAddUsers}
+                handleAddAll={handleAddAll}
             />
 
             <div className="flex w-full transition-all duration-500 ease-in-out">
@@ -406,7 +451,6 @@ function AccountMgrWrapper({ reloadKey }) {
                         <AccountListWrapper
                             users={users}
                             setUsers={setUsers}
-                            username={username}
                             filterUser={filterUser}
                             selectedUsers={selectedUsers}
                             setSelectedUsers={setSelectedUsers}
