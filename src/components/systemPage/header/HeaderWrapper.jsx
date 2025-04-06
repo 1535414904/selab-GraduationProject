@@ -61,7 +61,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
   const cross = getMedicalCross();
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-400 to-blue-400 shadow-lg z-1000 relative">
+    <div className="w-full bg-gradient-to-r from-blue-400 to-blue-400 shadow-md z-1000 relative">
       <div className="w-full max-w-screen-3xl mx-auto px-4">
         <div className="flex items-center mr-auto h-16">
           {/* Logo and Hospital Name */}
