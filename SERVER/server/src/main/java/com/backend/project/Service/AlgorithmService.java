@@ -140,13 +140,17 @@ public class AlgorithmService {
 
         for (OperatingRoom room : operatingRooms) {
             roomNamesOfAll.add(room.getName());
-            System.out.println("加入手術房: " + room.getName());
 
             if ("鉛牆房".equals(room.getRoomType())) {
                 roomNames4Orth.add(room.getName());
-                System.out.println("→ 鉛牆房: " + room.getName());
             }
         }
+
+        System.out.println("加入手術房roomNamesOfAll: " + roomNamesOfAll);
+        System.out.println("加入手術房roomNames4Orth: " + roomNames4Orth);
+
+        System.out.println("=== 手術房列表加入完成 ===");
+        System.out.println("=== 開始匯出 CSV 檔案 ===");
 
         try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
                 BufferedWriter writer = new BufferedWriter(osw);
