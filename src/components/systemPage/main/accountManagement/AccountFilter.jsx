@@ -79,7 +79,7 @@ function AccountFilter({ isOpen, users, filterUser, setFilterUser, onClose }) {
           onChange={handleChange}
         />
         <Select
-          className="filter-select"
+          className="flex flex-col gap-4"
           options={[...new Set(users.map(u => u.unit))].map(unit => ({ value: unit, label: unit }))}
           onChange={handleUnitChange}
           placeholder="選擇單位..."
@@ -87,7 +87,7 @@ function AccountFilter({ isOpen, users, filterUser, setFilterUser, onClose }) {
           isClearable
         />
         <Select
-          className="filter-select"
+          className="flex flex-col gap-4"
           options={roleOptions}
           onChange={handleRoleChange}
           placeholder="選擇權限..."

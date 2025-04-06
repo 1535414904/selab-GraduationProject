@@ -283,8 +283,8 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
         </select>
 
         {/* 狀態圖示 + 下拉選單 */}
-        <div className="filter-content flex items-center gap-2">
-          <svg
+        <div className="flex flex-col gap-4">
+          {/* <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill={
@@ -302,7 +302,7 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
               d="M9.013 19.9a.75.75 0 0 1 .877-.597 11.319 11.319 0 0 0 4.22 0 .75.75 0 1 1 .28 1.473 12.819 12.819 0 0 1-4.78 0 .75.75 0 0 1-.597-.876ZM9.754 22.344a.75.75 0 0 1 .824-.668 13.682 13.682 0 0 0 2.844 0 .75.75 0 1 1 .156 1.492 15.156 15.156 0 0 1-3.156 0 .75.75 0 0 1-.668-.824Z"
               clipRule="evenodd"
             />
-          </svg>
+          </svg> */}
 
           <select
             name="status"

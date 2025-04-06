@@ -134,7 +134,7 @@ function DepartmentFilter({ isOpen, onClose, departments, filterDepartment, setF
         />
 
         <Select
-          className="filter-select"
+          className="flex flex-col gap-4"
           options={departments.map((department) => ({
             value: department.name,
             label: department.name
