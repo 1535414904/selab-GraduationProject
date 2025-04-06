@@ -530,6 +530,7 @@ body {
   margin-top: 10px;
   height: calc(100vh - 30px);
   white-space: nowrap;
+  height: auto;
 }
 
 .gantt-container {
