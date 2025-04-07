@@ -78,13 +78,14 @@ public class AlgorithmService {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        addPinnedOperatingRoomToCsv();
 
-        try {
-            addPinnedOperatingRoomToCsv();
-            copyGuidelines();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // try {
+        // // addPinnedOperatingRoomToCsv();
+        // copyGuidelines();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
     }
 
     public void exportSurgeriesToCsv() {

@@ -133,20 +133,20 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
 
     // 監聽滾動事件，確保水平滾動同步
     const handleContentScroll = (e) => {
-      if (e.target.classList.contains('gantt-chart-scroll-area') || 
-          e.target.classList.contains('scrollable-container')) {
+      if (e.target.classList.contains('gantt-chart-scroll-area') ||
+        e.target.classList.contains('scrollable-container')) {
         const scrollLeft = e.target.scrollLeft;
-        
+
         // 通知時間刻度和內容區域
-        window.dispatchEvent(new CustomEvent('ganttMainScroll', { 
-          detail: { scrollLeft } 
+        window.dispatchEvent(new CustomEvent('ganttMainScroll', {
+          detail: { scrollLeft }
         }));
       }
     };
 
     window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
     window.addEventListener('ganttContentScroll', handleGanttContentScroll);
-    
+
     // 使用捕獲階段監聽所有相關容器的滾動事件
     document.addEventListener('scroll', handleContentScroll, true);
 
@@ -454,39 +454,44 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
       {/* {!loading && !error && filteredRows.length > 0 && (
         <div className="gantt-content">
           {/* 時間刻度固定在頂部 */}
-          <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
-            <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}>
-              {/* 時間刻度部分 */}
-            </TimeWrapper>
-          </div>
-          
-          {/* 甘特圖內容可滾動區域 */}
-          <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
-            <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
-              <div ref={ganttChartRef} className="gantt-chart-container">
-                <div className="gantt-chart">
-                  {filteredRows.map((room, roomIndex) => (
-                    <div
-                      key={room.room || roomIndex}
-                      className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
-                    >
-                      <RoomSection
-                        room={room}
-                        roomIndex={roomIndex}
-                        readOnly={readOnly}
-                        onSurgeryClick={handleSurgeryClick}
-                        isMainPage={true}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TimeWrapper>
-          </div>
-        </div>
-      )} */}
+      <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+        <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}>
+          {/* 時間刻度部分 */}
+        </TimeWrapper>
+      </div>
 
-      {/* 當篩選後無符合的資料
+      {/* 甘特圖內容可滾動區域 */}
+      <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
+        <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
+          <div ref={ganttChartRef} className="gantt-chart-container">
+            <div className="gantt-chart">
+              {filteredRows.map((room, roomIndex) => (
+                <div
+                  key={room.room || roomIndex}
+                  className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
+                >
+                  <RoomSection
+                    room={room}
+                    roomIndex={roomIndex}
+                    readOnly={readOnly}
+                    onSurgeryClick={handleSurgeryClick}
+                    isMainPage={true}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </TimeWrapper>
+      </div>
+
+
+
+
+    </div>
+  )
+}
+
+{/* 當篩選後無符合的資料
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">
           <p className="no-data-title">尚無符合條件的排程資料</p>
@@ -500,60 +505,6 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
 
 
 
-      <div className="flex w-full transition-all duration-500 ease-in-out">
-        <GanttFilter
-          originalRows={rows}
-          onFilteredDataChange={handleFilterChange}
-        />
 
-        {!loading && !error && filteredRows.length > 0 && (
-          <div className="gantt-content transition-all duration-500 ease-in-out" style={{ width: "2000000px" }}>
-            <div ref={scrollContainerRef} className="scroll-container">
-              <div ref={timeScaleRef} className="gantt-timescale-container">
-                <TimeWrapper containerWidth={containerWidth}>
-                  <div ref={ganttChartRef} className="gantt-chart-container">
-                    <div className="gantt-chart">
-                      {filteredRows.map((room, roomIndex) => (
-                        <div
-                          key={room.room || roomIndex}
-                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
-                        >
-                          <RoomSection
-                            room={room}
-                            roomIndex={roomIndex}
-                            readOnly={readOnly}
-                            onSurgeryClick={handleSurgeryClick}
-                            isMainPage={true}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </TimeWrapper>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-
-
-
-
-
-
-
-
-      {/* 手術詳細資訊模態視窗 */}
-      {selectedSurgery && (
-        <SurgeryModal
-          surgery={selectedSurgery}
-          onClose={handleCloseModal}
-          error={modalError}
-        />
-      )}
-    </div>
-  );
-}
 
 export default MainGantt;
