@@ -17,6 +17,7 @@ const ORSMButton = () => {
                 console.warn("返回 HTML：", result);
             } else {
                 alert(result);
+                setIsLoading(false)  // 重置加載狀態
             }
         } catch (error) {
             console.error("執行錯誤：", error);
