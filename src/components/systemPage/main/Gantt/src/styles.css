@@ -119,19 +119,45 @@
 .gantt-content {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  overflow: hidden;
+  overflow: visible;
   margin-top: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 滾動容器 */
 .scroll-container {
-  overflow: auto;
+  overflow: hidden;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 固定在頂部的時間刻度容器 */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 甘特圖內容滾動區域 */
+.gantt-chart-scroll-area {
+  overflow: auto;
+  position: relative;
+  max-height: calc(100vh - 250px);
 }
 
 .gantt-timescale-container {
   min-width: 100%;
+  position: relative;
+  z-index: 10;
 }
 
 .gantt-chart-container {
@@ -419,14 +445,31 @@ body {
   overflow: hidden;
 }
 
+/* 僅時間刻度的容器 */
+.time-wrapper-container.time-scale-only {
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 998;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 僅內容的容器 */
+.time-wrapper-container.content-only {
+  overflow: visible;
+}
+
 /* 時間刻度頭部 */
 .time-scale-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 999;
   background-color: white;
   padding: 16px 0 8px;
   border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* 時間刻度尺 */

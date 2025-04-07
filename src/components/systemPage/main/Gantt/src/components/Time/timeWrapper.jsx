@@ -3,7 +3,7 @@ import { getTimeSettings } from './timeUtils';
 import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 
-const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
+const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeScaleOnly = false, contentOnly = false }) => {
   // 新增時間設定狀態
   const [timeSettings, setTimeSettings] = useState({
     surgeryStartTime: 510, // 預設值 510 分鐘 = 8:30 AM (從00:00開始計算)
@@ -102,15 +102,24 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   const syncScroll = useCallback((event) => {
     const scrollLeft = event.target.scrollLeft;
 
-    // 直接操作兩個容器的滾動位置
-    if (timeScaleRef.current?.parentElement) {
-      timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
-    }
+    // 確保同步左右滾動
+    if (!timeScaleOnly && !contentOnly) {
+      // 標準模式 - 同步兩個容器
+      if (timeScaleRef.current?.parentElement) {
+        timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
+      }
 
-    if (contentRef.current) {
-      contentRef.current.scrollLeft = scrollLeft;
+      if (contentRef.current) {
+        contentRef.current.scrollLeft = scrollLeft;
+      }
+    } else if (timeScaleOnly) {
+      // 分離模式 - 通知父容器
+      window.dispatchEvent(new CustomEvent('ganttTimeScaleScroll', { detail: { scrollLeft } }));
+    } else if (contentOnly) {
+      // 分離模式 - 通知父容器
+      window.dispatchEvent(new CustomEvent('ganttContentScroll', { detail: { scrollLeft } }));
     }
-  }, []);
+  }, [timeScaleOnly, contentOnly]);
 
   const handleScroll = (event) => {
     syncScroll(event);
@@ -168,6 +177,52 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
     }
   }, [handleScroll, handleWheel]);
 
+  // 監聽滾動事件，同步時間刻度和內容部分
+  useEffect(() => {
+    const handleTimeScaleScroll = (e) => {
+      if (contentOnly && contentRef.current) {
+        contentRef.current.scrollLeft = e.detail.scrollLeft;
+      }
+    };
+
+    const handleContentScroll = (e) => {
+      if (timeScaleOnly && timeScaleRef.current?.parentElement) {
+        timeScaleRef.current.parentElement.scrollLeft = e.detail.scrollLeft;
+      }
+    };
+
+    const handleMainScroll = (e) => {
+      const { scrollLeft } = e.detail;
+      
+      // 同步兩個組件的滾動
+      if (timeScaleOnly && timeScaleRef.current?.parentElement) {
+        timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
+      }
+      
+      if (contentOnly && contentRef.current) {
+        contentRef.current.scrollLeft = scrollLeft;
+      }
+    };
+
+    // 特別處理垂直滾動時保持時間刻度可見
+    const handleVerticalScroll = () => {
+      // 此處不需要特別處理，因為使用了CSS的position:sticky來固定時間刻度
+      // 只需確保在任何情況下水平滾動都能同步
+    };
+
+    window.addEventListener('ganttTimeScaleScroll', handleTimeScaleScroll);
+    window.addEventListener('ganttContentScroll', handleContentScroll);
+    window.addEventListener('ganttMainScroll', handleMainScroll);
+    document.addEventListener('scroll', handleVerticalScroll, true);
+
+    return () => {
+      window.removeEventListener('ganttTimeScaleScroll', handleTimeScaleScroll);
+      window.removeEventListener('ganttContentScroll', handleContentScroll);
+      window.removeEventListener('ganttMainScroll', handleMainScroll);
+      document.removeEventListener('scroll', handleVerticalScroll, true);
+    };
+  }, [timeScaleOnly, contentOnly]);
+
   // 時間格式化函數
   const formatTime = useCallback((hour, minute) => {
     if (hour === 24 && minute === 0) {
@@ -202,6 +257,61 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   // 計算時間軸的總寬度
   const totalWidth = totalIntervals * pixelsPer15Minutes;
 
+  // 僅渲染時間刻度
+  if (timeScaleOnly) {
+    return (
+      <div className="time-wrapper-container time-scale-only" ref={wrapperRef} key={renderKey}>
+        <div className="time-scale-header">
+          <div className="scrollable-container">
+            <div
+              className="time-scale-ruler"
+              ref={timeScaleRef}
+              style={{ width: `${totalWidth}px` }}
+            >
+              {timeIntervals.map((interval, index) => (
+                <div
+                  key={index}
+                  className={`time-mark ${interval.type}-mark ${interval.is24Hour ? "time-mark-24hour" : ""}`}
+                  style={{ left: `${interval.position}px` }}
+                >
+                  {(interval.type === "hour" || interval.isStartTime || interval.is24Hour) && (
+                    <div
+                      className={`time-mark-label ${interval.isStartTime
+                          ? "time-mark-start"
+                          : interval.is24Hour
+                            ? "time-mark-24hour-label"
+                            : ""
+                        }`}
+                      style={{ left: interval.isStartTime ? "0" : "50%" }}
+                    >
+                      {interval.time}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 僅渲染內容
+  if (contentOnly) {
+    return (
+      <div className="time-wrapper-container content-only" ref={wrapperRef} key={renderKey}>
+        <div className="time-wrapper-content">
+          <div className="scrollable-container" ref={contentRef}>
+            <div style={{ width: `${totalWidth}px`, minHeight: "100%" }}>
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 標準模式（兩者都渲染）
   return (
     <div className="time-wrapper-container" ref={wrapperRef} key={renderKey}>
       <div className="time-scale-header">
