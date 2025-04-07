@@ -15,8 +15,18 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
   // 為了解決拖曳後甘特圖顯示偏差問題，新增一個key來強制重新渲染
   const [renderKey, setRenderKey] = useState(0);
 
-  // 從時間設定中獲取設定
+  // 從時間設定中獲取設定，並支援使用臨時設定
   const updateTimeSettings = useCallback(async () => {
+    if (useTempSettings) {
+      // 使用getTimeSettings獲取可能的臨時設定
+      const tempSettings = getTimeSettings(true);
+      if (tempSettings) {
+        console.log('使用臨時時間設定:', tempSettings);
+        setTimeSettings(tempSettings);
+        return;
+      }
+    }
+    
     // 從後端獲取時間設定
     const settings = await fetchTimeSettings();
     
@@ -31,7 +41,7 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
         cleaningTime: 45,
       });
     }
-  }, []);
+  }, [useTempSettings]);
 
   // 初始化時載入設定
   useEffect(() => {
@@ -61,7 +71,10 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true }) => {
 
     // 新增：額外監聽拖曳和銜接時間變更的自定義事件
     const handleDragOrCleaningChange = () => {
+      console.log('收到拖曳或銜接時間變更事件，重新獲取時間設定');
       updateTimeSettings();
+      // 強制重新渲染以確保UI正確顯示
+      setRenderKey(prev => prev + 1);
     };
 
     window.addEventListener('ganttDragEnd', handleDragOrCleaningChange);
