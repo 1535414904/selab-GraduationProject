@@ -60,7 +60,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
     };
 
     const handleDelete = async (name, id) => {
-        const isConfirmed = window.confirm(`請確認是否刪除手術房 ${name} ( ID: ${id} )？`);
+        const isConfirmed = window.confirm(`請確認是否刪除手術 ${name} ( ID: ${id} )？`);
         if (!isConfirmed) return;
 
         try {
@@ -90,7 +90,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
                 </div>
             ))}
             {selectedSurgery && (
-                <SurgeryDetail 
+                <SurgeryDetail
                     onClose={() => setSelectedSurgery(null)}
                     surgery={selectedSurgery}
                     operatingRooms={operatingRooms}
