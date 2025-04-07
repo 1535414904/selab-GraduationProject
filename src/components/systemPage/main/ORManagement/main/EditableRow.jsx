@@ -95,11 +95,16 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                 {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
             </td>
             <td>
-                <select name="status" value={editedOperatingRoom.status}
-                    onChange={handleChange}>
+                <select
+                    className={`${operatingRoom.hasSurgeries ? "err-input" : ""}`}
+                    name="status" value={editedOperatingRoom.status}
+                    onChange={handleChange}
+                    disabled={operatingRoom.hasSurgeries}
+                >
                     <option value={0}>關閉</option>
                     <option value={1}>開啟</option>
                 </select>
+                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
             </td>
             {/* <td>
                 <FontAwesomeIcon className="edit-button" icon={faFloppyDisk}

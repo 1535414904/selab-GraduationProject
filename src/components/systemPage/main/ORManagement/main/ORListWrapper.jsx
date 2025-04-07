@@ -80,6 +80,9 @@ function ORListWrapper({
     };
 
     const handleSave = async (updatedOperatingRoom) => {
+        const isConfirmed = window.confirm(`確定要儲存對手術房編號 ${updatedOperatingRoom.id} 的變更嗎？`);
+        if (!isConfirmed) return; // 如果使用者按下取消，則不進行儲存
+
         try {
             await axios.put(
                 `${BASE_URL}/api/system/operating-room/${updatedOperatingRoom.id}`,

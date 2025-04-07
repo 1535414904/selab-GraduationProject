@@ -1,6 +1,7 @@
 package com.backend.project.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.project.Dto.TimeSettingsDTO;
@@ -57,5 +59,13 @@ public class AlgorithmController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+
+    @PostMapping("/system/algorithm/pin")
+    public ResponseEntity<String> pinRoom(@RequestBody Map<String, Object> payload) {
+        String roomId = (String) payload.get("roomId");
+        boolean pinned = (Boolean) payload.get("pinned");
+        algorithmService.setPinned(roomId, pinned);
+        return ResponseEntity.ok("已更新釘選狀態"); 
     }
 }

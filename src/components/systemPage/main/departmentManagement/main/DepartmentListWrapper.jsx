@@ -58,8 +58,8 @@ function DepartmentListWrapper({
     setEditingDepartment(department);
   };
 
-  const handleSave = async (id, updatedDepartment) => {
-    const isConfirmed = window.confirm(`是否保存本次對科別編號${id}的修改？`);
+  const handleSave = async (updatedDepartment) => {
+    const isConfirmed = window.confirm(`確定要儲存對科別編號 ${updatedDepartment.id} 的變更？`);
     if (!isConfirmed) return;
 
     try {

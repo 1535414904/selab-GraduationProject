@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import RoomItem from "./RoomItem";
 import DroppableContainer from "../DragDrop/DroppableContainer";
 import { createGroup, ungroup } from "./GroupOperations";
+import axios from "axios";
+import { BASE_URL } from "../../../../../../../config";
 
 function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onSurgeryClick, onGroupOperation, isMainPage = false }) {
   const [isPinned, setIsPinned] = useState(room.isPinned || false);
@@ -12,10 +14,20 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
   const [selectedSurgeries, setSelectedSurgeries] = useState([]);
 
   // 處理釘選按鈕點擊
-  const handlePinClick = (e) => {
+  const handlePinClick = async (e) => {
     e.stopPropagation();
     const newPinnedStatus = !isPinned;
-    setIsPinned(newPinnedStatus);
+    try {
+      await axios.post(`${BASE_URL}/api/system/algorithm/pin`, {
+        roomId: room.roomId,
+        pinned: newPinnedStatus,
+      });
+      setIsPinned(newPinnedStatus);
+    } catch (error) {
+      console.error("Error updating pin status:", error);
+      alert("更新釘選狀態失敗，請稍後再試。");
+    }
+    // setIsPinned(newPinnedStatus);
 
     // 通知父組件釘選狀態已更改
     if (onPinStatusChange) {

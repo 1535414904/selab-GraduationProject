@@ -64,6 +64,9 @@ function AccountListWrapper({
     };
 
     const handleSave = async (updatedUser) => {
+        const isConfirmed = window.confirm(`確定要儲存 ${updatedUser.username} 的變更嗎？`);
+        if (!isConfirmed) return; // 如果使用者按下取消，則不進行儲存
+        
         try {
             await axios.put(`${BASE_URL}/api/system/user/${updatedUser.username}`, updatedUser);
             setUsers(users.map(user => (user.username === updatedUser.username ? updatedUser : user)));

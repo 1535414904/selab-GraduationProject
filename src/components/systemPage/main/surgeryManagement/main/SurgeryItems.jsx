@@ -41,6 +41,9 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
     }, []);
 
     const handleSave = async (updateSurgery) => {
+        const isConfirmed = window.confirm(`確定要儲存對申請編號 ${updateSurgery.applicationId} 的變更嗎？`);
+        if (!isConfirmed) return;
+        
         try {
             await axios.put(
                 `${BASE_URL}/api/system/surgery/${updateSurgery.applicationId}`,

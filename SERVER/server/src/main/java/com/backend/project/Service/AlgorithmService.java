@@ -17,12 +17,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,6 +56,8 @@ public class AlgorithmService {
 
     private final OperatingRoomRepository operatingRoomRepository;
 
+    private final Map<String, Boolean> pinnedRooms = new ConcurrentHashMap<>(); // 儲存釘選的手術房
+
     public AlgorithmService(SurgeryRepository surgeryRepository, OperatingRoomRepository operatingRoomRepository) {
         this.surgeryRepository = surgeryRepository;
         this.operatingRoomRepository = operatingRoomRepository;
@@ -75,6 +80,7 @@ public class AlgorithmService {
         }
 
         try {
+            addPinnedOperatingRoomToCsv();
             copyGuidelines();
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,6 +111,12 @@ public class AlgorithmService {
                 String departmentName = surgery.getOperatingRoom().getDepartment().getName().replace("\n", " ");
                 String chiefSurgeonName = surgery.getChiefSurgeon().getName().replace("\n", " ");
                 String operatingRoomName = surgery.getOperatingRoom().getName();
+                String operatingRoomId = surgery.getOperatingRoom().getId();
+
+                // 如果這間手術房有被釘選，跳過
+                if (Boolean.TRUE.equals(pinnedRooms.get(operatingRoomId))) {
+                    continue;
+                }
 
                 // 檢查是否為該手術房的第一筆手術
                 String dateSuffix = firstSurgeryMap.getOrDefault(operatingRoomName, false) ? "TF" : "0830";
@@ -139,6 +151,10 @@ public class AlgorithmService {
         System.out.println("=== 加入手術房列表 ===");
 
         for (OperatingRoom room : operatingRooms) {
+            if (room.getStatus() == 0 || Boolean.TRUE.equals(pinnedRooms.get(room.getId()))) {
+                continue; // 跳過狀態為 0 的手術房
+            }
+
             roomNamesOfAll.add(room.getName());
 
             if ("鉛牆房".equals(room.getRoomType())) {
@@ -174,6 +190,145 @@ public class AlgorithmService {
         } catch (IOException e) {
             System.err.println("匯出 CSV 時發生錯誤: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public void addPinnedOperatingRoomToCsv() {
+        String filePath = ORSM_GUIDELINES_FILE_PATH + "/Guidelines.csv";
+        String argumentsFilePath = ORSM_FILE_PATH + "/Arguments4Exec.csv";
+
+        // 读取Arguments4Exec.csv文件内容
+        int startSchedulingTime = 0;
+        int connectionTime = 0;
+
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(argumentsFilePath), StandardCharsets.UTF_8);
+
+            // 用來追蹤行號
+            int lineNumber = 0;
+
+            for (String line : lines) {
+                lineNumber++;
+
+                if (line.startsWith("#")) {
+                    continue; // 跳過註解行
+                }
+
+                // 移除空白字符並解析數值
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue; // 跳過空行
+                }
+
+                // 讀取第二行和第八行的值
+                if (lineNumber == 2) {
+                    startSchedulingTime = Integer.parseInt(line);
+                } else if (lineNumber == 8) {
+                    connectionTime = Integer.parseInt(line);
+                }
+            }
+
+            System.out.println("每日開始排程時間: " + startSchedulingTime);
+            System.out.println("兩檯手術之間的銜接期間: " + connectionTime);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<Surgery> surgeries = surgeryRepository.findAll();
+
+        // 使用OutputStreamWriter寫入CSV（指定Big5編碼並設為追加模式）
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath, true), "Big5");
+                BufferedWriter writer = new BufferedWriter(osw);
+                CSVWriter csvWriter = new CSVWriter(writer,
+                        CSVWriter.DEFAULT_SEPARATOR,
+                        CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
+                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                        CSVWriter.DEFAULT_LINE_END)) {
+
+            // 用來存儲已經處理過的手術房ID，避免重複寫入
+            Set<String> processedRooms = new HashSet<>();
+
+            // 使用DateTimeFormatter來格式化時間為HH:mm
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            for (Surgery surgery : surgeries) {
+                String operatingRoomId = surgery.getOperatingRoom().getId();
+
+                // 如果該手術房是釘選的，且尚未處理過
+                if (Boolean.TRUE.equals(pinnedRooms.get(operatingRoomId))
+                        && !processedRooms.contains(operatingRoomId)) {
+                    System.out.println("寫入手術房 " + operatingRoomId + " 的資料...");
+
+                    // 寫入手術房名稱
+                    String operatingRoomName = surgery.getOperatingRoom().getName();
+                    csvWriter.writeNext(new String[] { operatingRoomName });
+                    System.out.println("寫入手術房名稱: " + operatingRoomName);
+
+                    // 标记该手术房已经处理
+                    processedRooms.add(operatingRoomId);
+
+                    // 每个手术房处理的手术数据
+                    List<Surgery> roomSurgeries = surgeries.stream()
+                            .filter(s -> s.getOperatingRoom().getId().equals(operatingRoomId))
+                            .collect(Collectors.toList());
+
+                    // 記錄上一台手術的結束時間
+                    int previousEndTime = startSchedulingTime;
+
+                    for (int i = 0; i < roomSurgeries.size(); i++) {
+                        Surgery currentSurgery = roomSurgeries.get(i);
+                        String EST = currentSurgery.getEstimatedSurgeryTime().toString();
+                        String chiefSurgeonName = currentSurgery.getChiefSurgeon().getName().replace("\n", " ");
+                        String operatingRoomNameFromSurgery = currentSurgery.getOperatingRoom().getName();
+
+                        // 計算手術的開始和結束時間
+                        int surgeryStartTime = previousEndTime; // 當前手術的開始時間是前一台手術的結束時間
+                        int surgeryEndTime = surgeryStartTime + Integer.parseInt(EST); // 計算結束時間
+
+                        // 銜接的現在時間=前一台手術的結束時間，結束時間=現在時間+connectionTime
+                        previousEndTime = surgeryEndTime + connectionTime;
+
+                        // 將開始和結束時間轉換為HH:mm格式
+                        String startTimeFormatted = LocalTime.ofSecondOfDay(surgeryStartTime * 60)
+                                .format(timeFormatter);
+                        String endTimeFormatted = LocalTime.ofSecondOfDay(surgeryEndTime * 60).format(timeFormatter);
+
+                        // 手術數據
+                        String[] surgeryData = {
+                                "第1天", // 日期（此處可以根據需要動態修改）
+                                chiefSurgeonName, // 醫師姓名
+                                currentSurgery.getApplicationId() + "(" + EST + ")", // 手術名稱（加上時間）
+                                startTimeFormatted, // 開始時間（HH:mm格式）
+                                endTimeFormatted, // 結束時間（HH:mm格式）
+                                "1" // 狀態
+                        };
+
+                        // 寫入手術數據
+                        csvWriter.writeNext(surgeryData);
+                        System.out.println("寫入手術資料: " + String.join(", ", surgeryData));
+
+                        // 整理時間數據（假設整理時間是固定的）
+                        String[] cleaningData = {
+                                "第1天", // 日期（此處可以根據需要動態修改）
+                                "null", // 醫師姓名（整理時間沒有醫師）
+                                "整理時間", // 手術名稱
+                                endTimeFormatted, // 預計手術時間（假設固定）
+                                LocalTime.ofSecondOfDay((surgeryEndTime + 80) * 60).format(timeFormatter), // 整理時間結束
+                                "4" // 狀態（假設整理時間的狀態為4）
+                        };
+
+                        // 寫入整理時間數據
+                        csvWriter.writeNext(cleaningData);
+                        System.out.println("寫入整理時間資料: " + String.join(", ", cleaningData));
+                    }
+                }
+            }
+
+            System.out.println("已將釘選的手術房資料寫入CSV: " + filePath);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("寫入CSV過程中發生錯誤");
         }
     }
 
@@ -280,5 +435,10 @@ public class AlgorithmService {
         }
 
         return dto;
+    }
+
+    public void setPinned(String roomId, boolean isPinned) {
+        pinnedRooms.put(roomId, isPinned);
+        System.out.println("目前釘選的手術房列表: " + pinnedRooms);
     }
 }
