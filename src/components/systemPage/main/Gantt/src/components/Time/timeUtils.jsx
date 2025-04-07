@@ -20,6 +20,7 @@ let tempTimeSettings = null;
 // 設置臨時時間設定（用於預覽）
 export const setTempTimeSettings = (settings) => {
   tempTimeSettings = settings;
+  console.log('設置臨時時間設定:', tempTimeSettings);
 
   // 觸發自定義事件，當銜接時間改變時通知TimeWrapper組件重新渲染
   window.dispatchEvent(new CustomEvent('cleaningTimeChange'));
@@ -27,6 +28,7 @@ export const setTempTimeSettings = (settings) => {
 
 // 清除臨時時間設定
 export const clearTempTimeSettings = () => {
+  console.log('清除臨時時間設定');
   tempTimeSettings = null;
 };
 
@@ -41,16 +43,22 @@ export const getTimeSettings = (useTempSettings = false) => {
 
   // 如果是排班管理頁面且有臨時設定，則使用臨時設定
   if (useTempSettings && tempTimeSettings) {
+    console.log('從getTimeSettings取得臨時設定:', tempTimeSettings);
     return tempTimeSettings;
   }
 
   try {
-    const savedSettings = localStorage.getItem("ganttTimeSettings");
-    return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
+    // 嘗試從localStorage獲取
+    const savedSettings = localStorage.getItem('ganttTimeSettings');
+    if (savedSettings) {
+      return JSON.parse(savedSettings);
+    }
   } catch (error) {
-    console.error("獲取時間設定時發生錯誤：", error);
-    return defaultSettings;
+    console.error('從localStorage獲取時間設定失敗:', error);
   }
+
+  // 返回預設設定
+  return defaultSettings;
 };
 
 // 更新後續所有手術和整理時間

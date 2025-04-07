@@ -254,7 +254,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const onDragEndHandler = async (result) => {
     if (!result.destination) return;
 
-    console.log("排班管理甘特圖拖曳結束，更新界面");
+    console.log("排班管理甘特圖拖曳結束，更新界面", result);
+
+    // 檢查是否有ID相關問題
+    if (!result.draggableId) {
+      console.error("拖曳操作缺少draggableId，無法處理");
+      return;
+    }
 
     // 首先嘗試處理群組拖曳
     const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
@@ -264,8 +270,16 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       await handleDragEnd(result, filteredRows, setFilteredRows);
     }
 
+    // 觸發原始狀態更新
+    setRows([...filteredRows]);
+
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+    
+    // 延遲後再次更新以確保UI一致性
+    setTimeout(() => {
+      setFilteredRows([...filteredRows]);
+    }, 100);
   };
 
   // 處理頁籤切換

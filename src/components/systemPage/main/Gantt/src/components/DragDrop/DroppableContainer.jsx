@@ -20,8 +20,8 @@ function DroppableContainer({
 
   // 確保每個項目都有唯一的 ID
   const ensureUniqueId = (item, index) => {
-    // 如果項目已經有 ID，則使用它，否則使用索引作為 ID
-    return item.id || `generated-id-${roomIndex}-${index}`;
+    // 優先使用applicationId作為唯一標識，其次是現有id，最後才使用生成的id
+    return item.applicationId || item.id || `generated-id-${roomIndex}-${index}-${Date.now()}`;
   };
 
   // 檢查手術是否被選中
