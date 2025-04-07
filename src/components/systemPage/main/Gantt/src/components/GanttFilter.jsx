@@ -97,7 +97,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
-        setIsOpen(false);
+        // setIsOpen(false);
       }
     };
     if (isOpen) {
@@ -342,233 +342,362 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     setFilterValues({});
     setTimeRange({ min: "", max: "" });
   };
-
   return (
-    <>
-      <div
-        ref={filterRef}
-        className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"
-          }`}
-      >
-        <div className="filter-panel">
-          <div className="filter-header">
-            <h3 className="filter-title">篩選條件</h3>
-            <button onClick={() => setIsOpen(false)} className="filter-close-btn">
-              ✕
-            </button>
-          </div>
-          <div className="filter-content">
-            <Select
-              options={filterOptions}
-              onChange={handleAddFilter}
-              placeholder="新增篩選條件..."
-            />
-            {selectedFilters.map((filter) => (
-              <div key={filter.value} className="filter-item">
-                <div className="filter-item-header">
-                  <span className="filter-item-title">{filter.label}</span>
-                  <button
-                    onClick={() => handleRemoveFilter(filter.value)}
-                    className="filter-remove-btn"
-                  >
-                    ✕
-                  </button>
-                </div>
-                {/* 使用範圍選擇器替代多選下拉選單 */}
-                {filter.value === "estimatedSurgeryTime" && (
-                  <div className="range-selector" style={{ marginTop: "10px" }}>
-                    <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                      <label style={{ marginRight: "10px", width: "60px" }}>最小值(分):</label>
+    <div className="flex w-full transition-all duration-500 ease-in-out">
+      {/* 篩選器區塊 */}
+      {isOpen && (
+        <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+          <div
+            ref={filterRef}
+            className="h-full w-72 bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-r-2xl shadow-xl p-6 overflow-auto flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+              <h3 className="text-xl font-semibold text-blue-800">篩選條件</h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-blue-500 hover:text-red-500 text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <Select
+                options={filterOptions}
+                onChange={handleAddFilter}
+                placeholder="新增篩選條件..."
+              />
+
+              {selectedFilters.map((filter) => (
+                <div key={filter.value} className="filter-item">
+                  <div className="filter-item-header flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">{filter.label}</span>
+                    <button
+                      onClick={() => handleRemoveFilter(filter.value)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {filter.value === "estimatedSurgeryTime" && (
+                    <div className="range-selector mt-2">
+                      <label className="text-sm">最小值(分):</label>
                       <input
                         type="number"
                         value={timeRange.min}
                         onChange={(e) => handleTimeRangeChange("min", e.target.value)}
-                        style={{
-                          flex: 1,
-                          padding: "8px",
-                          border: "1px solid #ccc",
-                          borderRadius: "4px"
-                        }}
+                        className="w-full border rounded px-2 py-1"
                         min={minEstimatedTime}
                         max={maxEstimatedTime}
-                      />
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <label style={{ marginRight: "10px", width: "60px" }}>最大值(分):</label>
-                      <input
-                        type="number"
-                        value={timeRange.max}
-                        onChange={(e) => handleTimeRangeChange("max", e.target.value)}
-                        style={{
-                          flex: 1,
-                          padding: "8px",
-                          border: "1px solid #ccc",
-                          borderRadius: "4px"
-                        }}
-                        min={minEstimatedTime}
-                        max={maxEstimatedTime}
-                      />
-                    </div>
-                    <div style={{ marginTop: "8px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span>最小：{minEstimatedTime}(分)</span>
-                        <span>目前：{timeRange.min}(分)</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={minEstimatedTime}
-                        max={maxEstimatedTime}
-                        value={timeRange.min}
-                        onChange={(e) => handleTimeRangeChange("min", e.target.value)}
-                        style={{ width: "100%" }}
                       />
 
-                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
-                        <span>最大：{maxEstimatedTime}(分)</span>
-                        <span>目前：{timeRange.max}(分)</span>
-                      </div>
+                      <label className="text-sm mt-2">最大值(分):</label>
                       <input
-                        type="range"
-                        min={minEstimatedTime}
-                        max={maxEstimatedTime}
+                        type="number"
                         value={timeRange.max}
                         onChange={(e) => handleTimeRangeChange("max", e.target.value)}
-                        style={{ width: "100%" }}
+                        className="w-full border rounded px-2 py-1"
+                        min={minEstimatedTime}
+                        max={maxEstimatedTime}
                       />
+
+                      <div className="mt-2">
+                        <input
+                          type="range"
+                          min={minEstimatedTime}
+                          max={maxEstimatedTime}
+                          value={timeRange.min}
+                          onChange={(e) => handleTimeRangeChange("min", e.target.value)}
+                          className="w-full"
+                        />
+                        <input
+                          type="range"
+                          min={minEstimatedTime}
+                          max={maxEstimatedTime}
+                          value={timeRange.max}
+                          onChange={(e) => handleTimeRangeChange("max", e.target.value)}
+                          className="w-full mt-1"
+                        />
+                      </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
-                      {/* <span>{minEstimatedTime}</span>
-                      <span>{maxEstimatedTime}</span> */}
-                    </div>
-                  </div>
-                )}
-                {filter.value === "departmentName" && (
-                  <Select
-                    isMulti
-                    options={availableSpecialties.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) => handleFilterChange("departmentName", selected)}
-                    placeholder="選擇科別..."
-                  />
-                )}
-                {filter.value === "surgeryName" && (
-                  <Select
-                    isMulti
-                    options={availableSurgeryNames.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) => handleFilterChange("surgeryName", selected)}
-                    placeholder="選擇手術名稱..."
-                  />
-                )}
-                {filter.value === "chiefSurgeonName" && (
-                  <Select
-                    isMulti
-                    options={availableChiefSurgeonNames.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("chiefSurgeonName", selected)
-                    }
-                    placeholder="選擇主刀醫師..."
-                  />
-                )}
-                {filter.value === "operatingRoomName" && (
-                  <Select
-                    isMulti
-                    options={availableOperatingRoomNames.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("operatingRoomName", selected)
-                    }
-                    placeholder="選擇手術室..."
-                  />
-                )}
-                {filter.value === "anesthesiaMethod" && (
-                  <Select
-                    isMulti
-                    options={availableAnesthesiaMethods.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("anesthesiaMethod", selected)
-                    }
-                    placeholder="選擇麻醉方式..."
-                  />
-                )}
-                {filter.value === "surgeryReason" && (
-                  <Select
-                    isMulti
-                    options={availableSurgeryReasons.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("surgeryReason", selected)
-                    }
-                    placeholder="選擇手術原因..."
-                  />
-                )}
-                {filter.value === "specialOrRequirements" && (
-                  <Select
-                    isMulti
-                    options={availableSpecialOrRequirements.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) =>
-                      handleFilterChange("specialOrRequirements", selected)
-                    }
-                    placeholder="選擇特殊需求..."
-                  />
-                )}
-                {filter.value === "userName" && (
-                  <Select
-                    isMulti
-                    options={availableUserNames.map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                    onChange={(selected) => handleFilterChange("userName", selected)}
-                    placeholder="選擇申請人..."
-                  />
-                )}
-              </div>
-            ))}
-            {selectedFilters.length > 0 && (
-              <button
-                onClick={handleClearAllFilters}
-                className="clear-filters-btn"
-                style={{
-                  backgroundColor: "#3b82f6",
-                  color: "white",
-                  padding: "8px 16px",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  marginTop: "12px",
-                  fontWeight: "500",
-                  width: "100%",
-                }}
-              >
-                清除所有篩選條件
-              </button>
-            )}
+                  )}
+
+                  {filter.value !== "estimatedSurgeryTime" && (
+                    <Select
+                      isMulti
+                      options={(filter.value === "departmentName" ? availableSpecialties
+                        : filter.value === "surgeryName" ? availableSurgeryNames
+                          : filter.value === "chiefSurgeonName" ? availableChiefSurgeonNames
+                            : filter.value === "operatingRoomName" ? availableOperatingRoomNames
+                              : filter.value === "anesthesiaMethod" ? availableAnesthesiaMethods
+                                : filter.value === "surgeryReason" ? availableSurgeryReasons
+                                  : filter.value === "specialOrRequirements" ? availableSpecialOrRequirements
+                                    : filter.value === "userName" ? availableUserNames
+                                      : []
+                      ).map((v) => ({ value: v, label: v }))}
+                      onChange={(selected) => handleFilterChange(filter.value, selected)}
+                      placeholder={`選擇${filter.label}...`}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {selectedFilters.length > 0 && (
+                <button
+                  onClick={handleClearAllFilters}
+                  className="bg-blue-500 text-white px-4 py-2 rounded mt-2 font-semibold"
+                >
+                  清除所有篩選條件
+                </button>
+              )}
+            </div>
           </div>
         </div>
-        <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-          篩選
-        </button>
+      )}
+
+      {/* 篩選按鈕與內容區塊 */}
+      {/* 在這裡 render 甘特圖內容（由父層包住） */}
+      <div className="flex-1 transition-all duration-500 ease-in-out relative">
+        {!isOpen && (
+          <button
+            onClick={() => setIsOpen(true)}
+            className="fixed top-[160px] left-4 z-200 bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700"
+          >
+            篩選
+          </button>
+        )}
+
       </div>
-    </>
+    </div>
   );
+
+  // return (
+  //   <>
+  //     <div
+  //       ref={filterRef}
+  //       className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"
+  //         }`}
+  //     >
+  //       <div className="filter-panel">
+  //         <div className="filter-header">
+  //           <h3 className="filter-title">篩選條件</h3>
+  //           <button onClick={() => setIsOpen(false)} className="filter-close-btn">
+  //             ✕
+  //           </button>
+  //         </div>
+  //         <div className="filter-content">
+  //           <Select
+  //             options={filterOptions}
+  //             onChange={handleAddFilter}
+  //             placeholder="新增篩選條件..."
+  //           />
+  //           {selectedFilters.map((filter) => (
+  //             <div key={filter.value} className="filter-item">
+  //               <div className="filter-item-header">
+  //                 <span className="filter-item-title">{filter.label}</span>
+  //                 <button
+  //                   onClick={() => handleRemoveFilter(filter.value)}
+  //                   className="filter-remove-btn"
+  //                 >
+  //                   ✕
+  //                 </button>
+  //               </div>
+  //               {/* 使用範圍選擇器替代多選下拉選單 */}
+  //               {filter.value === "estimatedSurgeryTime" && (
+  //                 <div className="range-selector" style={{ marginTop: "10px" }}>
+  //                   <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+  //                     <label style={{ marginRight: "10px", width: "60px" }}>最小值(分):</label>
+  //                     <input
+  //                       type="number"
+  //                       value={timeRange.min}
+  //                       onChange={(e) => handleTimeRangeChange("min", e.target.value)}
+  //                       style={{
+  //                         flex: 1,
+  //                         padding: "8px",
+  //                         border: "1px solid #ccc",
+  //                         borderRadius: "4px"
+  //                       }}
+  //                       min={minEstimatedTime}
+  //                       max={maxEstimatedTime}
+  //                     />
+  //                   </div>
+  //                   <div style={{ display: "flex", alignItems: "center" }}>
+  //                     <label style={{ marginRight: "10px", width: "60px" }}>最大值(分):</label>
+  //                     <input
+  //                       type="number"
+  //                       value={timeRange.max}
+  //                       onChange={(e) => handleTimeRangeChange("max", e.target.value)}
+  //                       style={{
+  //                         flex: 1,
+  //                         padding: "8px",
+  //                         border: "1px solid #ccc",
+  //                         borderRadius: "4px"
+  //                       }}
+  //                       min={minEstimatedTime}
+  //                       max={maxEstimatedTime}
+  //                     />
+  //                   </div>
+  //                   <div style={{ marginTop: "8px" }}>
+  //                     <div style={{ display: "flex", justifyContent: "space-between" }}>
+  //                       <span>最小：{minEstimatedTime}(分)</span>
+  //                       <span>目前：{timeRange.min}(分)</span>
+  //                     </div>
+  //                     <input
+  //                       type="range"
+  //                       min={minEstimatedTime}
+  //                       max={maxEstimatedTime}
+  //                       value={timeRange.min}
+  //                       onChange={(e) => handleTimeRangeChange("min", e.target.value)}
+  //                       style={{ width: "100%" }}
+  //                     />
+
+  //                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
+  //                       <span>最大：{maxEstimatedTime}(分)</span>
+  //                       <span>目前：{timeRange.max}(分)</span>
+  //                     </div>
+  //                     <input
+  //                       type="range"
+  //                       min={minEstimatedTime}
+  //                       max={maxEstimatedTime}
+  //                       value={timeRange.max}
+  //                       onChange={(e) => handleTimeRangeChange("max", e.target.value)}
+  //                       style={{ width: "100%" }}
+  //                     />
+  //                   </div>
+  //                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
+  //                     {/* <span>{minEstimatedTime}</span>
+  //                     <span>{maxEstimatedTime}</span> */}
+  //                   </div>
+  //                 </div>
+  //               )}
+  //               {filter.value === "departmentName" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableSpecialties.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) => handleFilterChange("departmentName", selected)}
+  //                   placeholder="選擇科別..."
+  //                 />
+  //               )}
+  //               {filter.value === "surgeryName" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableSurgeryNames.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) => handleFilterChange("surgeryName", selected)}
+  //                   placeholder="選擇手術名稱..."
+  //                 />
+  //               )}
+  //               {filter.value === "chiefSurgeonName" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableChiefSurgeonNames.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) =>
+  //                     handleFilterChange("chiefSurgeonName", selected)
+  //                   }
+  //                   placeholder="選擇主刀醫師..."
+  //                 />
+  //               )}
+  //               {filter.value === "operatingRoomName" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableOperatingRoomNames.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) =>
+  //                     handleFilterChange("operatingRoomName", selected)
+  //                   }
+  //                   placeholder="選擇手術室..."
+  //                 />
+  //               )}
+  //               {filter.value === "anesthesiaMethod" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableAnesthesiaMethods.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) =>
+  //                     handleFilterChange("anesthesiaMethod", selected)
+  //                   }
+  //                   placeholder="選擇麻醉方式..."
+  //                 />
+  //               )}
+  //               {filter.value === "surgeryReason" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableSurgeryReasons.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) =>
+  //                     handleFilterChange("surgeryReason", selected)
+  //                   }
+  //                   placeholder="選擇手術原因..."
+  //                 />
+  //               )}
+  //               {filter.value === "specialOrRequirements" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableSpecialOrRequirements.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) =>
+  //                     handleFilterChange("specialOrRequirements", selected)
+  //                   }
+  //                   placeholder="選擇特殊需求..."
+  //                 />
+  //               )}
+  //               {filter.value === "userName" && (
+  //                 <Select
+  //                   isMulti
+  //                   options={availableUserNames.map((v) => ({
+  //                     value: v,
+  //                     label: v,
+  //                   }))}
+  //                   onChange={(selected) => handleFilterChange("userName", selected)}
+  //                   placeholder="選擇申請人..."
+  //                 />
+  //               )}
+  //             </div>
+  //           ))}
+  //           {selectedFilters.length > 0 && (
+  //             <button
+  //               onClick={handleClearAllFilters}
+  //               className="clear-filters-btn"
+  //               style={{
+  //                 backgroundColor: "#3b82f6",
+  //                 color: "white",
+  //                 padding: "8px 16px",
+  //                 border: "none",
+  //                 borderRadius: "4px",
+  //                 cursor: "pointer",
+  //                 marginTop: "12px",
+  //                 fontWeight: "500",
+  //                 width: "100%",
+  //               }}
+  //             >
+  //               清除所有篩選條件
+  //             </button>
+  //           )}
+  //         </div>
+  //       </div>
+  //       <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
+  //         篩選
+  //       </button>
+  //     </div>
+  //   </>
+  // );
 };
 
 export default GanttFilter;

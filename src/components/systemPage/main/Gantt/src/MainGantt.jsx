@@ -248,12 +248,12 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = (surgery) => {
     console.log('主頁點擊的手術:', surgery);
-    
+
     // 確保保留群組資訊
     if (surgery.isGroup) {
       console.log('這是一個群組手術，保留群組資訊');
     }
-    
+
     setSelectedSurgery(surgery);
     setModalError(null);
   };
@@ -398,13 +398,13 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
       </div>
 
       {/* 篩選器放在提示下方 */}
-      <GanttFilter
+      {/* <GanttFilter
         originalRows={rows}
         onFilteredDataChange={handleFilterChange}
       />
 
       {/* 手術排程內容 */}
-      {!loading && !error && filteredRows.length > 0 && (
+      {/* {!loading && !error && filteredRows.length > 0 && (
         <div className="gantt-content">
           <div ref={scrollContainerRef} className="scroll-container">
             <div ref={timeScaleRef} className="gantt-timescale-container">
@@ -431,15 +431,65 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
-      {/* 當篩選後無符合的資料 */}
+      {/* 當篩選後無符合的資料
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
-      )}
+      )} */}
+
+
+
+
+
+
+
+      <div className="flex w-full transition-all duration-500 ease-in-out">
+        <GanttFilter
+          originalRows={rows}
+          onFilteredDataChange={handleFilterChange}
+        />
+
+        {!loading && !error && filteredRows.length > 0 && (
+          <div className="gantt-content transition-all duration-500 ease-in-out" style={{ width: "2000000px" }}>
+            <div ref={scrollContainerRef} className="scroll-container">
+              <div ref={timeScaleRef} className="gantt-timescale-container">
+                <TimeWrapper containerWidth={containerWidth}>
+                  <div ref={ganttChartRef} className="gantt-chart-container">
+                    <div className="gantt-chart">
+                      {filteredRows.map((room, roomIndex) => (
+                        <div
+                          key={room.room || roomIndex}
+                          className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
+                        >
+                          <RoomSection
+                            room={room}
+                            roomIndex={roomIndex}
+                            readOnly={readOnly}
+                            onSurgeryClick={handleSurgeryClick}
+                            isMainPage={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TimeWrapper>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+
+
+
+
+
+
+
 
       {/* 手術詳細資訊模態視窗 */}
       {selectedSurgery && (
