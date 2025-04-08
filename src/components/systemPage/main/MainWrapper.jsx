@@ -33,18 +33,20 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
   });
 
   useEffect(() => {
-    // 發送請求獲取後端時間設定數據
     const fetchTimeSettings = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/system/algorithm/time-settings`); // 你的 API 地址
+        const response = await axios.get(`${BASE_URL}/api/system/algorithm/time-settings`);
         const data = response.data;
 
         if (data) {
-          // 設置 initialTimeSettings 狀態為後端回傳的數據
+          const surgeryStartTime = data.surgeryStartTime || 510;
+          const regularEndTime = (surgeryStartTime + data.regularEndTime) % 1440;
+          const overtimeEndTime = (surgeryStartTime + data.regularEndTime + data.overtimeEndTime) % 1440;
+
           setInitialTimeSettings({
-            surgeryStartTime: data.surgeryStartTime || 510,
-            regularEndTime: data.regularEndTime || 1050,
-            overtimeEndTime: data.overtimeEndTime || 1200,
+            surgeryStartTime: surgeryStartTime,
+            regularEndTime: regularEndTime,
+            overtimeEndTime: overtimeEndTime,
             cleaningTime: data.cleaningTime || 45,
           });
         }
@@ -54,7 +56,9 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
     };
 
     fetchTimeSettings();
-  }, []);  // 空依賴陣列，表示這個 effect 只會在組件首次渲染時執行一次
+  }, []);
+
+
 
   const onDragEnd = (result) => {
     if (!result.destination) return;

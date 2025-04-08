@@ -71,6 +71,10 @@ public class Surgery {
     @Column(name = "department_name")
     private String departmentName;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "surgery_group_id")
+    private SurgeryGroup surgeryGroup;
+
     // ===== Getters and Setters =====
 
     public String getApplicationId() {

@@ -191,18 +191,25 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     if (event) event.preventDefault();
     setTempTimeSettings(timeSettings);
     setInitialTimeSettings(timeSettings);
-    localStorage.setItem("ganttTimeSettings", JSON.stringify(timeSettings)); // 確保設定儲存
+    localStorage.setItem("ganttTimeSettings", JSON.stringify(timeSettings)); // 儲存設定
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true);
     }
+  
     try {
+      const getMinutesDiff = (later, earlier) => {
+        let diff = later - earlier;
+        if (diff < 0) diff += 1440; // 若為負，表示跨過午夜
+        return diff;
+      };
+  
       const payload = {
         surgeryStartTime: timeSettings.surgeryStartTime,
-        regularEndTime: timeSettings.regularEndTime - timeSettings.surgeryStartTime,
-        overtimeEndTime: timeSettings.overtimeEndTime - timeSettings.regularEndTime,
+        regularEndTime: getMinutesDiff(timeSettings.regularEndTime, timeSettings.surgeryStartTime),
+        overtimeEndTime: getMinutesDiff(timeSettings.overtimeEndTime, timeSettings.regularEndTime),
         cleaningTime: timeSettings.cleaningTime
       };
-
+  
       const response = await axios.post(`${BASE_URL}/api/system/algorithm/time-settings/export`, payload);
       console.log("CSV 產生結果：", response.data);
       alert("參數設定已更新，您可以在甘特圖中預覽變更。");
@@ -211,6 +218,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
       alert("生成 CSV 失敗，請稍後再試。");
     }
   };
+  
 
   // 處理提示收合狀態變更
   const toggleTips = () => {
