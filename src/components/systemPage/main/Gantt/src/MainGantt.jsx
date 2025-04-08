@@ -111,6 +111,53 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
     };
   }, [filteredRows, rows, handleFilterChange, mainGanttRef]);
 
+  // 處理滾輪事件
+  useEffect(() => {
+    const handleGanttTimeScaleScroll = (e) => {
+      const { scrollLeft } = e.detail;
+      // 同步內容區域的水平滾動
+      const chartScrollArea = document.querySelector('.gantt-chart-scroll-area');
+      if (chartScrollArea) {
+        chartScrollArea.scrollLeft = scrollLeft;
+      }
+    };
+
+    const handleGanttContentScroll = (e) => {
+      const { scrollLeft } = e.detail;
+      // 同步時間刻度的水平滾動
+      const timeScaleContainer = timeScaleRef.current?.querySelector('.scrollable-container');
+      if (timeScaleContainer) {
+        timeScaleContainer.scrollLeft = scrollLeft;
+      }
+    };
+
+    // 監聽滾動事件，確保水平滾動同步
+    const handleContentScroll = (e) => {
+      if (e.target.classList.contains('gantt-chart-scroll-area') ||
+        e.target.classList.contains('scrollable-container')) {
+        const scrollLeft = e.target.scrollLeft;
+
+        // 通知時間刻度和內容區域
+        window.dispatchEvent(new CustomEvent('ganttMainScroll', {
+          detail: { scrollLeft }
+        }));
+      }
+    };
+
+    window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+    window.addEventListener('ganttContentScroll', handleGanttContentScroll);
+
+    // 使用捕獲階段監聽所有相關容器的滾動事件
+    document.addEventListener('scroll', handleContentScroll, true);
+
+    return () => {
+      window.removeEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+      window.removeEventListener('ganttContentScroll', handleGanttContentScroll);
+      document.removeEventListener('scroll', handleContentScroll, true);
+    };
+  }, []);
+
+  // 處理窗口大小變化
   useEffect(() => {
     const handleResize = () => {
       if (scrollContainerRef.current) {
@@ -248,12 +295,12 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = (surgery) => {
     console.log('主頁點擊的手術:', surgery);
-    
+
     // 確保保留群組資訊
     if (surgery.isGroup) {
       console.log('這是一個群組手術，保留群組資訊');
     }
-    
+
     setSelectedSurgery(surgery);
     setModalError(null);
   };
@@ -398,59 +445,66 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
       </div>
 
       {/* 篩選器放在提示下方 */}
-      <GanttFilter
+      {/* <GanttFilter
         originalRows={rows}
         onFilteredDataChange={handleFilterChange}
       />
 
       {/* 手術排程內容 */}
-      {!loading && !error && filteredRows.length > 0 && (
+      {/* {!loading && !error && filteredRows.length > 0 && (
         <div className="gantt-content">
-          <div ref={scrollContainerRef} className="scroll-container">
-            <div ref={timeScaleRef} className="gantt-timescale-container">
-              <TimeWrapper containerWidth={containerWidth}>
-                <div ref={ganttChartRef} className="gantt-chart-container">
-                  <div className="gantt-chart">
-                    {filteredRows.map((room, roomIndex) => (
-                      <div
-                        key={room.room || roomIndex}
-                        className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
-                      >
-                        <RoomSection
-                          room={room}
-                          roomIndex={roomIndex}
-                          readOnly={readOnly}
-                          onSurgeryClick={handleSurgeryClick}
-                          isMainPage={true}
-                        />
-                      </div>
-                    ))}
-                  </div>
+          {/* 時間刻度固定在頂部 */}
+      <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+        <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}>
+          {/* 時間刻度部分 */}
+        </TimeWrapper>
+      </div>
+
+      {/* 甘特圖內容可滾動區域 */}
+      <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
+        <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
+          <div ref={ganttChartRef} className="gantt-chart-container">
+            <div className="gantt-chart">
+              {filteredRows.map((room, roomIndex) => (
+                <div
+                  key={room.room || roomIndex}
+                  className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
+                >
+                  <RoomSection
+                    room={room}
+                    roomIndex={roomIndex}
+                    readOnly={readOnly}
+                    onSurgeryClick={handleSurgeryClick}
+                    isMainPage={true}
+                  />
                 </div>
-              </TimeWrapper>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        </TimeWrapper>
+      </div>
 
-      {/* 當篩選後無符合的資料 */}
+
+
+
+    </div>
+  )
+}
+
+{/* 當篩選後無符合的資料
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
-      )}
+      )} */}
 
-      {/* 手術詳細資訊模態視窗 */}
-      {selectedSurgery && (
-        <SurgeryModal
-          surgery={selectedSurgery}
-          onClose={handleCloseModal}
-          error={modalError}
-        />
-      )}
-    </div>
-  );
-}
+
+
+
+
+
+
+
 
 export default MainGantt;
