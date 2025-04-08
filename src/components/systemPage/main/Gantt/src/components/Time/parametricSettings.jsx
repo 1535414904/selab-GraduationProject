@@ -198,8 +198,8 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     try {
       const payload = {
         surgeryStartTime: timeSettings.surgeryStartTime,
-        regularEndTime: timeSettings.regularEndTime,
-        overtimeEndTime: timeSettings.overtimeEndTime,
+        regularEndTime: timeSettings.regularEndTime - timeSettings.surgeryStartTime,
+        overtimeEndTime: timeSettings.overtimeEndTime - timeSettings.regularEndTime,
         cleaningTime: timeSettings.cleaningTime
       };
 

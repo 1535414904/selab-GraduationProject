@@ -78,14 +78,13 @@ public class AlgorithmService {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        addPinnedOperatingRoomToCsv();
 
-        // try {
-        // // addPinnedOperatingRoomToCsv();
-        // copyGuidelines();
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
+        try {
+            addPinnedOperatingRoomToCsv();
+            copyGuidelines();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void exportSurgeriesToCsv() {
@@ -286,13 +285,17 @@ public class AlgorithmService {
                         int surgeryStartTime = previousEndTime; // 當前手術的開始時間是前一台手術的結束時間
                         int surgeryEndTime = surgeryStartTime + Integer.parseInt(EST); // 計算結束時間
 
+                        surgeryStartTime = surgeryStartTime % 1440; // 限制開始時間不超過1440分鐘（24小時）
+                        surgeryEndTime = surgeryEndTime % 1440; // 限制結束時間不超過1440分鐘（24小時）
+
                         // 銜接的現在時間=前一台手術的結束時間，結束時間=現在時間+connectionTime
                         previousEndTime = surgeryEndTime + connectionTime;
 
                         // 將開始和結束時間轉換為HH:mm格式
                         String startTimeFormatted = LocalTime.ofSecondOfDay(surgeryStartTime * 60)
                                 .format(timeFormatter);
-                        String endTimeFormatted = LocalTime.ofSecondOfDay(surgeryEndTime * 60).format(timeFormatter);
+                        String endTimeFormatted = LocalTime.ofSecondOfDay(surgeryEndTime * 60)
+                                .format(timeFormatter);
 
                         // 手術數據
                         String[] surgeryData = {
