@@ -124,6 +124,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 /* 滾動容器 */
@@ -152,6 +153,8 @@
   overflow: auto;
   position: relative;
   max-height: calc(100vh - 250px);
+  width: 100%;
+  display: block;
 }
 
 .gantt-timescale-container {
@@ -163,6 +166,8 @@
 .gantt-chart-container {
   position: relative;
   min-height: fit-content;
+  width: fit-content;
+  min-width: 100%;
 }
 
 /* 行樣式 */
@@ -413,8 +418,6 @@
   /* z-index: 999; */
 }
 
-
-
 /* 統一滾動容器樣式 */
 .scrollable-container {
   width: 100%;
@@ -453,11 +456,13 @@ body {
   z-index: 998;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
 }
 
 /* 僅內容的容器 */
 .time-wrapper-container.content-only {
   overflow: visible;
+  width: 100%;
 }
 
 /* 時間刻度頭部 */
@@ -479,6 +484,8 @@ body {
   background-color: #f9fafb;
   border-bottom: 2px solid #1f2937;
   margin-top: 20px;
+  min-width: max-content;
+  width: 100%;
 }
 
 /* 時間標記 */
@@ -546,34 +553,42 @@ body {
 .time-wrapper-content {
   flex: 1;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  width: 100%;
 }
 
 /* 滾動條樣式 */
+.gantt-chart-scroll-area::-webkit-scrollbar,
 .scrollable-container::-webkit-scrollbar {
+  width: 8px;
   height: 8px;
+  display: block;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-track,
 .scrollable-container::-webkit-scrollbar-track {
   background: #f3f4f6;
   border-radius: 4px;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-thumb,
 .scrollable-container::-webkit-scrollbar-thumb {
   background-color: #9ca3af;
   border-radius: 4px;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-thumb:hover,
 .scrollable-container::-webkit-scrollbar-thumb:hover {
   background-color: #6b7280;
 }
 
 /* 移除重複的甘特圖相關樣式 */
 .gantt-chart {
-  margin-top: 10px;
-  height: calc(100vh - 30px);
+  position: relative;
+  width: fit-content;
+  min-width: 100%;
+  margin-top: 0;
   white-space: nowrap;
-  height: auto;
 }
 
 .gantt-container {
