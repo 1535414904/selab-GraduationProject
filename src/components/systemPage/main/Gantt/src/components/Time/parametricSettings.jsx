@@ -279,32 +279,105 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
             <div className="time-settings-form">
               <div className="time-settings-item">
                 <label>手術開始時間：</label>
-
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.surgeryStartTime)}
-                  onChange={(e) => handleTimeChange("surgeryStartTime", e.target.value)}
-                  className="time-input"
-                />
-
+                <div className="time-select-container">
+                  <select
+                    className="time-select hour-select"
+                    value={Math.floor(timeSettings.surgeryStartTime / 60)}
+                    onChange={(e) => {
+                      const hours = parseInt(e.target.value);
+                      const minutes = timeSettings.surgeryStartTime % 60;
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("surgeryStartTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(24)].map((_, i) => (
+                      <option key={`hour-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <span className="time-separator">:</span>
+                  <select
+                    className="time-select minute-select"
+                    value={timeSettings.surgeryStartTime % 60}
+                    onChange={(e) => {
+                      const hours = Math.floor(timeSettings.surgeryStartTime / 60);
+                      const minutes = parseInt(e.target.value);
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("surgeryStartTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(60)].map((_, i) => (
+                      <option key={`minute-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>常規結束時間：</label>
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.regularEndTime)}
-                  onChange={(e) => handleTimeChange("regularEndTime", e.target.value)}
-                  className="time-input"
-                />
+                <div className="time-select-container">
+                  <select
+                    className="time-select hour-select"
+                    value={Math.floor(timeSettings.regularEndTime / 60)}
+                    onChange={(e) => {
+                      const hours = parseInt(e.target.value);
+                      const minutes = timeSettings.regularEndTime % 60;
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("regularEndTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(24)].map((_, i) => (
+                      <option key={`hour-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <span className="time-separator">:</span>
+                  <select
+                    className="time-select minute-select"
+                    value={timeSettings.regularEndTime % 60}
+                    onChange={(e) => {
+                      const hours = Math.floor(timeSettings.regularEndTime / 60);
+                      const minutes = parseInt(e.target.value);
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("regularEndTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(60)].map((_, i) => (
+                      <option key={`minute-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>加班結束時間：</label>
-                <input
-                  type="time"
-                  value={minutesToTimeString(timeSettings.overtimeEndTime)}
-                  onChange={(e) => handleTimeChange("overtimeEndTime", e.target.value)}
-                  className="time-input"
-                />
+                <div className="time-select-container">
+                  <select
+                    className="time-select hour-select"
+                    value={Math.floor(timeSettings.overtimeEndTime / 60)}
+                    onChange={(e) => {
+                      const hours = parseInt(e.target.value);
+                      const minutes = timeSettings.overtimeEndTime % 60;
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("overtimeEndTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(24)].map((_, i) => (
+                      <option key={`hour-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  <span className="time-separator">:</span>
+                  <select
+                    className="time-select minute-select"
+                    value={timeSettings.overtimeEndTime % 60}
+                    onChange={(e) => {
+                      const hours = Math.floor(timeSettings.overtimeEndTime / 60);
+                      const minutes = parseInt(e.target.value);
+                      const newTime = hours * 60 + minutes;
+                      handleTimeChange("overtimeEndTime", `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`);
+                    }}
+                  >
+                    {[...Array(60)].map((_, i) => (
+                      <option key={`minute-${i}`} value={i}>{i.toString().padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="time-settings-item">
                 <label>銜接時間 (分鐘)：</label>

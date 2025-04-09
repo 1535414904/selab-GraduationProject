@@ -978,6 +978,23 @@ body {
   box-sizing: border-box;
 }
 
+/* 強制時間輸入框使用 24 小時制 */
+.time-input {
+  appearance: textfield;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  display: inline-flex;
+}
+
+.time-input::-webkit-datetime-edit-ampm-field {
+  display: none;
+}
+
+.time-input::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  cursor: pointer;
+}
+
 .time-input:focus,
 .number-input:focus {
   outline: none;
@@ -1464,6 +1481,56 @@ body {
 .closed-room-item label {
   font-size: 14px;
   color: #334155;
+}
+
+/* 自定義24小時制時間選擇器樣式 */
+.time-select-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 120px;
+}
+
+.time-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #334155;
+  padding: 6px 8px;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%23475569" d="M0 0l6 6 6-6z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 8px;
+  padding-right: 24px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.time-select:hover {
+  border-color: #94a3b8;
+}
+
+.hour-select {
+  width: 55px;
+}
+
+.minute-select {
+  width: 55px;
+}
+
+.time-separator {
+  font-weight: bold;
+  color: #64748b;
 }
 
 
