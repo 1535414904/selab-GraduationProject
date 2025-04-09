@@ -491,13 +491,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
   )
 }
 
-{/* 當篩選後無符合的資料
-      {!loading && !error && filteredRows.length === 0 && (
-        <div className="no-data">
-          <p className="no-data-title">尚無符合條件的排程資料</p>
-          <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
-        </div>
-      )} */}
+
 
 
 

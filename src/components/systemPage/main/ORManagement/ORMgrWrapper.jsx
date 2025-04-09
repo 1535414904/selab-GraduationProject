@@ -162,7 +162,7 @@ function ORMgrWrapper({ reloadKey }) {
             <div className="flex w-full transition-all duration-500 ease-in-out">
                 {/* 篩選器滑入區塊 */}
                 {isOpen && (
-                    <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+                    <div className="w-75 shrink-0 transition-all duration-500 ease-in-out p-4">
                         <ORFilter
                             isOpen={isOpen}
                             operatingRooms={operatingRooms}
@@ -178,7 +178,8 @@ function ORMgrWrapper({ reloadKey }) {
                     {!isOpen && (
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-2 py-4 rounded shadow size-15"
+                            style={{ width: "70px", fontSize: "20px" }}
                         >
                             篩選
                         </button>
