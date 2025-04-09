@@ -80,12 +80,18 @@ const handleGroupDrag = (newRows, sourceRoomIndex, destinationRoomIndex, sourceI
   // 獲取群組項
   const groupItem = sourceRoomData[groupItemIndex];
 
-  // 從源房間移除群組項
-  sourceRoomData.splice(groupItemIndex, 1);
+  // 檢查群組後面是否有銜接時間，如果有也需要移除
+  let itemsToRemove = 1;
+  if (groupItemIndex < sourceRoomData.length - 1 && sourceRoomData[groupItemIndex + 1].isCleaningTime) {
+    itemsToRemove = 2; // 同時移除群組和後續的銜接時間
+  }
 
-  // 更新源房間的時間
+  // 從源房間移除群組項和相關銜接時間
+  sourceRoomData.splice(groupItemIndex, itemsToRemove);
+
+  // 更新源房間的時間，使用true參數避免自動添加尾部銜接時間
   if (sourceRoomData.length > 0) {
-    updateRoomTimes(sourceRoomData);
+    updateRoomTimes(sourceRoomData, true);
   }
 
   // 插入到目標房間
@@ -287,10 +293,11 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
     sourceRoomData.splice(sourceIndex, 1);
   }
 
-  // 更新源房間的時間
+  // 更新源房間和目標房間的時間
   if (sourceRoomData.length > 0) {
-    updateRoomTimes(sourceRoomData);
+    updateRoomTimes(sourceRoomData, true);
   }
+  updateRoomTimes(destRoomData);
 
   // 更新手術室名稱
   surgery.operatingRoomName = roomName;
@@ -345,7 +352,7 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
   updateRoomTimes(destRoomData);
 };
 
-const updateRoomTimes = (roomData) => {
+const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
   if (!roomData || roomData.length === 0) return;
 
   // 從時間設定中獲取起始時間和銜接時間
@@ -442,7 +449,7 @@ const updateRoomTimes = (roomData) => {
       item.color = getColorByEndTime(item.endTime, false);
 
       // 如果是最後一個項目且不是銜接時間，添加銜接時間
-      if (i === roomData.length - 1 && !item.isCleaningTime) {
+      if (!skipAddLastCleaningTime && i === roomData.length - 1 && !item.isCleaningTime) {
         const cleaningTime = {
           isCleaningTime: true,
           startTime: item.endTime,
