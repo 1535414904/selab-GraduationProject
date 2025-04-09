@@ -68,6 +68,52 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [rows]);
 
+  // 處理滾輪事件，確保垂直滾動時時間刻度保持在頂部，同時保持水平滾動同步
+  useEffect(() => {
+    const handleGanttTimeScaleScroll = (e) => {
+      const { scrollLeft } = e.detail;
+      // 同步內容區域的水平滾動
+      const chartScrollArea = document.querySelector('.gantt-chart-scroll-area');
+      if (chartScrollArea) {
+        chartScrollArea.scrollLeft = scrollLeft;
+      }
+    };
+
+    const handleGanttContentScroll = (e) => {
+      const { scrollLeft } = e.detail;
+      // 同步時間刻度的水平滾動
+      const timeScaleContainer = timeScaleRef.current?.querySelector('.scrollable-container');
+      if (timeScaleContainer) {
+        timeScaleContainer.scrollLeft = scrollLeft;
+      }
+    };
+
+    // 監聽滾動事件，確保水平滾動同步
+    const handleContentScroll = (e) => {
+      if (e.target.classList.contains('gantt-chart-scroll-area') ||
+        e.target.classList.contains('scrollable-container')) {
+        const scrollLeft = e.target.scrollLeft;
+        
+        // 通知時間刻度和內容區域
+        window.dispatchEvent(new CustomEvent('ganttMainScroll', { 
+          detail: { scrollLeft } 
+        }));
+      }
+    };
+
+    window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+    window.addEventListener('ganttContentScroll', handleGanttContentScroll);
+    
+    // 使用捕獲階段監聽所有相關容器的滾動事件
+    document.addEventListener('scroll', handleContentScroll, true);
+
+    return () => {
+      window.removeEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+      window.removeEventListener('ganttContentScroll', handleGanttContentScroll);
+      document.removeEventListener('scroll', handleContentScroll, true);
+    };
+  }, []);
+
   const handleResize = () => {
     if (timeScaleRef.current) {
       setTimeScaleWidth(`${timeScaleRef.current.scrollWidth}px`);
@@ -523,35 +569,38 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             </div>
           </div> */}
           {!loading && !error && filteredRows.length > 0 && (
-            <div
-              className="gantt-content transition-all duration-500 ease-in-out"
-              style={{ width: "2000000px" }}
-            >
+            <div className="gantt-content transition-all duration-500 ease-in-out">
               <DragDropContext onDragEnd={onDragEndHandler}>
-                <div ref={scrollContainerRef} className="scroll-container">
-                  <div ref={timeScaleRef} className="gantt-timescale-container">
-                    <TimeWrapper containerWidth={containerWidth}>
-                      <div ref={ganttChartRef} className="gantt-chart-container">
-                        <div className="gantt-chart">
-                          {filteredRows.map((room, roomIndex) => (
-                            <div
-                              key={room.room || roomIndex}
-                              className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"}`}
-                            >
-                              <RoomSection
-                                room={room}
-                                roomIndex={roomIndex}
-                                onPinStatusChange={handleRoomPinStatusChange}
-                                readOnly={readOnly}
-                                onSurgeryClick={handleSurgeryClick}
-                                onGroupOperation={handleGroupOperation}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                {/* 時間刻度固定在頂部 */}
+                <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+                  <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} useTempSettings={true}>
+                    {/* 時間刻度部分 */}
+                  </TimeWrapper>
+                </div>
+                
+                {/* 甘特圖內容可滾動區域 */}
+                <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
+                  <TimeWrapper containerWidth={containerWidth} contentOnly={true} useTempSettings={true}>
+                    <div ref={ganttChartRef} className="gantt-chart-container">
+                      <div className="gantt-chart">
+                        {filteredRows.map((room, roomIndex) => (
+                          <div
+                            key={room.room || roomIndex}
+                            className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
+                          >
+                            <RoomSection
+                              room={room}
+                              roomIndex={roomIndex}
+                              onPinStatusChange={handleRoomPinStatusChange}
+                              readOnly={readOnly}
+                              onSurgeryClick={handleSurgeryClick}
+                              onGroupOperation={handleGroupOperation}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    </TimeWrapper>
-                  </div>
+                    </div>
+                  </TimeWrapper>
                 </div>
               </DragDropContext>
             </div>

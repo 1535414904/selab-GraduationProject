@@ -124,6 +124,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 /* 滾動容器 */
@@ -152,6 +153,8 @@
   overflow: auto;
   position: relative;
   max-height: calc(100vh - 250px);
+  width: 100%;
+  display: block;
 }
 
 .gantt-timescale-container {
@@ -163,6 +166,8 @@
 .gantt-chart-container {
   position: relative;
   min-height: fit-content;
+  width: fit-content;
+  min-width: 100%;
 }
 
 /* 行樣式 */
@@ -413,8 +418,6 @@
   /* z-index: 999; */
 }
 
-
-
 /* 統一滾動容器樣式 */
 .scrollable-container {
   width: 100%;
@@ -453,11 +456,13 @@ body {
   z-index: 998;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
 }
 
 /* 僅內容的容器 */
 .time-wrapper-container.content-only {
   overflow: visible;
+  width: 100%;
 }
 
 /* 時間刻度頭部 */
@@ -479,6 +484,8 @@ body {
   background-color: #f9fafb;
   border-bottom: 2px solid #1f2937;
   margin-top: 20px;
+  min-width: max-content;
+  width: 100%;
 }
 
 /* 時間標記 */
@@ -546,34 +553,42 @@ body {
 .time-wrapper-content {
   flex: 1;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  width: 100%;
 }
 
 /* 滾動條樣式 */
+.gantt-chart-scroll-area::-webkit-scrollbar,
 .scrollable-container::-webkit-scrollbar {
+  width: 8px;
   height: 8px;
+  display: block;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-track,
 .scrollable-container::-webkit-scrollbar-track {
   background: #f3f4f6;
   border-radius: 4px;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-thumb,
 .scrollable-container::-webkit-scrollbar-thumb {
   background-color: #9ca3af;
   border-radius: 4px;
 }
 
+.gantt-chart-scroll-area::-webkit-scrollbar-thumb:hover,
 .scrollable-container::-webkit-scrollbar-thumb:hover {
   background-color: #6b7280;
 }
 
 /* 移除重複的甘特圖相關樣式 */
 .gantt-chart {
-  margin-top: 10px;
-  height: calc(100vh - 30px);
+  position: relative;
+  width: fit-content;
+  min-width: 100%;
+  margin-top: 0;
   white-space: nowrap;
-  height: auto;
 }
 
 .gantt-container {
@@ -961,6 +976,23 @@ body {
   background-color: #f8fafc;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+}
+
+/* 強制時間輸入框使用 24 小時制 */
+.time-input {
+  appearance: textfield;
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  display: inline-flex;
+}
+
+.time-input::-webkit-datetime-edit-ampm-field {
+  display: none;
+}
+
+.time-input::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  cursor: pointer;
 }
 
 .time-input:focus,
@@ -1449,6 +1481,56 @@ body {
 .closed-room-item label {
   font-size: 14px;
   color: #334155;
+}
+
+/* 自定義24小時制時間選擇器樣式 */
+.time-select-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 120px;
+}
+
+.time-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #334155;
+  padding: 6px 8px;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%23475569" d="M0 0l6 6 6-6z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 8px;
+  padding-right: 24px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.time-select:hover {
+  border-color: #94a3b8;
+}
+
+.hour-select {
+  width: 55px;
+}
+
+.minute-select {
+  width: 55px;
+}
+
+.time-separator {
+  font-weight: bold;
+  color: #64748b;
 }
 
 
