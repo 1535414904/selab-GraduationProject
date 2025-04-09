@@ -162,10 +162,29 @@ public class SurgeryController {
         return ResponseEntity.ok("Surgery add successfully");
     }
     
-
+    
     @DeleteMapping("/system/surgery/delete/{id}")
     public ResponseEntity<?> deleteSurgery(@PathVariable String id) {
         surgeryService.deleteSurgery(id);
         return ResponseEntity.ok("Surgery delete successfully");
+    }
+
+    // 更新手術群組的 API
+    @PostMapping("/system/surgeries/group")
+    public void updateSurgeryGroup(@RequestBody List<String> applicationIds) {
+        System.out.println("收到的手術 ID 列表: " + applicationIds);
+        surgeryService.updateSurgeryGroups(applicationIds);
+        surgeryService.updateSurgeryGroupEstimatedTime(applicationIds);
+    }
+
+    @PostMapping("/system/surgeries/group/clear")
+    public void clearSurgeryGroup(@RequestBody String id) {
+        if (id.endsWith("=")) {
+            id = id.substring(0, id.length() - 1); // 去掉結尾的等號
+        }
+        System.out.println("收到的手術 ID: " + id);
+        System.out.println("清空手術群組的 estimatedSurgeryTime");
+        surgeryService.restoreSurgeryGroupEstimatedTime(id);
+        surgeryService.clearSurgeryGroups(id);
     }
 }
