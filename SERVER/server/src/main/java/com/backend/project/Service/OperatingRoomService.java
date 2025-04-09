@@ -84,7 +84,6 @@ public class OperatingRoomService {
             // 確保手術房和科別資訊已加載
             if (surgery.getOperatingRoom() != null && surgery.getOperatingRoom().getDepartment() != null) {
                 Department department = surgery.getOperatingRoom().getDepartment();
-                surgery.setDepartmentName(department.getName());
             }
         }
         

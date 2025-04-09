@@ -2,8 +2,12 @@ package com.backend.project.model;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
+import com.backend.project.StringListConverter;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -68,8 +72,9 @@ public class Surgery {
     @Transient
     private String chiefSurgeonId;
 
-    @Column(name = "department_name")
-    private String departmentName;
+    @Column(name = "group_application_ids")
+    @Convert(converter = StringListConverter.class)
+    private List<String> groupApplicationIds;
 
     // ===== Getters and Setters =====
 
@@ -201,12 +206,12 @@ public class Surgery {
         this.chiefSurgeonId = chiefSurgeonId;
     }
 
-    public String getDepartmentName() {
-        return departmentName;
+    public List<String> getGroupApplicationIds() {
+        return groupApplicationIds;
     }
 
-    public void setDepartmentName(String departmentName) {
-        this.departmentName = departmentName;
+    public void setGroupApplicationIds(List<String> groupApplicationIds) {
+        this.groupApplicationIds = groupApplicationIds;
     }
 
     public String getFormattedTime() {

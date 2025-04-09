@@ -22,11 +22,11 @@ export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = fal
   const [hours, minutes] = endTime.split(':').map(Number);
   const totalMinutes = hours * 60 + minutes;
 
-  if (totalMinutes <= timeSettings.regularEndTime) {        // 常規時間內
+  if (totalMinutes <= timeSettings.surgeryStartTime + timeSettings.regularEndTime) {        // 常規時間內
     return "green";
-  } else if (totalMinutes <= timeSettings.overtimeEndTime) { // 常規時間-加班時間內
+  } else if (totalMinutes <= timeSettings.surgeryStartTime + timeSettings.regularEndTime + timeSettings.overtimeEndTime) { // 常規時間-加班時間內
     return "yellow";
-  } else {                                                  // 加班時間之後
+  } else {// 加班時間之後
     return "red";
   }
 };
