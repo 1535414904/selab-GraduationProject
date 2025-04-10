@@ -22,11 +22,26 @@ export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = fal
   const [hours, minutes] = endTime.split(':').map(Number);
   const totalMinutes = hours * 60 + minutes;
 
-  if (totalMinutes <= timeSettings.surgeryStartTime + timeSettings.regularEndTime) {        // 常規時間內
+  // 手術開始時間（例如：8:30 = 510分鐘）
+  const surgeryStartTime = timeSettings.surgeryStartTime;
+  
+  // 注意: timeSettings.regularEndTime 實際上是當天的分鐘數，不是持續時間
+  // 例如常規結束時間為 15:30，則 regularEndTime = 15*60 + 30 = 930
+  const regularEndTimeMinutes = timeSettings.regularEndTime;
+  
+  // 注意: timeSettings.overtimeEndTime 實際上是當天的分鐘數，不是持續時間
+  // 例如加班結束時間為 19:00，則 overtimeEndTime = 19*60 + 0 = 1140
+  const overtimeEndTimeMinutes = timeSettings.overtimeEndTime;
+
+  console.log(`DEBUG - 時間設定: 開始時間=${surgeryStartTime}分鐘, 正常結束=${regularEndTimeMinutes}分鐘, 加班結束=${overtimeEndTimeMinutes}分鐘`);
+  console.log(`DEBUG - 手術時間: 結束時間=${totalMinutes}分鐘`);
+
+  // 比較總分鐘數，確定顏色
+  if (totalMinutes <= regularEndTimeMinutes) {
     return "green";
-  } else if (totalMinutes <= timeSettings.surgeryStartTime + timeSettings.regularEndTime + timeSettings.overtimeEndTime) { // 常規時間-加班時間內
+  } else if (totalMinutes <= overtimeEndTimeMinutes) {
     return "yellow";
-  } else {// 加班時間之後
+  } else {
     return "red";
   }
 };
