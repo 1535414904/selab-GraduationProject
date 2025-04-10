@@ -401,7 +401,7 @@
 
 .filter-toggle-btn {
   position: fixed;
-  right: -3.5rem; /* 保持原本往右偏 */
+  left: rem; /* 保持原本往右偏 */
   top: 4.1rem; /* 貼近視窗底部 */
   background-color: #3b82f6;
   color: white;
@@ -1531,6 +1531,26 @@ body {
 .time-separator {
   font-weight: bold;
   color: #64748b;
+}
+
+.gantt-content-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow: hidden;
+}
+
+.gantt-main-scroll-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+}
+.gantt-main-content-area {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 200px); /* 可依實際情況調整，或用 100% */
 }
 
 

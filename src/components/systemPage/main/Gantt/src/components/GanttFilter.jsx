@@ -343,7 +343,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     setTimeRange({ min: "", max: "" });
   };
   return (
-    <div className="flex w-full transition-all duration-500 ease-in-out">
+    <div className="h-full w-full bg-white border-r border-gray-200 flex flex-col overflow-auto p-4">
       {/* 篩選器區塊 */}
       {isOpen && (
         <div className="w-75 shrink-0 transition-all duration-500 ease-in-out pt-4 pb-1">
