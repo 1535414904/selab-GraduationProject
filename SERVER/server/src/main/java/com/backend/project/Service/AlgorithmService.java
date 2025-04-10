@@ -2,11 +2,13 @@ package com.backend.project.Service;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -19,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,24 +66,27 @@ public class AlgorithmService {
         this.operatingRoomRepository = operatingRoomRepository;
     }
 
-    public void runBatchFile() {
+    public void runBatchFile() throws Exception {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
         exportSurgeriesToCsv();
         exportOperatingRoomToCsv();
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", BATCH_FILE_PATH);
-            processBuilder.directory(new File(System.getProperty("user.dir"))); // 設定工作目錄為 server 目錄
-            processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
-            Process process = processBuilder.start();
-            process.waitFor(); // 等待執行完成
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        // try {
+        // ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
+        // BATCH_FILE_PATH);
+        // processBuilder.directory(new File(System.getProperty("user.dir"))); //
+        // 設定工作目錄為 server 目錄
+        // processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
+        // Process process = processBuilder.start();
+        // process.waitFor(); // 等待執行完成
+        // } catch (IOException | InterruptedException e) {
+        // e.printStackTrace();
+        // }
 
         try {
             addPinnedOperatingRoomToCsv();
+            processGuidelinesCsv("ORSM 2025/Guidelines/Guidelines.csv");
             copyGuidelines();
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,38 +99,47 @@ public class AlgorithmService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String tomorrowDate = LocalDate.now().plusDays(1).format(formatter);
 
-        Map<String, Boolean> firstSurgeryMap = new HashMap<>(); // 記錄手術房是否已有第一筆手術
+        Map<String, Boolean> firstSurgeryMap = new HashMap<>();
+        Set<String> processedGroupIds = new HashSet<>(); // 已處理過的群組 id
 
         try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
                 BufferedWriter writer = new BufferedWriter(osw);
                 CSVWriter csvWriter = new CSVWriter(writer,
-                        CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
-                        CSVWriter.NO_QUOTE_CHARACTER, // 不使用雙引號
+                        CSVWriter.DEFAULT_SEPARATOR,
+                        CSVWriter.NO_QUOTE_CHARACTER,
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                         CSVWriter.DEFAULT_LINE_END)) {
 
-            // 寫入 UTF-8 BOM
             osw.write("\uFEFF");
 
             for (Surgery surgery : surgeries) {
-                String EST = surgery.getEstimatedSurgeryTime().toString();
-                String departmentName = surgery.getOperatingRoom().getDepartment().getName().replace("\n", " ");
-                String chiefSurgeonName = surgery.getChiefSurgeon().getName().replace("\n", " ");
-                String operatingRoomName = surgery.getOperatingRoom().getName();
-                String operatingRoomId = surgery.getOperatingRoom().getId();
+                List<String> groupIds = surgery.getGroupApplicationIds();
+                String applicationId = surgery.getApplicationId();
 
-                // 如果這間手術房有被釘選，跳過
+                // 如果是群組手術
+                if (groupIds != null && !groupIds.isEmpty()) {
+                    String groupKey = String.join(",", groupIds); // 用來識別群組，可改為更穩定邏輯
+                    if (processedGroupIds.contains(groupKey)) {
+                        continue; // 已寫入群組第一筆手術，跳過
+                    }
+                    processedGroupIds.add(groupKey);
+                }
+
+                String operatingRoomId = surgery.getOperatingRoom().getId();
                 if (Boolean.TRUE.equals(pinnedRooms.get(operatingRoomId))) {
                     continue;
                 }
 
-                // 檢查是否為該手術房的第一筆手術
+                String EST = surgery.getEstimatedSurgeryTime().toString();
+                String departmentName = surgery.getOperatingRoom().getDepartment().getName().replace("\n", " ");
+                String chiefSurgeonName = surgery.getChiefSurgeon().getName().replace("\n", " ");
+                String operatingRoomName = surgery.getOperatingRoom().getName();
                 String dateSuffix = firstSurgeryMap.getOrDefault(operatingRoomName, false) ? "TF" : "0830";
                 firstSurgeryMap.put(operatingRoomName, true);
 
                 String[] data = {
                         tomorrowDate + " " + dateSuffix,
-                        surgery.getApplicationId(),
+                        applicationId,
                         surgery.getMedicalRecordNumber(),
                         departmentName,
                         chiefSurgeonName,
@@ -337,38 +352,58 @@ public class AlgorithmService {
     }
 
     public void copyGuidelines() throws IOException {
-        // 取得時間戳，例如：20250401_153045
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        // 取得日期與毫秒級 timestamp
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String timestamp = String.valueOf(System.currentTimeMillis());
 
-        // 取得來源 CSV 檔案路徑
-        Path inputPath = Paths.get(ORSM_GUIDELINES_FILE_PATH, "Guidelines.csv");
+        // 產生新檔名
+        String outputFileNameOfGuidelines = date + "_Guidelines" + timestamp + ".csv";
+        String outputFileNameOfTimeTable = date + "_TimeTable" + timestamp + ".csv";
 
-        // 產生新的檔名，例如：20250401_153045_Guidelines.csv
-        String outputFileName = timestamp + "_" + inputPath.getFileName().toString();
+        // 設定來源與目標路徑
+        Path inputPathOfGuidelines = Paths.get(ORSM_FILE_PATH, "Guidelines/Guidelines.csv");
+        Path inputPathOfTimeTable = Paths.get(ORSM_FILE_PATH, "TimeTable/TimeTable.csv");
+        Path outputDir = Paths.get(ORSM_FILE_PATH, "Backup4Guidelines");
 
-        // 目標 CSV 檔案路徑（存放在相同資料夾內）
-        Path outputPath = inputPath.getParent().resolve(outputFileName);
+        // 確保備份資料夾存在
+        if (!Files.exists(outputDir)) {
+            Files.createDirectories(outputDir);
+        }
+
+        // 建立完整目標檔案路徑
+        Path outputPathOfGuidelines = outputDir.resolve(outputFileNameOfGuidelines);
+        Path outputPathOfTimeTable = outputDir.resolve(outputFileNameOfTimeTable);
 
         // 使用 OpenCSV 來讀取與寫入 CSV
         try (
-                Reader reader = Files.newBufferedReader(inputPath, Charset.forName("Big5"));
-                CSVReader csvReader = new CSVReader(reader);
+                Reader readerOfGuidelines = Files.newBufferedReader(inputPathOfGuidelines, Charset.forName("Big5"));
+                CSVReader csvReaderOfGuidelines = new CSVReader(readerOfGuidelines);
 
-                Writer writer = Files.newBufferedWriter(outputPath, Charset.forName("Big5"));
-                CSVWriter csvWriter = new CSVWriter(writer)) {
+                Reader readerOfTimeTable = Files.newBufferedReader(inputPathOfTimeTable, StandardCharsets.UTF_8);
+                CSVReader csvReaderOfTimeTable = new CSVReader(readerOfTimeTable);
+
+                Writer writerGuidelines = Files.newBufferedWriter(outputPathOfGuidelines, StandardCharsets.UTF_8);
+                CSVWriter csvWriterGuidelines = new CSVWriter(writerGuidelines);
+
+                Writer writerTimeTable = Files.newBufferedWriter(outputPathOfTimeTable, StandardCharsets.UTF_8);
+                CSVWriter csvWriterTimeTable = new CSVWriter(writerTimeTable)) {
+
             String[] nextLine;
-            while (true) {
-                try {
-                    if ((nextLine = csvReader.readNext()) == null)
-                        break;
-                    csvWriter.writeNext(nextLine);
-                } catch (CsvValidationException e) {
-                    System.err.println("CSV 讀取錯誤: " + e.getMessage());
-                }
+
+            // 複製 Guidelines.csv
+            while ((nextLine = csvReaderOfGuidelines.readNext()) != null) {
+                csvWriterGuidelines.writeNext(nextLine);
             }
+
+            // 複製 TimeTable.csv
+            while ((nextLine = csvReaderOfTimeTable.readNext()) != null) {
+                csvWriterTimeTable.writeNext(nextLine);
+            }
+        } catch (CsvValidationException e) {
+            System.err.println("CSV 讀取錯誤: " + e.getMessage());
         }
 
-        System.out.println("Guidelines.csv 已成功複製為：" + outputPath);
+        System.out.println("Guidelines.csv 與 TimeTable.csv 已成功備份至：" + outputDir);
     }
 
     public void exportArgumentsToCsv(
@@ -444,5 +479,143 @@ public class AlgorithmService {
     public void setPinned(String roomId, boolean isPinned) {
         pinnedRooms.put(roomId, isPinned);
         System.out.println("目前釘選的手術房列表: " + pinnedRooms);
+    }
+
+    public void processGuidelinesCsv(String csvPath) throws Exception {
+        Path path = Paths.get(csvPath);
+        Charset big5 = Charset.forName("Big5");
+        List<String[]> updatedRows = new ArrayList<>();
+
+        TimeSettingsDTO settings = getTimeSettingsFromCsv();
+        if (settings == null) {
+            System.out.println("未取得 TimeSettings，跳過處理。");
+            return;
+        }
+        int cleaningTime = settings.getCleaningTime();
+        System.out.println("整理時間: " + cleaningTime);
+
+        List<String[]> originalRows;
+        try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
+            originalRows = reader.readAll();
+        }
+
+        for (int i = 0; i < originalRows.size(); i++) {
+            String[] row = originalRows.get(i);
+            updatedRows.add(row);
+
+            if (i == 0)
+                continue; // 跳過第一行
+            if (row.length < 6)
+                continue; // 跳過逗號數小於5的行
+            if ("整理時間".equals(row[2]))
+                continue; // 跳過整理時間行
+
+            String rawSurgeryName = row[2];
+            System.out.println("原手術名稱: " + rawSurgeryName);
+            String applicationId = extractApplicationId(rawSurgeryName);
+            System.out.println("擷取的申請序號: " + applicationId);
+            if (applicationId == null) {
+                System.out.println("無法從手術名稱擷取申請序號，跳過：" + rawSurgeryName);
+                continue;
+            }
+
+            System.out.println("處理手術申請序號: " + applicationId);
+            Surgery surgery = surgeryRepository.findById(applicationId).orElseThrow();
+            if (surgery == null) {
+                System.out.println("找不到對應的手術資料: " + applicationId);
+                continue;
+            }
+            if (surgery.getGroupApplicationIds() == null) {
+                System.out.println("手術 " + applicationId + " 無群組資料，跳過。");
+                continue;
+            }
+
+            List<String> groupIds = surgery.getGroupApplicationIds();
+            List<String> otherIds = groupIds.stream()
+                    .filter(id -> !id.equals(applicationId))
+                    .collect(Collectors.toList());
+            if (otherIds.isEmpty()) {
+                System.out.println("手術 " + applicationId + " 所在群組無其他手術，跳過。");
+                continue;
+            }
+
+            System.out.println("將為手術 " + applicationId + " 插入同群組手術: " + otherIds);
+
+            String day = row[0];
+            String startTimeStr = row[3];
+
+            LocalTime cursorTime = parseCustomTime(startTimeStr);
+            List<String[]> insertedRows = new ArrayList<>();
+
+            // 更新原手術結束時間
+            int duration = surgery.getEstimatedSurgeryTime();
+            LocalTime endTime = cursorTime.plusMinutes(duration);
+            row[4] = formatCustomTime(endTime);
+            System.out.println("更新結束時間為: " + row[4]);
+
+            // 插入整理時間
+            cursorTime = endTime;
+            endTime = cursorTime.plusMinutes(cleaningTime);
+            insertedRows.add(
+                    new String[] { day, "null", "整理時間", formatCustomTime(cursorTime), formatCustomTime(endTime), "4" });
+            cursorTime = endTime;
+
+            // 插入其他手術與整理時間
+            for (String otherId : otherIds) {
+                Surgery other = surgeryRepository.findById(otherId).orElseThrow();
+                if (other == null) {
+                    System.out.println("找不到群組內手術: " + otherId);
+                    continue;
+                }
+                int est = other.getEstimatedSurgeryTime();
+                LocalTime otherEnd = cursorTime.plusMinutes(est);
+                insertedRows.add(new String[] {
+                        day,
+                        other.getSurgeryName(),
+                        formatSurgeryName(otherId),
+                        formatCustomTime(cursorTime),
+                        formatCustomTime(otherEnd),
+                        "1"
+                });
+                System.out.println("插入手術: " + otherId + " 時間: " + formatCustomTime(cursorTime) + " ~ "
+                        + formatCustomTime(otherEnd));
+                cursorTime = otherEnd;
+
+                LocalTime cleanEnd = cursorTime.plusMinutes(cleaningTime);
+                insertedRows.add(new String[] { day, "null", "整理時間", formatCustomTime(cursorTime),
+                        formatCustomTime(cleanEnd), "4" });
+                cursorTime = cleanEnd;
+            }
+
+            updatedRows.addAll(insertedRows);
+        }
+
+        try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(path.toFile()), big5))) {
+            writer.writeAll(updatedRows);
+            System.out.println("Guidelines.csv 寫入完成。");
+        }
+    }
+
+    private String extractApplicationId(String surgeryName) {
+        if (surgeryName == null)
+            return null;
+        int idx = surgeryName.indexOf("(");
+        return idx > 0 ? surgeryName.substring(0, idx) : surgeryName;
+    }
+
+    private String formatSurgeryName(String id) {
+        // 預設為 TF
+        return id + "(TF)";
+    }
+
+    private LocalTime parseCustomTime(String timeStr) {
+        String[] parts = timeStr.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+        return LocalTime.of(hour, minute);
+    }
+
+    private String formatCustomTime(LocalTime time) {
+        return String.format("%d:%02d", time.getHour(), time.getMinute());
     }
 }

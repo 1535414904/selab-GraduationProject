@@ -31,3 +31,25 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+*.csv
+*.xlsx
+*.jpg
+*.pdf
+*.png
+
+# IntelliJ
+SERVER\server\ORSM 2025\*.csv
+SERVER\server\ORSM 2025\*.xlsx
+SERVER\server\ORSM 2025\*.jpg
+SERVER\server\ORSM 2025\*.pdf
+SERVER\server\ORSM 2025\*.png
+SERVER\server\ORSM 2025\SchedulingResults\*.csv
+SERVER\server\ORSM 2025\TimeTable\*.csv
+SERVER\server\ORSM 2025\PdfFiles\*.pdf
+SERVER\server\ORSM 2025\PdfFiles\*.jpg
+
+
+SERVER/server/src/main/resources/application.properties
+SERVER/server/pom.xml

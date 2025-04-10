@@ -14,7 +14,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
 
@@ -22,22 +22,22 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
   const getClockHands = () => {
     const hours = currentTime.getHours() % 12;
     const minutes = currentTime.getMinutes();
-    
+
     // 時針角度 (30度/小時 + 分鐘貢獻的小量旋轉)
     const hourAngle = (hours * 30) + (minutes * 0.5);
     // 分針角度 (6度/分鐘)
     const minuteAngle = minutes * 6;
-    
+
     // 計算時針終點
     const hourHandLength = 35;
     const hourX = 100 + hourHandLength * Math.sin(hourAngle * Math.PI / 180);
     const hourY = 100 - hourHandLength * Math.cos(hourAngle * Math.PI / 180);
-    
+
     // 計算分針終點
     const minuteHandLength = 45;
     const minuteX = 100 + minuteHandLength * Math.sin(minuteAngle * Math.PI / 180);
     const minuteY = 100 - minuteHandLength * Math.cos(minuteAngle * Math.PI / 180);
-    
+
     return {
       hourHand: { x2: hourX, y2: hourY },
       minuteHand: { x2: minuteX, y2: minuteY }
@@ -48,24 +48,24 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
   const getMedicalCross = () => {
     const minutes = currentTime.getMinutes();
     const minuteAngle = minutes * 6;
-    
+
     // 十字長度和寬度
     const crossWidth = 30;
     const crossHeight = 8;
-    
+
     // 計算十字中心點
     const centerDistance = 30; // 到時鐘中心的距離
     const centerX = 100 + centerDistance * Math.sin(minuteAngle * Math.PI / 180);
     const centerY = 100 - centerDistance * Math.cos(minuteAngle * Math.PI / 180);
-    
+
     // 計算水平矩形位置
     const horizRectX = centerX - crossWidth / 2;
     const horizRectY = centerY - crossHeight / 2;
-    
+
     // 計算垂直矩形位置
     const vertRectX = centerX - crossHeight / 2;
     const vertRectY = centerY - crossWidth / 2;
-    
+
     return {
       horizontal: { x: horizRectX, y: horizRectY },
       vertical: { x: vertRectX, y: vertRectY }
@@ -118,7 +118,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white overflow-hidden">
       {/* 上方波浪 */}
       <div className="absolute top-0 left-0 w-full overflow-hidden">
-        <svg className="w-full" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <svg className="w-full h-[200px]" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
             className="fill-blue-400 opacity-60"
@@ -136,76 +136,76 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
 
       {/* 底部波浪 */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden rotate-180">
-        <svg className="w-full" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <svg className="w-full h-[200px]" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-            className="fill-blue-100 opacity-40"
+            className="fill-blue-300 opacity-40"
           ></path>
         </svg>
       </div>
 
       {/* 登入卡片 */}
-      <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
+      <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
         {/* 卡片圓角裝飾
         // <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 z-0 opacity-70"></div>
         // <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-50 rounded-full -ml-12 -mb-12 z-0 opacity-70"></div> */}
 
         <div className="flex flex-col items-center mb-8 relative z-10">
           {/* MedTime Logo SVG - 動態時鐘+十字設計 */}
-          <div className="w-20 h-20 mb-3">
+          <div className="w-30 h-30 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="w-full h-full">
               <circle cx="100" cy="100" r="90" fill="#0d6efd" />
               <circle cx="100" cy="100" r="75" fill="#FFFFFF" />
-              
+
               {/* 時鐘刻度 */}
               <line x1="100" y1="40" x2="100" y2="50" stroke="#0d6efd" strokeWidth="5" />
               <line x1="100" y1="150" x2="100" y2="160" stroke="#0d6efd" strokeWidth="5" />
               <line x1="40" y1="100" x2="50" y2="100" stroke="#0d6efd" strokeWidth="5" />
               <line x1="150" y1="100" x2="160" y2="100" stroke="#0d6efd" strokeWidth="5" />
-              
+
               {/* 時針與分針 - 動態顯示現在時間 */}
               <line x1="100" y1="100" x2={hourHand.x2} y2={hourHand.y2} stroke="#0d6efd" strokeWidth="6" strokeLinecap="round" />
               <line x1="100" y1="100" x2={minuteHand.x2} y2={minuteHand.y2} stroke="#0d6efd" strokeWidth="4" strokeLinecap="round" />
-              
+
               {/* 中心點 */}
               <circle cx="100" cy="100" r="8" fill="#0d6efd" />
-              
+
               {/* 醫療十字 - 跟隨分針移動 */}
-              <rect 
-                x={cross.horizontal.x} 
-                y={cross.horizontal.y} 
-                width="30" 
-                height="8" 
-                rx="4" 
-                fill="#0d6efd" 
+              <rect
+                x={cross.horizontal.x}
+                y={cross.horizontal.y}
+                width="30"
+                height="8"
+                rx="4"
+                fill="#0d6efd"
                 transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.horizontal.x + 15}, ${cross.horizontal.y + 4})`}
               />
-              <rect 
-                x={cross.vertical.x} 
-                y={cross.vertical.y} 
-                width="8" 
-                height="30" 
-                rx="4" 
-                fill="#0d6efd" 
+              <rect
+                x={cross.vertical.x}
+                y={cross.vertical.y}
+                width="8"
+                height="30"
+                rx="4"
+                fill="#0d6efd"
                 transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`}
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-blue-900 mb-1">MedTime</h1>
-          <p className="text-sm text-blue-600 font-medium">手術排班系統登入</p>
+          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">MedTime</h1>
+          <p className="text-2xl text-blue-600 font-medium p-2">手術排班系統登入</p>
         </div>
 
-        <div className="space-y-6 relative z-10">
+        <div className="space-y-10 relative z-10 p-1">
           <div>
             <div className="relative">
               <input
-                className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
+                className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
                 placeholder="帳號"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -217,13 +217,13 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
             <div className="relative">
               <input
                 type="password"
-                className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
+                className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
                 placeholder="密碼"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -239,20 +239,20 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
 
           <div className="flex justify-between items-center pt-2">
             <button
-              className="text-sm text-blue-700 hover:text-blue-800 hover:underline flex items-center"
+              className="text-2xl text-blue-700 hover:text-blue-800 hover:underline flex items-center"
               onClick={handleForgotPassword}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className=" h-10 w-10 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
               忘記密碼？
             </button>
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transform transition hover:scale-105 flex items-center"
+              className="text-3xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transform transition hover:scale-105 flex items-center"
               onClick={confirmHandler}
             >
               確定
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 ml-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>

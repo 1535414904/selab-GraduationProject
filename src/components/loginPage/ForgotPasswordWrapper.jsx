@@ -95,7 +95,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
         username,
         email,
       });
-      
+
       setMessage("驗證碼已發送，請檢查您的郵箱");
       setStep("verify");
       setCountdown(300); // 5分鐘倒數
@@ -108,15 +108,15 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
     resetErrors();
     let isValid = true;
     const newError = { verificationCode: "" };
-  
+
     if (!verificationCode.trim()) {
       newError.verificationCode = "驗證碼不能為空";
       isValid = false;
     }
-  
+
     setError(newError);
     if (!isValid) return;
-  
+
     try {
       const res = await axios.post(`${BASE_URL}/api/login/verifyCode`, {
         username,
@@ -127,7 +127,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
           "Content-Type": "application/json"
         }
       });
-  
+
       setMessage("");
       if (res.data === "驗證成功") {
         setNowUsername(username);
@@ -139,7 +139,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
       setMessage("驗證過程發生錯誤，請稍後再試");
     }
   };
-  
+
 
   // Countdown timer for verification code
   useEffect(() => {
@@ -169,7 +169,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
       {/* 上方與下方波浪省略（你已有） */}
       {/* 上方波浪 */}
       <div className="absolute top-0 left-0 w-full overflow-hidden">
-        <svg className="w-full" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <svg className="w-full h-[200px]" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
             className="fill-blue-400 opacity-60"
@@ -187,17 +187,17 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
 
       {/* 底部波浪 */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden rotate-180">
-        <svg className="w-full" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <svg className="w-full h-[200px]" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-            className="fill-blue-100 opacity-40"
+            className="fill-blue-300 opacity-40"
           ></path>
         </svg>
       </div>
-      <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
+      <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
         {/* LOGO */}
         <div className="flex flex-col items-center mb-8 relative z-10">
-          <div className="w-20 h-20 mb-3">
+          <div className="w-30 h-30 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="w-full h-full">
               <circle cx="100" cy="100" r="90" fill="#0d6efd" />
               <circle cx="100" cy="100" r="75" fill="#FFFFFF" />
@@ -212,22 +212,22 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
               <rect x={cross.vertical.x} y={cross.vertical.y} width="8" height="30" rx="4" fill="#0d6efd" transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`} />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-blue-900 mb-1">MedTime</h1>
-          <p className="text-sm text-blue-600 font-medium">找回密碼</p>
+          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">MedTime</h1>
+          <p className="text-2xl text-blue-600 font-medium p-1">找回密碼</p>
         </div>
 
-        <div className="space-y-6 relative z-10">
+        <div className="space-y-10 relative z-10 p-1">
           {/* 帳號 */}
           <div>
             <div className="relative">
               <input
-                className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
+                className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
                 placeholder="帳號"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -236,20 +236,20 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
           </div>
           {/* 信箱 */}
           <div>
-          <div className="relative">
-            <input
-              className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
-              placeholder="電子信箱"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
+            <div className="relative">
+              <input
+                className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
+                placeholder="電子信箱"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
             </div>
-          </div>
 
             {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
           </div>
@@ -259,13 +259,13 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
             <div>
               <div className="relative">
                 <input
-                  className="w-full pl-10 pr-4 py-3 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
+                  className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
                   placeholder="驗證碼"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="7" cy="17" r="3" />
                     <path d="M10.6 14.6L20 5.2l-1.4-1.4L9.2 13.2v1.4h1.4z" />
                     <path d="M20 5.2l1.4 1.4" />
@@ -279,13 +279,13 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
 
               {/* 倒數計時器 */}
               {countdown > 0 && (
-                <p className="text-sm text-blue-600 mt-2">
+                <p className="text-2xl text-blue-600 mt-2">
                   驗證碼將在 {Math.floor(countdown / 60)}:{countdown % 60 < 10 ? '0' : ''}{countdown % 60} 後過期
                 </p>
               )}
               {countdown === 0 && (
-                <button 
-                  className="text-sm text-blue-700 hover:underline mt-2"
+                <button
+                  className="text-3xl text-sm text-blue-700 hover:underline mt-2"
                   onClick={resendCode}
                 >
                   重新發送驗證碼
@@ -304,22 +304,22 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
 
           {/* 按鈕 */}
           <div className="flex justify-between items-center pt-2">
-            <button 
-              className="text-sm text-blue-700 hover:underline" 
+            <button
+              className="text-2xl text-blue-700 hover:underline"
               onClick={() => togglePage("loginPage")}
             >
               返回登入
             </button>
             {step === "send" ? (
-              <button 
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" 
+              <button
+                className="text-3xl bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                 onClick={sendCodeHandler}
               >
                 發送驗證碼
               </button>
             ) : (
-              <button 
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" 
+              <button
+                className="text-3xl bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                 onClick={confirmHandler}
               >
                 確認

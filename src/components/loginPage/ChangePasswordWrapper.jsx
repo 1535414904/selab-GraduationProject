@@ -101,9 +101,9 @@ function ChangePasswordWrapper({ togglePage, username }) {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white overflow-hidden">
-            {/* 上方波浪 */}
-            <div className="absolute top-0 left-0 w-full overflow-hidden">
-        <svg className="w-full" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+      {/* 上方波浪 */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden">
+        <svg className="w-full  h-[200px]" style={{ marginTop: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
             className="fill-blue-400 opacity-60"
@@ -121,10 +121,10 @@ function ChangePasswordWrapper({ togglePage, username }) {
 
       {/* 底部波浪 */}
       <div className="absolute bottom-0 left-0 w-full overflow-hidden rotate-180">
-        <svg className="w-full" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <svg className="w-full  h-[200px]" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-            className="fill-blue-100 opacity-40"
+            className="fill-blue-300 opacity-40"
           ></path>
         </svg>
       </div>
@@ -149,7 +149,7 @@ function ChangePasswordWrapper({ togglePage, username }) {
                 transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`} />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-blue-900 mb-1">MedTime</h1>
+          <h1 className="text-3xl font-bold text-blue-900 mb-1 ">MedTime</h1>
           <p className="text-sm text-blue-600 font-medium">更改密碼</p>
         </div>
 
