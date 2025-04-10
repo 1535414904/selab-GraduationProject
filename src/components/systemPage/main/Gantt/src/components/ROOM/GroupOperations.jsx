@@ -320,28 +320,36 @@ export const ungroup = (groupItem, roomData, roomName) => {
     return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
   });
 
+  // 獲取每個手術的原始持續時間
+  const originalDurations = [];
+  for (const item of sortedItems) {
+    const itemDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
+    originalDurations.push({
+      id: item.id,
+      duration: itemDuration,
+      isCleaningTime: item.isCleaningTime
+    });
+  }
+
   // 插入所有原始項目
   let insertIndex = groupIndex;
+  let currentStartTime = groupItem.startTime; // 從群組的開始時間開始
+
   for (let i = 0; i < sortedItems.length; i++) {
     const item = sortedItems[i];
+    const originalDuration = originalDurations.find(d => d.id === item.id)?.duration || 0;
 
-    // 如果有原始時間信息，使用它恢復時間和顏色
+    // 創建還原後的手術項目
     let restoredItem = { ...item };
-    if (hasOriginalTimeInfo) {
-      const originalItem = groupItem.originalTimeInfo.items.find(orig => orig.id === item.id);
-      if (originalItem) {
-        restoredItem.startTime = originalItem.startTime;
-        restoredItem.endTime = originalItem.endTime;
-        // 恢復原始顏色
-        if (!restoredItem.isCleaningTime) {
-          restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
-        }
-      }
-    } else {
-      // 如果沒有原始信息，基於結束時間重新計算顏色
-      if (!restoredItem.isCleaningTime) {
-        restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
-      }
+    
+    // 設置手術的開始時間和結束時間，保持原始持續時間
+    restoredItem.startTime = currentStartTime;
+    restoredItem.endTime = minutesToTime(timeToMinutes(currentStartTime) + originalDuration);
+    currentStartTime = restoredItem.endTime; // 更新下一個手術的開始時間
+
+    // 更新顏色
+    if (!restoredItem.isCleaningTime) {
+      restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
     }
 
     // 確保項目ID是唯一的
@@ -444,6 +452,9 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   let startTimeChanged = false;
   let endTimeChanged = false;
 
+  // 獲取群組的原始時間量（分鐘）
+  const originalGroupDuration = timeToMinutes(updatedGroup.endTime) - timeToMinutes(updatedGroup.startTime);
+  
   // 更新群組開始時間（如果有前一個項目）
   if (prevItem) {
     const newStartTime = prevItem.isCleaningTime
@@ -456,88 +467,84 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
     }
   }
 
-  // 更新群組結束時間（如果有後一個項目）
-  if (nextItem) {
-    // 如果有後一個項目，調整結束時間
-    const newEndTime = nextItem.isCleaningTime
-      ? nextItem.startTime  // 如果後一個是銜接時間，調整到其開始時間
+  // 如果開始時間變化了，根據原始持續時間來設置結束時間，保持時間量不變
+  if (startTimeChanged) {
+    const newEndTime = minutesToTime(timeToMinutes(updatedGroup.startTime) + originalGroupDuration);
+    updatedGroup.endTime = newEndTime;
+    endTimeChanged = true;
+  } 
+  // 如果開始時間沒變，但有後一個項目且需要調整結束時間
+  else if (nextItem) {
+    // 檢查是否需要調整結束時間
+    const currentEndTime = updatedGroup.endTime;
+    const maxEndTime = nextItem.isCleaningTime
+      ? nextItem.startTime  // 如果後一個是銜接時間，最大到其開始時間
       : minutesToTime(timeToMinutes(nextItem.startTime) - getCleaningDuration(true)); // 否則減去銜接時間
-
-    if (newEndTime !== updatedGroup.endTime) {
-      updatedGroup.endTime = newEndTime;
+      
+    // 如果當前結束時間超過了允許的最大結束時間，則需要調整
+    if (timeToMinutes(currentEndTime) > timeToMinutes(maxEndTime)) {
+      updatedGroup.endTime = maxEndTime;
       endTimeChanged = true;
+      
+      // 由於結束時間變化了，我們也需要調整開始時間以保持原始持續時間
+      updatedGroup.startTime = minutesToTime(timeToMinutes(maxEndTime) - originalGroupDuration);
+      startTimeChanged = true;
     }
   }
 
   // 如果時間有變化，更新群組內部時間
   if (startTimeChanged || endTimeChanged) {
-    // 計算群組持續時間（分鐘）
-    const groupDuration = timeToMinutes(updatedGroup.endTime) - timeToMinutes(updatedGroup.startTime);
-
-    // 如果群組持續時間小於或等於0，則無法更新
-    if (groupDuration <= 0) {
-      console.error('群組時間調整後持續時間不正確', groupDuration);
-      return groupItem; // 返回原始群組
-    }
-
-    // 更新群組內部時間
+    // 獲取原始群組內每個項目的持續時間
+    const originalItemDurations = [];
+    
     if (updatedGroup.surgeries && updatedGroup.surgeries.length > 0) {
-      // 獲取非銜接時間的項目
+      // 獲取所有項目（包括清潔時間）的原始持續時間
+      for (const item of updatedGroup.surgeries) {
+        const itemDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
+        originalItemDurations.push({
+          id: item.id,
+          duration: itemDuration,
+          isCleaningTime: item.isCleaningTime
+        });
+      }
+      
+      // 重新分配時間，保持每個項目的原始持續時間
+      let currentTime = timeToMinutes(updatedGroup.startTime);
+      
+      for (let i = 0; i < updatedGroup.surgeries.length; i++) {
+        const item = updatedGroup.surgeries[i];
+        const originalDuration = originalItemDurations.find(d => d.id === item.id)?.duration || 0;
+        
+        // 設置項目的開始時間
+        item.startTime = minutesToTime(currentTime);
+        
+        // 設置項目的結束時間，保持原始持續時間
+        currentTime += originalDuration;
+        item.endTime = minutesToTime(currentTime);
+        
+        // 更新顏色（僅對非銜接時間項目）
+        if (!item.isCleaningTime) {
+          item.color = getColorByEndTime(item.endTime, false, true);
+        }
+      }
+      
+      // 確保最後一個項目的結束時間與群組結束時間一致
+      // 由於我們保持了原始持續時間，這應該已經是自動的
+      // 但為了安全起見，我們仍進行一次檢查
+      const lastItem = updatedGroup.surgeries[updatedGroup.surgeries.length - 1];
+      if (lastItem.endTime !== updatedGroup.endTime) {
+        // 如果不一致，輕微調整最後一個項目的持續時間
+        lastItem.endTime = updatedGroup.endTime;
+      }
+      
+      // 更新群組顏色基於最後一個非銜接時間項目
       const nonCleaningItems = updatedGroup.surgeries.filter(item => !item.isCleaningTime);
-
       if (nonCleaningItems.length > 0) {
-        // 計算原始總持續時間（不包括銜接時間）
-        let originalTotalDuration = 0;
-        for (const item of nonCleaningItems) {
-          originalTotalDuration += timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
-        }
-
-        // 計算縮放比例
-        const scaleFactor = groupDuration / originalTotalDuration;
-
-        // 重新計算每個項目的時間
-        let currentTime = timeToMinutes(updatedGroup.startTime);
-
-        for (let i = 0; i < updatedGroup.surgeries.length; i++) {
-          const item = updatedGroup.surgeries[i];
-
-          // 設置項目的開始時間
-          item.startTime = minutesToTime(currentTime);
-
-          // 計算項目的持續時間
-          let itemDuration = 0;
-          if (!item.isCleaningTime) {
-            // 非銜接時間項目，按比例縮放
-            const originalDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
-            itemDuration = Math.round(originalDuration * scaleFactor);
-
-            // 確保最短持續時間至少15分鐘
-            itemDuration = Math.max(itemDuration, 15);
-
-            // 更新項目顏色
-            item.color = getColorByEndTime(minutesToTime(currentTime + itemDuration), false, true);
-          } else {
-            // 銜接時間固定
-            itemDuration = getCleaningDuration(true);
-          }
-
-          // 設置項目的結束時間
-          currentTime += itemDuration;
-          item.endTime = minutesToTime(currentTime);
-        }
-
-        // 確保最後一個項目的結束時間與群組結束時間一致
-        if (updatedGroup.surgeries.length > 0) {
-          const lastSurgery = updatedGroup.surgeries[updatedGroup.surgeries.length - 1];
-          lastSurgery.endTime = updatedGroup.endTime;
-
-          // 更新群組顏色基於最後一個非銜接時間項目
-          const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
-            return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
-          })[0];
-
-          updatedGroup.color = getColorByEndTime(lastNonCleaningItem.endTime, false, true);
-        }
+        const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
+          return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
+        })[0];
+        
+        updatedGroup.color = getColorByEndTime(lastNonCleaningItem.endTime, false, true);
       }
     }
   }
