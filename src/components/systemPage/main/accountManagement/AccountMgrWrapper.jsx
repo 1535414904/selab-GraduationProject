@@ -324,37 +324,37 @@ function AccountMgrWrapper({ reloadKey }) {
         const errors = {};
         const existingUsernames = new Set(users.map(u => u.username.trim()));
         const seenUsernames = new Set();
-    
+
         // 每次先重設錯誤
         const newEmptyError = {};
-    
+
         newUsers.forEach(user => {
             const trimmedUsername = user.username?.trim();
-    
+
             if (!trimmedUsername) {
                 newEmptyError[user.uniqueId] = "*帳號欄位不得為空";
                 return;
             }
-    
+
             if (existingUsernames.has(trimmedUsername)) {
                 newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 已存在，請使用其他帳號`;
                 return;
             }
-    
+
             if (seenUsernames.has(trimmedUsername)) {
                 newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 重複，請修改後再新增`;
                 return;
             }
-    
+
             seenUsernames.add(trimmedUsername); // 無誤才加入
         });
-    
+
         setEmptyError(newEmptyError); // 這裡會更新所有錯誤訊息（同時也會清除已修正的）
-    
+
         if (Object.keys(newEmptyError).length > 0) {
             return; // 有錯誤就中止
         }
-    
+
         try {
             await axios.post(`${BASE_URL}/api/system/users/add`, newUsers);
             const response = await axios.get(`${BASE_URL}/api/system/users`);
@@ -425,7 +425,7 @@ function AccountMgrWrapper({ reloadKey }) {
             <div className="flex w-full transition-all duration-500 ease-in-out">
                 {/* 篩選器滑入區塊 */}
                 {isOpen && (
-                    <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+                    <div className="w-75 shrink-0 transition-all duration-500 ease-in-out p-4">
                         <AccountFilter
                             isOpen={isOpen}
                             users={users}
@@ -441,7 +441,8 @@ function AccountMgrWrapper({ reloadKey }) {
                     {!isOpen && (
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-2 py-4 rounded shadow size-15"
+                            style={{ width: "70px", fontSize: "20px" }}
                         >
                             篩選
                         </button>

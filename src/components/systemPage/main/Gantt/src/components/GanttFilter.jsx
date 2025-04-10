@@ -346,7 +346,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     <div className="flex w-full transition-all duration-500 ease-in-out">
       {/* 篩選器區塊 */}
       {isOpen && (
-        <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+        <div className="w-75 shrink-0 transition-all duration-500 ease-in-out pt-4 pb-1">
           <div
             ref={filterRef}
             className="h-full w-72 bg-white/90 backdrop-blur-md border-2 border-blue-500 rounded-r-2xl shadow-xl p-6 overflow-auto flex flex-col"
@@ -454,7 +454,8 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* 篩選按鈕與內容區塊 */}
       {/* 在這裡 render 甘特圖內容（由父層包住） */}
@@ -462,14 +463,14 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="fixed top-[160px] left-4 z-200 bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700"
+            className="fixed top-[360px] left-4 z-200 bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700"
           >
             篩選
           </button>
         )}
 
       </div>
-    </div>
+    </div >
   );
 
   // return (

@@ -285,10 +285,10 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
                 setAddDepartments={setAddDepartments}
             />
 
-            <div className="flex w-full transition-all duration-500 ease-in-out">
-                {/* 篩選器滑入區塊 */}
+            <div className="flex w-full transition-all duration-500 ease-in-out ">
+                {/* 篩選器滑入區塊 //shrink-0 transition-all duration-500 ease-in-out*/}
                 {isOpen && (
-                    <div className="w-72 shrink-0 transition-all duration-500 ease-in-out">
+                    <div className=" w-75 shrink-0 transition-all duration-500 ease-in-out p-4">
                         <DepartmentFilter
                             isOpen={isOpen}
                             departments={departments}
@@ -304,13 +304,14 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
                     {!isOpen && (
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-2 rounded shadow"
+                            className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-2 py-4 rounded shadow size-15"
+                            style={{ width: "70px", fontSize: "20px" }}
                         >
                             篩選
                         </button>
                     )}
 
-                    <div className="p-4">
+                    <div className="p-4 ">
                         <DepartmentListWrapper
                             departments={departments}
                             setDepartments={setDepartments}

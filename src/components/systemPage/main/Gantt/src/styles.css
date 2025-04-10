@@ -30,13 +30,13 @@
 
 /* 甘特圖標題區域 */
 .gantt-title-text {
-  font-size: 1.25rem;
+  font-size: 2.25rem;
   font-weight: 600;
   color: #1f2937;
 }
 
 .gantt-subtitle {
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   color: #6b7280;
   margin-top: 0.25rem;
 }
@@ -72,7 +72,7 @@
 }
 
 .gantt-room-count-text {
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -208,7 +208,7 @@
 
 /* 手術房標題 */
 .room-title {
-  font-size: 0.875rem;
+  font-size: 1.2rem;
   font-weight: 500;
   margin: 0.125rem 0;
   padding-left: 0.75rem;
@@ -237,7 +237,7 @@
 
 /* 釘選文字 */
 .pin-text {
-  font-size: 0.75rem;
+  font-size: 1.18rem;
   margin-left: 0.25rem;
 }
 
@@ -525,7 +525,7 @@ body {
 
 /* 時間標籤 */
 .time-mark-label {
-  font-size: 0.7rem;
+  font-size: 1rem;
   color: #6b7280;
   position: absolute;
   top: -1.5rem;
@@ -747,10 +747,10 @@ body {
   justify-content: center;
   padding: 8px 16px;
   background-color: #f3f4f6;
-  color: #4b5563;
+  color: #3a414b;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -794,7 +794,7 @@ body {
 }
 
 .confirm-dialog-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   margin-bottom: 10px;
   color: #1f2937;
@@ -892,10 +892,10 @@ body {
 }
 
 .time-settings-title {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -928,7 +928,7 @@ body {
 }
 
 .settings-section-title {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 16px;
@@ -937,7 +937,7 @@ body {
 }
 
 .settings-description {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #6b7280;
   margin-bottom: 16px;
 }
@@ -1276,7 +1276,7 @@ body {
 }
 
 .parameter-tips-content, .gantt-tips-content {
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   color: #1e40af;
   width: 100%;
 }
@@ -1299,7 +1299,7 @@ body {
   border: 1px solid #bfdbfe;
   border-radius: 4px;
   padding: 2px 8px;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1372,7 +1372,7 @@ body {
 }
 
 .rooms-section-title {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 500;
   color: #334155;
   margin-top: 0;
@@ -1403,7 +1403,7 @@ body {
 }
 
 .room-item label {
-  font-size: 14px;
+  font-size: 18px;
   color: #334155;
 }
 
@@ -1498,7 +1498,7 @@ body {
   background-color: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 18px;
   color: #334155;
   padding: 6px 8px;
   cursor: pointer;

@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import AddSurgery from "./AddSurgery";
 import { BASE_URL } from "../../../../../config";
+import "../../Mgr.css";
 
 /* eslint-disable react/prop-types */
 function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, nowUsername }) {
@@ -55,12 +56,12 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
       <table className="system-table table-surgeries">
         <thead>
           <tr>
-            <th>手術房編號</th>
+            <th>編號</th>
             <th>手術房名稱</th>
-            <th>手術房種類</th>
-            <th>所屬科別</th>
-            <th>預期可用時間點</th>
-            <th>預約狀況</th>
+            <th>種類</th>
+            <th>科別</th>
+            <th>可用時間點</th>
+            <th>手術房預約狀況</th>
             <th>動作</th>
           </tr>
         </thead>

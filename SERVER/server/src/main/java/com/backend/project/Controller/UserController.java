@@ -61,7 +61,7 @@ public class UserController {
             message.setTo(toEmail);
             message.setSubject("【MedTime 密碼重置驗證碼】");
             message.setText("親愛的使用者您好，\n\n您申請了密碼重置。\n\n您的驗證碼是： " + code +
-                    "\n\n請在 10 分鐘內使用此驗證碼完成操作。\n\n若非您本人操作，請忽略此信。\n\nMedTime 系統敬上");
+                    "\n\n請在 5 分鐘內使用此驗證碼完成操作。\n\n若非您本人操作，請忽略此信。\n\nMedTime 系統敬上");
 
             mailSender.send(message);
             return ResponseEntity.ok("驗證碼已發送至您的信箱");
@@ -103,7 +103,7 @@ public class UserController {
             return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.status(404).body(result);
-    }
+        }
     }
 
     @GetMapping("/system/users")
