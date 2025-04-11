@@ -51,6 +51,13 @@ public class Surgery {
     @Column(name = "estimated_surgery_time")
     private Integer estimatedSurgeryTime;
 
+    @Column(name = "order_in_room")
+    private Integer orderInRoom;
+
+    @Column(name = "group_application_ids")
+    @Convert(converter = StringListConverter.class)
+    private List<String> groupApplicationIds;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chief_surgeon_employee_id")
     private ChiefSurgeon chiefSurgeon;
@@ -71,10 +78,6 @@ public class Surgery {
 
     @Transient
     private String chiefSurgeonId;
-
-    @Column(name = "group_application_ids")
-    @Convert(converter = StringListConverter.class)
-    private List<String> groupApplicationIds;
 
     // ===== Getters and Setters =====
 
@@ -212,6 +215,14 @@ public class Surgery {
 
     public void setGroupApplicationIds(List<String> groupApplicationIds) {
         this.groupApplicationIds = groupApplicationIds;
+    }
+
+    public Integer getOrderInRoom() {
+        return orderInRoom;
+    }
+
+    public void setOrderInRoom(Integer orderInRoom) {
+        this.orderInRoom = orderInRoom;
     }
 
     public String getFormattedTime() {

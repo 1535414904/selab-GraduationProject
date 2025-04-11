@@ -88,6 +88,7 @@ public class SurgeryService {
         surgery.setUser(user);
         surgery.setOperatingRoom(operatingRoom);
         surgery.setChiefSurgeon(chiefSurgeon);
+        surgery.setOrderInRoom(operatingRoom.getSurgeries().size() + 1); // 設定手術在手術房中的順序
 
         return surgeryRepository.save(surgery);
     }

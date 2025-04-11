@@ -2,6 +2,8 @@ package com.backend.project.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -86,5 +88,14 @@ public class OperatingRoom {
     }
 
     @OneToMany(mappedBy = "operatingRoom" , cascade = CascadeType.REMOVE)
+    @JsonIgnore
     private List<Surgery> surgeries;
+
+    public List<Surgery> getSurgeries() {
+        return surgeries;
+    }
+
+    public void setSurgeries(List<Surgery> surgeries) {
+        this.surgeries = surgeries;
+    }
 }

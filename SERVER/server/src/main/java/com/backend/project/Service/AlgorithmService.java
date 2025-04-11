@@ -497,7 +497,7 @@ public class AlgorithmService {
         int cleaningTime = settings.getCleaningTime();
         System.out.println("整理時間: " + cleaningTime);
 
-        copyGuidelines(); // 複製 Guidelines.csv
+        //copyGuidelines(); // 複製 Guidelines.csv
 
         List<String[]> originalRows;
         try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
