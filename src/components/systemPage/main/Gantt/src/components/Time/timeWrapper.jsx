@@ -26,10 +26,10 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeSca
         return;
       }
     }
-    
+
     // 從後端獲取時間設定
     const settings = await fetchTimeSettings();
-    
+
     if (settings) {
       setTimeSettings(settings);  // 更新 timeSettings 為後端資料
     } else {
@@ -193,12 +193,12 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeSca
 
     const handleMainScroll = (e) => {
       const { scrollLeft } = e.detail;
-      
+
       // 同步兩個組件的滾動
       if (timeScaleOnly && timeScaleRef.current?.parentElement) {
         timeScaleRef.current.parentElement.scrollLeft = scrollLeft;
       }
-      
+
       if (contentOnly && contentRef.current) {
         contentRef.current.scrollLeft = scrollLeft;
       }
@@ -277,10 +277,10 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeSca
                   {(interval.type === "hour" || interval.isStartTime || interval.is24Hour) && (
                     <div
                       className={`time-mark-label ${interval.isStartTime
-                          ? "time-mark-start"
-                          : interval.is24Hour
-                            ? "time-mark-24hour-label"
-                            : ""
+                        ? "time-mark-start"
+                        : interval.is24Hour
+                          ? "time-mark-24hour-label"
+                          : ""
                         }`}
                       style={{ left: interval.isStartTime ? "0" : "50%" }}
                     >
@@ -330,10 +330,10 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeSca
                 {(interval.type === "hour" || interval.isStartTime || interval.is24Hour) && (
                   <div
                     className={`time-mark-label ${interval.isStartTime
-                        ? "time-mark-start"
-                        : interval.is24Hour
-                          ? "time-mark-24hour-label"
-                          : ""
+                      ? "time-mark-start"
+                      : interval.is24Hour
+                        ? "time-mark-24hour-label"
+                        : ""
                       }`}
                     style={{ left: interval.isStartTime ? "0" : "50%" }}
                   >

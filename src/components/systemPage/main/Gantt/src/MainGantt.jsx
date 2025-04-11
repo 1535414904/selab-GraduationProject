@@ -380,7 +380,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
           </div>
         </div>
-  
+
         {/* 手術室數量、編輯模式按鈕 & PDF 按鈕 */}
         <div className="gantt-actions">
           <div className="gantt-room-count">
@@ -389,7 +389,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             </svg>
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
-  
+
           <div className="gantt-buttons">
             {Number(userRole) === 3 && (
               <button
@@ -404,7 +404,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           </div>
         </div>
       </div>
-  
+
       {/* 使用提示 */}
       <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
         <svg
@@ -430,7 +430,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
               {tipsCollapsed ? "展開" : "收合"}
             </button>
           </div>
-  
+
           {!tipsCollapsed && (
             <ul className="gantt-tips-list">
               <li>可以橫向滾動查看不同時間段的排程</li>
@@ -442,7 +442,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           )}
         </div>
       </div>
-  
+
       {/* 主體內容區域，使用 flex 佈局 */}
       <div className="gantt-main-content-area" style={{ display: "flex", height: "100%" }}>
         {/* 篩選器區域 - 可收合的側邊欄 */}
@@ -452,15 +452,15 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             onFilteredDataChange={handleFilterChange}
           />
           {/* 切換按鈕 */}
-          <button 
+          <button
             className="filter-toggle-button"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             aria-label={isFilterOpen ? "收合篩選器" : "展開篩選器"}
           >
-            {isFilterOpen ? "←" : "→"}
+            {/* {isFilterOpen ? "←" : "→"} */}
           </button>
         </div>
-  
+
         {/* 甘特圖主體區域 */}
         <div className={`gantt-chart-main-area ${isFilterOpen ? 'with-filter' : 'no-filter'}`}>
           {/* 時間刻度固定在頂部 */}
@@ -469,7 +469,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
               {/* 時間刻度部分 */}
             </TimeWrapper>
           </div>
-  
+
           {/* 甘特圖內容可滾動區域 */}
           <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
             <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
@@ -495,7 +495,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           </div>
         </div>
       </div>
-  
+
       {/* 當篩選後無符合的資料 */}
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">

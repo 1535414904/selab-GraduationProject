@@ -120,41 +120,61 @@
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   overflow: visible;
-  margin-top: 1rem;
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 93vw;  
+  margin: 0 auto;
 }
 
 /* 滾動容器 */
-.scroll-container {
+/* .scroll-container {
   overflow: hidden;
   width: 100%;
   -webkit-overflow-scrolling: touch;
   position: relative;
   display: flex;
   flex-direction: column;
-}
+} */
+
+
 
 /* 固定在頂部的時間刻度容器 */
-.sticky-header {
+/* .sticky-header {
   position: sticky;
   top: 0;
   z-index: 999;
   background-color: white;
   border-bottom: 1px solid #e5e7eb;
   width: 100%;
+  display: inline-flex; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+} */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;  /* 改這裡 */
+  display: flex;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-
 /* 甘特圖內容滾動區域 */
-.gantt-chart-scroll-area {
+.gantt-chart-scroll-area  {
   overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   position: relative;
+  -webkit-overflow-scrolling: touch;
   max-height: calc(100vh - 250px);
   width: 100%;
   display: block;
+}
+/*控制滾動條的樣式*/
+body.lock-scroll {
+  overflow-y: hidden !important;
 }
 
 .gantt-timescale-container {
@@ -226,8 +246,8 @@
 
 /* 釘選圖標 */
 .pin-icon {
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 1.3rem;
+  height: 1.3rem;
   color: #4b5563;
 }
 
@@ -276,7 +296,7 @@
 
 /* 確保拖曳元素在最上層 */
 .react-beautiful-dnd-dragging {
-  z-index: 1000 !important;
+  z-index: 99999999 !important;
   pointer-events: auto !important;
 }
 
@@ -427,6 +447,8 @@
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: #9ca3af #f3f4f6;
+  white-space: nowrap;
+
 }
 /* 隱藏橫向捲動條 */
 ::-webkit-scrollbar:horizontal {

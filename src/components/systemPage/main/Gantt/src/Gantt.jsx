@@ -39,7 +39,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [modalError, setModalError] = useState(null); // 模態視窗錯誤
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
@@ -68,6 +68,39 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [rows]);
 
+
+  //  處理滾動事件，確保時間刻度和內容區域同步
+  const handleDragStart = () => {
+    document.body.style.overflowY = "hidden";
+  };
+
+  const handleDragEndWrapper = async (result) => {
+    document.body.style.overflowY = "auto"; // 拖曳結束後恢復滾動
+
+    if (!result.destination) return;
+
+    console.log("排班管理甘特圖拖曳結束，更新界面", result);
+
+    if (!result.draggableId) {
+      console.error("拖曳操作缺少draggableId，無法處理");
+      return;
+    }
+
+    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
+
+    if (!isGroupDrag) {
+      await handleDragEnd(result, filteredRows, setFilteredRows);
+    }
+
+    setRows([...filteredRows]);
+
+    window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+    setTimeout(() => {
+      setFilteredRows([...filteredRows]);
+    }, 100);
+  };
+
+
   // 處理滾輪事件，確保垂直滾動時時間刻度保持在頂部，同時保持水平滾動同步
   useEffect(() => {
     const handleGanttTimeScaleScroll = (e) => {
@@ -93,26 +126,30 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       if (e.target.classList.contains('gantt-chart-scroll-area') ||
         e.target.classList.contains('scrollable-container')) {
         const scrollLeft = e.target.scrollLeft;
-        
+
         // 通知時間刻度和內容區域
-        window.dispatchEvent(new CustomEvent('ganttMainScroll', { 
-          detail: { scrollLeft } 
+        window.dispatchEvent(new CustomEvent('ganttMainScroll', {
+          detail: { scrollLeft }
         }));
       }
     };
 
-    window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
-    window.addEventListener('ganttContentScroll', handleGanttContentScroll);
-    
-    // 使用捕獲階段監聽所有相關容器的滾動事件
-    document.addEventListener('scroll', handleContentScroll, true);
+    // window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+    // window.addEventListener('ganttContentScroll', handleGanttContentScroll);
 
-    return () => {
-      window.removeEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
-      window.removeEventListener('ganttContentScroll', handleGanttContentScroll);
-      document.removeEventListener('scroll', handleContentScroll, true);
-    };
+    // // 使用捕獲階段監聽所有相關容器的滾動事件
+    // document.addEventListener('scroll', handleContentScroll, true);
+
+    // return () => {
+    //   window.removeEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
+    //   window.removeEventListener('ganttContentScroll', handleGanttContentScroll);
+    //   document.removeEventListener('scroll', handleContentScroll, true);
+    // };
   }, []);
+
+
+
+
 
   const handleResize = () => {
     if (timeScaleRef.current) {
@@ -121,6 +158,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     if (scrollContainerRef.current) {
       setContainerWidth(scrollContainerRef.current.clientWidth);
     }
+
+
   };
 
   // 處理手術房釘選狀態變更
@@ -422,52 +461,15 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   }
 
   return (
+
     <div className="gantt-main-container">
-      {/* ✅ 上方資訊區塊 */}
-      {/* <div className="gantt-header">
-        <div className="gantt-title">
-          <div className="gantt-date">
-            <h2 className="gantt-title-text">{currentDate}手術排程甘特圖</h2>
-            <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
-          </div>
-        </div> */}
-
-      {/* ✅ 手術室數量 & 確認修改按鈕 */}
-      {/* <div className="gantt-actions">
-          <div className="gantt-room-count">
-            <svg className="gantt-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
-          </div>
-
-          <ConfirmScheduleButton rows={filteredRows} setRows={setRows} />
-          <ORSMButton />
-        </div>
-      </div> */}
       <GanttHeader
         currentDate={currentDate}
         filteredRows={filteredRows}
         setRows={setRows}
       />
-      {/* 篩選按鈕與內容區塊
-      <div className="flex-1 transition-all duration-500 ease-in-out relative">
-        {!isOpen && (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="fixed top-[160px] left-4 z-30 bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700"
-          >
-            篩選
-          </button>
-        )} */}
-      {/* 在這裡 render 甘特圖內容（由父層包住）
-
-
-      </div> */}
-
-
-      {/* ✅ 頁籤選單 */}
-      <div div className="gantt-tabs" >
+      {/* ✅ 頁籤切換區 */}
+      <div className="gantt-tabs">
         <ul className="gantt-tab-list">
           <li
             className={`gantt-tab ${activeTab === 'gantt' ? 'gantt-tab-active' : ''}`}
@@ -482,21 +484,13 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             參數設定
           </li>
         </ul>
-      </div >
+      </div>
 
-      {/* 甘特圖頁籤內容 */}
-      < div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`
-      }>
-        {/* ✅ 使用提示 - 添加收合功能 */}
-        < div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
-          <svg
-            className="gantt-tips-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="currentColor"
-          >
+      {/* ✅ 甘特圖頁籤內容 */}
+      <div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`}>
+        {/* ✅ 提示區塊 */}
+        <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
+          <svg className="gantt-tips-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" fill="#3B82F6" />
             <circle cx="12" cy="7" r="1.5" fill="white" />
             <rect x="11" y="9.5" width="2" height="6" rx="1" fill="white" />
@@ -504,193 +498,150 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           <div className="gantt-tips-content">
             <div className="tips-header">
               <p className="gantt-tips-title">使用提示</p>
-              <button
-                className="tips-toggle-button"
-                onClick={toggleTips}
-                aria-label={tipsCollapsed ? "展開說明" : "收合說明"}
-              >
+              <button className="tips-toggle-button" onClick={toggleTips}>
                 {tipsCollapsed ? "展開" : "收合"}
               </button>
             </div>
-
             {!tipsCollapsed && (
               <ul className="gantt-tips-list">
-                <li>可以橫向滾動查看不同時間段的排程</li>
-                <li>點擊「更新主頁」按鈕可將當前排程更新到主頁中</li>
-                <li>點擊手術房名稱右側的圖釘可釘選手術房，釘選後該手術房的手術將無法移動</li>
-                <li>點擊手術房名稱右側的群組按鈕可進行手術群組操作</li>
-                <li>點擊「參數設定」頁籤可調整手術排程相關的參數</li>
+                <li>可橫向滾動查看時間</li>
+                <li>可拖曳修改手術時間與群組</li>
+                <li>點擊手術查看詳細資訊</li>
               </ul>
             )}
           </div>
-        </div >
-
-        {/* ✅ 篩選器放在提示下方
-        {/* < GanttFilter
-          originalRows={rows}
-          onFilteredDataChange={handleFilterChange}
-        /> */}
-        <div className="flex w-full transition-all duration-500 ease-in-out">
-          <GanttFilter
-            originalRows={rows}
-            onFilteredDataChange={handleFilterChange}
-          />
-
-          {/* ✅ 畫面右側甘特圖會自動被推擠壓縮 */}
-          {/* <div className="flex-1 transition-all duration-500 ease-in-out relative">
-            <div className="gantt-content">
-              <DragDropContext onDragEnd={onDragEndHandler}>
-                <div ref={scrollContainerRef} className="scroll-container">
-                  <div ref={timeScaleRef} className="gantt-timescale-container">
-                    <TimeWrapper containerWidth={containerWidth} useTempSettings={true}>
-                      <div ref={ganttChartRef} className="gantt-chart-container">
-                        <div className="gantt-chart">
-                          {filteredRows.map((room, roomIndex) => (
-                            <div
-                              key={room.room || roomIndex}
-                              className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                            >
-                              <RoomSection
-                                room={room}
-                                roomIndex={roomIndex}
-                                onPinStatusChange={handleRoomPinStatusChange}
-                                readOnly={readOnly}
-                                onSurgeryClick={handleSurgeryClick}
-                                onGroupOperation={handleGroupOperation}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TimeWrapper>
-                  </div>
-                </div>
-              </DragDropContext>
-            </div>
-          </div> */}
-          {!loading && !error && filteredRows.length > 0 && (
-            <div className="gantt-content transition-all duration-500 ease-in-out">
-              <DragDropContext onDragEnd={onDragEndHandler}>
-                {/* 時間刻度固定在頂部 */}
-                <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
-                  <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} useTempSettings={true}>
-                    {/* 時間刻度部分 */}
-                  </TimeWrapper>
-                </div>
-                
-                {/* 甘特圖內容可滾動區域 */}
-                <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
-                  <TimeWrapper containerWidth={containerWidth} contentOnly={true} useTempSettings={true}>
-                    <div ref={ganttChartRef} className="gantt-chart-container">
-                      <div className="gantt-chart">
-                        {filteredRows.map((room, roomIndex) => (
-                          <div
-                            key={room.room || roomIndex}
-                            className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                          >
-                            <RoomSection
-                              room={room}
-                              roomIndex={roomIndex}
-                              onPinStatusChange={handleRoomPinStatusChange}
-                              readOnly={readOnly}
-                              onSurgeryClick={handleSurgeryClick}
-                              onGroupOperation={handleGroupOperation}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </TimeWrapper>
-                </div>
-              </DragDropContext>
-            </div>
-          )}
         </div>
 
-        {/* ✅ 手術排程內容
-        {
-          !loading && !error && filteredRows.length > 0 && (
-            <div className="gantt-content">
-              <DragDropContext onDragEnd={onDragEndHandler}>
-                <div ref={scrollContainerRef} className="scroll-container">
-                  <div ref={timeScaleRef} className="gantt-timescale-container">
-                    <TimeWrapper containerWidth={containerWidth} useTempSettings={true}>
-                      <div ref={ganttChartRef} className="gantt-chart-container">
-                        <div className="gantt-chart">
-                          {filteredRows.map((room, roomIndex) => (
-                            <div
-                              key={room.room || roomIndex}
-                              className={`row ${roomIndex % 2 === 0 ? "row-even" : "row-odd"} ${room.isPinned ? 'row-pinned' : ''}`}
-                            >
-                              <RoomSection
-                                room={room}
-                                roomIndex={roomIndex}
-                                onPinStatusChange={handleRoomPinStatusChange}
-                                readOnly={readOnly}
-                                onSurgeryClick={handleSurgeryClick}
-                                onGroupOperation={handleGroupOperation}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TimeWrapper>
-                  </div>
-                </div>
-              </DragDropContext>
-            </div>
-          )
-        } */}
+        {/* ✅ 主內容：左右佈局 */}
+        <div className="gantt-main-layout flex w-full h-full">
+          {/* ✅ 左側固定篩選器 */}
+          {/* 篩選器區域 - 可收合的側邊欄 */}
+          <div className={` ${isFilterOpen ? 'open' : 'closed'}`}>
+            <GanttFilter
+              originalRows={rows}
+              onFilteredDataChange={handleFilterChange}
+            />
+            {/* 切換按鈕 */}
+            <button
+              className="filter-toggle-button"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              aria-label={isFilterOpen ? "收合篩選器" : "展開篩選器"}
+            >
+              {/* {isFilterOpen ? "←" : "→"} */}
+            </button>
+          </div>
+          {/* ✅ 右側甘特圖區域 */}
+          <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
+            {/* 篩選器開關按鈕（固定）
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="filter-toggle-btn"
+              style={{
+                top: '8rem',
+                left: isFilterOpen ? '18rem' : '0.25rem',
+                position: 'absolute',
+                zIndex: 50,
+              }}
+            >
+              {isFilterOpen ? '←' : '→'}
+            </button> */}
 
-        {/* ✅ 當篩選後無符合的資料 */}
-        {
-          !loading && !error && filteredRows.length === 0 && (
-            <div className="no-data">
-              <p className="no-data-title">尚無符合條件的排程資料</p>
-              <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
-            </div>
-          )
-        }
+            {/* ✅ 甘特圖內容 */}
+            {!loading && !error && filteredRows.length > 0 && (
+              <div className="gantt-content">
+                {/* // <div class="w-full max-w-[95vw] mx-auto border border-gray-200 rounded-lg relative flex flex-col overflow-visible"> */}
+
+                <DragDropContext
+                  onDragStart={handleDragStart}
+                  onDragEnd={onDragEndHandler} >
+                  {/* 時間刻度區塊 */}
+                  {/* <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+                    <div className="containerWidth" style={{ overflowX: 'auto' }}>
+                      <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}> */}
+                  {/* 時間刻度 */}
+                  {/* </TimeWrapper>
+                    </div>
+                  </div> */}
+                  <div className="gantt-timescale-container sticky-header">
+                    <div className="scrollable-container" ref={timeScaleRef}>
+                      <div style={{ width: containerWidth }}>
+                        <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 可滾動內容區域 */}
+                  <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
+                    <div style={{ width: containerWidth }}>
+                      <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
+                        <div ref={ganttChartRef} className="gantt-chart-container">
+                          <div className="gantt-chart">
+                            {filteredRows.map((room, roomIndex) => (
+                              <div
+                                key={room.room || roomIndex}
+                                className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                              >
+                                <RoomSection
+                                  room={room}
+                                  roomIndex={roomIndex}
+                                  readOnly={readOnly}
+                                  onSurgeryClick={handleSurgeryClick}
+                                  onGroupOperation={handleGroupOperation}
+                                  onPinStatusChange={handleRoomPinStatusChange}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TimeWrapper>
+                    </div>
+                  </div>
+                </DragDropContext>
+              </div>
+            )}
+
+            {/* 無資料提示 */}
+            {!loading && !error && filteredRows.length === 0 && (
+              <div className="no-data">
+                <p className="no-data-title">尚無符合條件的排程資料</p>
+                <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* 手術詳細資訊模態視窗 */}
-        {
-          selectedSurgery && (
-            <SurgeryModal
-              surgery={selectedSurgery}
-              onClose={handleCloseModal}
-              error={modalError}
-            />
-          )
-        }
-      </div >
+        {selectedSurgery && (
+          <SurgeryModal
+            surgery={selectedSurgery}
+            onClose={handleCloseModal}
+            error={modalError}
+          />
+        )}
+      </div>
 
-      {/* 時間設定頁籤內容 */}
-      < div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
-        <ParametricSettings onTimeSettingsChange={(newSettings, isPreview) => {
-          // 重新格式化所有手術房的數據
-          const updatedRows = formatRoomData([...rows].map(room => ({
-            ...room,
-            data: room.data ? [...room.data] : []
-          })), isPreview); // 傳遞 isPreview 參數
+      {/* 參數設定頁籤內容 */}
+      <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
+        <ParametricSettings
+          onTimeSettingsChange={(newSettings, isPreview) => {
+            const updatedRows = formatRoomData([...rows].map(r => ({
+              ...r,
+              data: r.data ? [...r.data] : []
+            })), isPreview);
 
-          // 強制觸發重新渲染
-          setRows([]);
-          setTimeout(() => {
-            setRows(updatedRows);
-            setFilteredRows(updatedRows);
-          }, 0);
-
-          // 切換到甘特圖頁籤
-          setActiveTab('gantt');
-        }}
+            setRows([]);
+            setTimeout(() => {
+              setRows(updatedRows);
+              setFilteredRows(updatedRows);
+            }, 0);
+            setActiveTab('gantt');
+          }}
           initialTimeSettings={initialTimeSettings}
-          setInitialTimeSettings={setInitialTimeSettings} />
-      </div >
+          setInitialTimeSettings={setInitialTimeSettings}
+        />
+      </div>
     </div >
   );
 
-
-
 }
-
 export default Gantt;

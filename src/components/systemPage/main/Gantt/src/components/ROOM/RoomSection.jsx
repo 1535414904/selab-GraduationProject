@@ -177,7 +177,10 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 alignItems: 'center',
                 background: '#f3f4f6',
                 padding: '2px 8px',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                marginRight: '8px',
+                fontWeight: 'bold',
+
               }}>
                 <button
                   onClick={enableGroupMode}
@@ -185,8 +188,11 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '4px 8px',
-                    color: '#3B82F6'
+                    padding: '0.5px 3px',
+                    color: '#3B82F6',
+                    marginRight: '8px',
+                    fontWeight: 'bold',
+                    fontSize: '15.8px',
                   }}
                 >
                   建立
@@ -197,8 +203,11 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '4px 8px',
-                    color: '#EF4444'
+                    padding: '0.5px 3px',
+                    color: '#EF4444',
+                    marginRight: '8px',
+                    fontWeight: 'bold',
+                    fontSize: '15.8px',
                   }}
                 >
                   解除

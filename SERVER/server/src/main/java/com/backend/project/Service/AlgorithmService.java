@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,17 +73,17 @@ public class AlgorithmService {
         exportOperatingRoomToCsv();
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
-        // try {
-        // ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
-        // BATCH_FILE_PATH);
-        // processBuilder.directory(new File(System.getProperty("user.dir"))); //
-        // 設定工作目錄為 server 目錄
-        // processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
-        // Process process = processBuilder.start();
-        // process.waitFor(); // 等待執行完成
-        // } catch (IOException | InterruptedException e) {
-        // e.printStackTrace();
-        // }
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
+                    BATCH_FILE_PATH);
+            processBuilder.directory(new File(System.getProperty("user.dir"))); //
+            // 設定工作目錄為 server 目錄
+            processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
+            Process process = processBuilder.start();
+            process.waitFor(); // 等待執行完成
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
         try {
             addPinnedOperatingRoomToCsv();
@@ -519,6 +520,14 @@ public class AlgorithmService {
                 continue;
             }
 
+            // // 🔽 在這裡刪掉下一行（如果存在）
+            // if (i + 1 < originalRows.size()) {
+            // System.out.println("刪除原始資料中第 " + (i + 1) + " 行，內容為: " +
+            // Arrays.toString(originalRows.get(i + 1)));
+            // originalRows.remove(i + 1);
+            // i--; // 調整索引以反映刪除的行
+            // }
+
             System.out.println("處理手術申請序號: " + applicationId);
             Surgery surgery = surgeryRepository.findById(applicationId).orElseThrow();
             if (surgery == null) {
@@ -571,7 +580,7 @@ public class AlgorithmService {
                 LocalTime otherEnd = cursorTime.plusMinutes(est);
                 insertedRows.add(new String[] {
                         day,
-                        other.getSurgeryName(),
+                        other.getChiefSurgeon().getName(),
                         formatSurgeryName(otherId),
                         formatCustomTime(cursorTime),
                         formatCustomTime(otherEnd),
