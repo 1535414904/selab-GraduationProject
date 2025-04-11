@@ -12,6 +12,7 @@ import {
 // 修改：處理拖曳結束，增加對群組的處理
 export const handleDragEnd = async (result, rows, setRows) => {
   console.log("開始處理拖曳結束事件");
+  console.log("拖曳結果:", result);
   const { source, destination } = result;
   if (!destination) return null;
 
@@ -42,7 +43,7 @@ export const handleDragEnd = async (result, rows, setRows) => {
     handleSameRoomDrag(newRows, sourceRoomIndex, sourceIndex, destinationIndex);
   } else {
     console.log("跨手術室的拖曳操作");
-    handleCrossRoomDrag(newRows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex);
+    handleCrossRoomDrag(result, newRows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex);
   }
 
   // 只更新前端界面，不發送後端請求
@@ -271,7 +272,7 @@ const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) =
   updateRoomTimes(roomData);
 };
 
-const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceIndex, destinationIndex) => {
+const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, sourceIndex, destinationIndex) => {
   const sourceRoomData = newRows[sourceRoomIndex].data;
   const destRoomData = newRows[destRoomIndex].data;
   const roomName = newRows[destRoomIndex].room || '手術室';
@@ -350,6 +351,16 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
 
   // 更新目標房間的時間
   updateRoomTimes(destRoomData);
+
+  // 更新後端資料庫
+  axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
+  .then(response => {
+    console.log("手術室更新成功:", response.data);
+  })
+  .catch(error => {
+    console.error("手術室更新失敗:", error);
+  }
+  );
 };
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {

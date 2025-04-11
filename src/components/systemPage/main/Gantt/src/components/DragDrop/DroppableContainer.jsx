@@ -226,8 +226,8 @@ function DroppableContainer({
             if (surgery.isVirtualContainer) {
               return (
                 <Draggable
-                  key={`draggable-container-${surgery.id}`}
-                  draggableId={`draggable-container-${surgery.id}`}
+                  key={surgery.id}
+                  draggableId={surgery.id}
                   index={index}
                   isDragDisabled={!isMainPage && isPinned}
                 >
@@ -265,8 +265,8 @@ function DroppableContainer({
             if (surgery.isGroup) {
               return (
                 <Draggable
-                  key={`draggable-group-${surgery.id}`}
-                  draggableId={`draggable-group-${surgery.id}`}
+                  key={surgery.id}
+                  draggableId={surgery.id}
                   index={index}
                   isDragDisabled={!isMainPage && isPinned}
                 >
@@ -296,8 +296,8 @@ function DroppableContainer({
 
             return (
               <Draggable
-                key={draggableId}
-                draggableId={draggableId}
+                key={surgery.id}
+                draggableId={surgery.id}
                 index={index}
                 isDragDisabled={!isMainPage && isPinned}
               >
