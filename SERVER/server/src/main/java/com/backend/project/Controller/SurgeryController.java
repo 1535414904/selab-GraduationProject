@@ -155,6 +155,15 @@ public class SurgeryController {
         return ResponseEntity.ok("Surgery update successfully");
     }
 
+    @PutMapping("system/surgery/{id}/{operatingRoomId}")
+    public ResponseEntity<?> updateSurgery4DrogEnd(@PathVariable String id, @PathVariable String operatingRoomId) {
+        System.out.println("收到的手術 ID：" + id);
+        System.out.println("收到的手術室 ID：" + operatingRoomId);
+
+        surgeryService.updateSurgery4DrogEnd(id, operatingRoomId);
+        return ResponseEntity.ok("Surgery update successfully");
+    }
+
     @PostMapping("/system/surgery/add")
     public ResponseEntity<?> addSurgery(@RequestBody Surgery surgery) {
         System.out.println("🔹 接收到的 Surgery 物件：" + surgery);

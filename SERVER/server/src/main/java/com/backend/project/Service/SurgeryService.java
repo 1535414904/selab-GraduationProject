@@ -215,4 +215,18 @@ public class SurgeryService {
         // 保存更新後的手術資料
         surgeryRepository.save(firstSurgery);
     }
+
+    public void updateSurgery4DrogEnd(String id, String operatingRoomId) {
+        Surgery surgery = surgeryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Surgery not found with id " + id));
+        OperatingRoom operatingRoom = operatingRoomRepository.findById(operatingRoomId)
+                .orElseThrow(() -> new RuntimeException("OperatingRoom not found with id " + operatingRoomId));
+
+        // 更新手術的 operatingRoom
+        surgery.setOperatingRoom(operatingRoom);
+        surgery.setOrderInRoom(operatingRoom.getSurgeries().size() + 1); // 設定手術在手術房中的順序
+
+        // 保存更新後的手術資料
+        surgeryRepository.save(surgery);        
+    }
 }

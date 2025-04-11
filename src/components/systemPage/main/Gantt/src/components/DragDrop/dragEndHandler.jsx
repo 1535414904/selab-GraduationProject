@@ -15,7 +15,6 @@ export const handleDragEnd = async (result, rows, setRows) => {
   const { source, destination } = result;
   if (!destination) return null;
 
-
   const sourceRoomIndex = parseInt(source.droppableId.split("-")[1], 10);
   const destinationRoomIndex = parseInt(destination.droppableId.split("-")[1], 10);
 
@@ -276,6 +275,7 @@ const handleCrossRoomDrag = (newRows, sourceRoomIndex, destRoomIndex, sourceInde
   const sourceRoomData = newRows[sourceRoomIndex].data;
   const destRoomData = newRows[destRoomIndex].data;
   const roomName = newRows[destRoomIndex].room || '手術室';
+  console.log(`拖曳到 ${destRoomIndex}`);
 
   // 檢查被拖曳的項目是否為銜接時間
   const isDraggingCleaningTime = sourceRoomData[sourceIndex]?.isCleaningTime;
