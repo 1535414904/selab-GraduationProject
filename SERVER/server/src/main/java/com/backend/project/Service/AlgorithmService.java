@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.OperatingRoomRepository;
@@ -57,17 +56,16 @@ public class AlgorithmService {
 
     private String ORSM_GUIDELINES_FILE_PATH = "ORSM 2025/Guidelines";
 
-    @Autowired
-    private SurgeryRepository surgeryRepository;
+    private final SurgeryRepository surgeryRepository;
 
-    @Autowired
-    private OperatingRoomRepository operatingRoomRepository;
-
-    @Autowired
-    @Lazy
-    private SurgeryService surgeryService;
+    private final OperatingRoomRepository operatingRoomRepository;
 
     private final Map<String, Boolean> pinnedRooms = new ConcurrentHashMap<>(); // 儲存釘選的手術房
+
+    public AlgorithmService(SurgeryRepository surgeryRepository, OperatingRoomRepository operatingRoomRepository) {
+        this.surgeryRepository = surgeryRepository;
+        this.operatingRoomRepository = operatingRoomRepository;
+    }
 
     public void runBatchFile() throws Exception {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
@@ -76,15 +74,35 @@ public class AlgorithmService {
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
-                    BATCH_FILE_PATH);
-            processBuilder.directory(new File(System.getProperty("user.dir"))); //
-            // 設定工作目錄為 server 目錄
+            File batchFile = new File(BATCH_FILE_PATH);
+            System.out.println("批處理文件絕對路徑: " + batchFile.getAbsolutePath());
+            System.out.println("批處理文件是否存在: " + batchFile.exists());
+            System.out.println("工作目錄: " + System.getProperty("user.dir"));
+            
+            // 使用完整路徑執行批處理文件
+            File fullPathBatch = new File(System.getProperty("user.dir"), BATCH_FILE_PATH).getAbsoluteFile();
+            System.out.println("使用完整路徑: " + fullPathBatch.getAbsolutePath());
+            
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", 
+                    fullPathBatch.getAbsolutePath());
+                    
+            // 設定工作目錄為批處理文件所在目錄
+            processBuilder.directory(fullPathBatch.getParentFile());
             processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
+            
+            System.out.println("啟動批處理...");
             Process process = processBuilder.start();
-            process.waitFor(); // 等待執行完成
+            System.out.println("等待批處理完成...");
+            int exitCode = process.waitFor(); // 等待執行完成
+            System.out.println("批處理執行完成，退出代碼: " + exitCode);
+            
+            if (exitCode != 0) {
+                throw new Exception("批處理執行失敗，錯誤代碼: " + exitCode);
+            }
         } catch (IOException | InterruptedException e) {
+            System.err.println("執行批處理文件時出錯: " + e.getMessage());
             e.printStackTrace();
+            throw new Exception("演算法執行失敗: " + e.getMessage(), e);
         }
 
         try {
@@ -497,8 +515,6 @@ public class AlgorithmService {
         int cleaningTime = settings.getCleaningTime();
         System.out.println("整理時間: " + cleaningTime);
 
-        //copyGuidelines(); // 複製 Guidelines.csv
-
         List<String[]> originalRows;
         try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
             originalRows = reader.readAll();
@@ -524,6 +540,14 @@ public class AlgorithmService {
                 continue;
             }
 
+            // // 🔽 在這裡刪掉下一行（如果存在）
+            // if (i + 1 < originalRows.size()) {
+            // System.out.println("刪除原始資料中第 " + (i + 1) + " 行，內容為: " +
+            // Arrays.toString(originalRows.get(i + 1)));
+            // originalRows.remove(i + 1);
+            // i--; // 調整索引以反映刪除的行
+            // }
+
             System.out.println("處理手術申請序號: " + applicationId);
             Surgery surgery = surgeryRepository.findById(applicationId).orElseThrow();
             if (surgery == null) {
@@ -545,11 +569,9 @@ public class AlgorithmService {
             }
 
             System.out.println("將為手術 " + applicationId + " 插入同群組手術: " + otherIds);
-            surgeryService.restoreSurgeryGroupEstimatedTime(applicationId);
 
             String day = row[0];
             String startTimeStr = row[3];
-            System.out.println("原手術開始時間: " + startTimeStr);
 
             LocalTime cursorTime = parseCustomTime(startTimeStr);
             List<String[]> insertedRows = new ArrayList<>();
@@ -574,14 +596,6 @@ public class AlgorithmService {
                     System.out.println("找不到群組內手術: " + otherId);
                     continue;
                 }
-
-                // 先刪除原始CSV中的下一行（如果存在）
-                if (i + 1 < originalRows.size()) {
-                    String[] nextRow = originalRows.get(i + 1);
-                    System.out.println("刪除下一行資料: " + Arrays.toString(nextRow));
-                    i++; // 跳過下一行（不加入 updatedRows）
-                }
-
                 int est = other.getEstimatedSurgeryTime();
                 LocalTime otherEnd = cursorTime.plusMinutes(est);
                 insertedRows.add(new String[] {
@@ -602,7 +616,6 @@ public class AlgorithmService {
                 cursorTime = cleanEnd;
             }
 
-            surgeryService.updateSurgeryGroupEstimatedTime(groupIds);
             updatedRows.addAll(insertedRows);
         }
 
