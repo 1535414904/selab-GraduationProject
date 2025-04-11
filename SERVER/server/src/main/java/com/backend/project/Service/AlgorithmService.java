@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.OperatingRoomRepository;
@@ -56,16 +57,17 @@ public class AlgorithmService {
 
     private String ORSM_GUIDELINES_FILE_PATH = "ORSM 2025/Guidelines";
 
-    private final SurgeryRepository surgeryRepository;
+    @Autowired
+    private SurgeryRepository surgeryRepository;
 
-    private final OperatingRoomRepository operatingRoomRepository;
+    @Autowired
+    private OperatingRoomRepository operatingRoomRepository;
+
+    @Autowired
+    @Lazy
+    private SurgeryService surgeryService;
 
     private final Map<String, Boolean> pinnedRooms = new ConcurrentHashMap<>(); // 儲存釘選的手術房
-
-    public AlgorithmService(SurgeryRepository surgeryRepository, OperatingRoomRepository operatingRoomRepository) {
-        this.surgeryRepository = surgeryRepository;
-        this.operatingRoomRepository = operatingRoomRepository;
-    }
 
     public void runBatchFile() throws Exception {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
@@ -495,6 +497,8 @@ public class AlgorithmService {
         int cleaningTime = settings.getCleaningTime();
         System.out.println("整理時間: " + cleaningTime);
 
+        copyGuidelines(); // 複製 Guidelines.csv
+
         List<String[]> originalRows;
         try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
             originalRows = reader.readAll();
@@ -520,14 +524,6 @@ public class AlgorithmService {
                 continue;
             }
 
-            // // 🔽 在這裡刪掉下一行（如果存在）
-            // if (i + 1 < originalRows.size()) {
-            // System.out.println("刪除原始資料中第 " + (i + 1) + " 行，內容為: " +
-            // Arrays.toString(originalRows.get(i + 1)));
-            // originalRows.remove(i + 1);
-            // i--; // 調整索引以反映刪除的行
-            // }
-
             System.out.println("處理手術申請序號: " + applicationId);
             Surgery surgery = surgeryRepository.findById(applicationId).orElseThrow();
             if (surgery == null) {
@@ -549,9 +545,11 @@ public class AlgorithmService {
             }
 
             System.out.println("將為手術 " + applicationId + " 插入同群組手術: " + otherIds);
+            surgeryService.restoreSurgeryGroupEstimatedTime(applicationId);
 
             String day = row[0];
             String startTimeStr = row[3];
+            System.out.println("原手術開始時間: " + startTimeStr);
 
             LocalTime cursorTime = parseCustomTime(startTimeStr);
             List<String[]> insertedRows = new ArrayList<>();
@@ -576,6 +574,14 @@ public class AlgorithmService {
                     System.out.println("找不到群組內手術: " + otherId);
                     continue;
                 }
+
+                // 先刪除原始CSV中的下一行（如果存在）
+                if (i + 1 < originalRows.size()) {
+                    String[] nextRow = originalRows.get(i + 1);
+                    System.out.println("刪除下一行資料: " + Arrays.toString(nextRow));
+                    i++; // 跳過下一行（不加入 updatedRows）
+                }
+
                 int est = other.getEstimatedSurgeryTime();
                 LocalTime otherEnd = cursorTime.plusMinutes(est);
                 insertedRows.add(new String[] {
@@ -596,6 +602,7 @@ public class AlgorithmService {
                 cursorTime = cleanEnd;
             }
 
+            surgeryService.updateSurgeryGroupEstimatedTime(groupIds);
             updatedRows.addAll(insertedRows);
         }
 
