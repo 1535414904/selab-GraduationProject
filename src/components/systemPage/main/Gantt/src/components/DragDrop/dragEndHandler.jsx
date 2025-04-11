@@ -239,10 +239,9 @@ const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) =
 
   // 檢查被拖曳的項目是否為銜接時間
   const isDraggingCleaningTime = roomData[sourceIndex]?.isCleaningTime;
-
   if (isDraggingCleaningTime) {
     console.log("禁止直接拖曳銜接時間");
-    return; // 禁止直接拖曳銜接時間
+    return;
   }
 
   // 如果目標位置是銜接時間，調整到相鄰的手術位置
@@ -250,27 +249,46 @@ const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) =
     destinationIndex = destinationIndex % 2 === 0 ? destinationIndex + 1 : destinationIndex - 1;
   }
 
-  // 從源位置移除手術和銜接時間
-  const itemsToMove = roomData[sourceIndex + 1] ?
-    roomData.splice(sourceIndex, 2) : // 有銜接時間，移除兩個項目
-    roomData.splice(sourceIndex, 1);  // 沒有銜接時間，只移除手術項目
+  // 移除拖曳手術（含其銜接時間）
+  const itemsToMove = roomData[sourceIndex + 1]?.isCleaningTime
+    ? roomData.splice(sourceIndex, 2)
+    : roomData.splice(sourceIndex, 1);
 
   let targetIndex = destinationIndex;
-  // 確保目標索引不超出范圍
   if (targetIndex > roomData.length) {
     targetIndex = roomData.length;
   }
 
-  // 將項目插入到目標位置
-  if (itemsToMove.length === 2) {
-    roomData.splice(targetIndex, 0, ...itemsToMove);
-  } else {
-    roomData.splice(targetIndex, 0, itemsToMove[0]);
-  }
+  // 插入拖曳項目
+  roomData.splice(targetIndex, 0, ...itemsToMove);
 
-  // 更新房間時間
+  console.log(`拖曳至相同房間：從 ${sourceIndex} 到 ${destinationIndex}`);
+
+  // 重新排序並更新 orderInRoom
+  const surgeriesOnly = roomData.filter(item => !item.isCleaningTime);
+
+  surgeriesOnly.forEach((surgery, index) => {
+    const newOrder = index + 1;
+    console.log(`手術：${surgery.applicationId}，新順序：${newOrder}`);
+    if (surgery.orderInRoom !== newOrder) {
+      surgery.orderInRoom = newOrder;
+
+      // 發送更新到後端
+      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`,
+        { orderInRoom: newOrder }
+      )
+        .then(() => {
+          console.log(`✅ 已更新 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
+        }).catch((err) => {
+          console.error(`❌ 更新 ${surgery.applicationId} 的順序失敗`, err);
+        });
+    }
+  });
+
+  // 最後更新時間顯示
   updateRoomTimes(roomData);
 };
+
 
 const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, sourceIndex, destinationIndex) => {
   const sourceRoomData = newRows[sourceRoomIndex].data;
@@ -354,13 +372,13 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
 
   // 更新後端資料庫
   axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
-  .then(response => {
-    console.log("手術室更新成功:", response.data);
-  })
-  .catch(error => {
-    console.error("手術室更新失敗:", error);
-  }
-  );
+    .then(response => {
+      console.log("手術室更新成功:", response.data);
+    })
+    .catch(error => {
+      console.error("手術室更新失敗:", error);
+    }
+    );
 };
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {

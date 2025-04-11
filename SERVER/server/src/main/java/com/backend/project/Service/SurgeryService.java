@@ -70,6 +70,13 @@ public class SurgeryService {
         }).orElseThrow(() -> new RuntimeException("Surgery not found"));
     }
 
+    public Surgery updateSurgery4OrderInRoom(String id, int orderInRoom) {
+        return surgeryRepository.findById(id).map(surgery -> {
+            surgery.setOrderInRoom(orderInRoom);
+            return surgeryRepository.save(surgery);
+        }).orElseThrow(() -> new RuntimeException("Surgery not found")); 
+    }
+
     public Surgery addSurgery(Surgery surgery) {
         // 若是以帳號為主關聯
         User user = userRepository.findByUsername(surgery.getUsername())

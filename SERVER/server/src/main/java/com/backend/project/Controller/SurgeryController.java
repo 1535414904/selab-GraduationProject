@@ -35,7 +35,7 @@ public class SurgeryController {
 
     @Autowired
     private OperatingRoomRepository operatingRoomRepository;
-    
+
     // 新增獲取手術排程的 endpoint
     @GetMapping("/surgeries")
     public ResponseEntity<?> getAllSurgeries() {
@@ -76,7 +76,8 @@ public class SurgeryController {
                 response.put("departmentName", department.getName());
             } else {
                 response.put("departmentName", "未指定科別");
-                System.out.println("Warning: Operating Room " + operatingRoom.getId() + " has no associated department");
+                System.out
+                        .println("Warning: Operating Room " + operatingRoom.getId() + " has no associated department");
             }
         } else {
             response.put("departmentName", "未指定科別");
@@ -164,14 +165,24 @@ public class SurgeryController {
         return ResponseEntity.ok("Surgery update successfully");
     }
 
+    @PutMapping("system/surgery/{id}/order-in-room")
+    public ResponseEntity<?> updateSurgery4OrderInRoom(@PathVariable String id,
+            @RequestBody Map<String, Integer> body) {
+        int orderInRoom = body.get("orderInRoom");
+        System.out.println("收到的手術 ID：" + id);
+        System.out.println("收到的手術室順序：" + orderInRoom);
+
+        surgeryService.updateSurgery4OrderInRoom(id, orderInRoom);
+        return ResponseEntity.ok("Surgery update successfully");
+    }
+
     @PostMapping("/system/surgery/add")
     public ResponseEntity<?> addSurgery(@RequestBody Surgery surgery) {
         System.out.println("🔹 接收到的 Surgery 物件：" + surgery);
         surgeryService.addSurgery(surgery);
         return ResponseEntity.ok("Surgery add successfully");
     }
-    
-    
+
     @DeleteMapping("/system/surgery/delete/{id}")
     public ResponseEntity<?> deleteSurgery(@PathVariable String id) {
         surgeryService.deleteSurgery(id);

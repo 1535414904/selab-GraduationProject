@@ -21,7 +21,7 @@ public class ProjectApplication {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // 允許所有 `/api/**` 的請求
-                        .allowedOrigins("*")  // 允許所有網域（可以改成前端的網址）
+                        .allowedOrigins("http://localhost:5173")  // 允許所有網域（可以改成前端的網址）
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
