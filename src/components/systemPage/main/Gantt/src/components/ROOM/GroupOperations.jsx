@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getTimeSettings } from '../Time/timeUtils';
-import { getColorByEndTime, COLORS } from './colorUtils';
+import { getColorByEndTime, COLORS, getCleaningColor } from './colorUtils';
 import { BASE_URL } from '../../../../../../../config';
 
 // 輔助函數：將時間轉換為分鐘數
@@ -331,13 +331,24 @@ export const ungroup = (groupItem, roomData, roomName) => {
     });
   }
 
+  // 獲取清潔時間設置
+  const cleaningTime = getCleaningDuration(true);
+
   // 插入所有原始項目
   let insertIndex = groupIndex;
   let currentStartTime = groupItem.startTime; // 從群組的開始時間開始
 
   for (let i = 0; i < sortedItems.length; i++) {
     const item = sortedItems[i];
-    const originalDuration = originalDurations.find(d => d.id === item.id)?.duration || 0;
+    
+    // 獲取原始持續時間或使用默認值
+    let originalDuration;
+    if (item.isCleaningTime) {
+      // 使用設定中的銜接時間
+      originalDuration = cleaningTime;
+    } else {
+      originalDuration = originalDurations.find(d => d.id === item.id)?.duration || 0;
+    }
 
     // 創建還原後的手術項目
     let restoredItem = { ...item };
@@ -348,7 +359,10 @@ export const ungroup = (groupItem, roomData, roomName) => {
     currentStartTime = restoredItem.endTime; // 更新下一個手術的開始時間
 
     // 更新顏色
-    if (!restoredItem.isCleaningTime) {
+    if (restoredItem.isCleaningTime) {
+      restoredItem.color = getCleaningColor();
+      restoredItem.duration = cleaningTime; // 確保使用正確的銜接時間
+    } else {
       restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
     }
 
@@ -394,6 +408,9 @@ export const ensureTimeConsistency = (roomData, startIndex, roomName) => {
   // 檢查項目是否為空
   if (!roomData || roomData.length === 0) return roomData;
 
+  // 獲取清潔時間設置
+  const cleaningDuration = getCleaningDuration(true);
+
   // 遍歷所有項目，確保時間連續性
   for (let i = startIndex; i < roomData.length - 1; i++) {
     const currentItem = roomData[i];
@@ -401,38 +418,64 @@ export const ensureTimeConsistency = (roomData, startIndex, roomName) => {
 
     // 如果當前項目不是銜接時間且下一個項目不是銜接時間，則需要添加銜接時間
     if (!currentItem.isCleaningTime && !nextItem.isCleaningTime) {
-      // 計算銜接時間長度（分鐘）
-      const cleaningDuration = getCleaningDuration(true);
-
       // 創建銜接時間項目
-      const cleaningItem = createCleaningTimeItem(
-        currentItem.endTime,
-        nextItem.startTime,
-        roomName
-      );
+      const cleaningItem = {
+        id: generateUniqueId('cleaning'),
+        doctor: '銜接時間',
+        surgery: '整理中',
+        startTime: currentItem.endTime,
+        endTime: minutesToTime(timeToMinutes(currentItem.endTime) + cleaningDuration),
+        isCleaningTime: true,
+        operatingRoomName: roomName,
+        color: "blue",
+        duration: cleaningDuration
+      };
 
       // 插入銜接時間
       roomData.splice(i + 1, 0, cleaningItem);
+      
+      // 更新下一個手術的開始時間
+      if (i + 2 < roomData.length) {
+        roomData[i + 2].startTime = cleaningItem.endTime;
+      }
+      
       i++; // 跳過新插入的銜接時間
     }
     // 如果當前項目是銜接時間且下一個項目也是銜接時間，合併它們
     else if (currentItem.isCleaningTime && nextItem.isCleaningTime) {
       currentItem.endTime = nextItem.endTime;
+      currentItem.duration = timeToMinutes(currentItem.endTime) - timeToMinutes(currentItem.startTime);
+      currentItem.color = "blue";
       roomData.splice(i + 1, 1); // 移除下一個項目
       i--; // 重新檢查當前項目
     }
-    // 如果時間不連續，調整銜接時間的結束時間
-    else if (currentItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
-      currentItem.endTime = nextItem.startTime;
+    // 如果時間不連續，調整銜接時間
+    else if (currentItem.isCleaningTime) {
+      // 確保銜接時間使用正確的顏色和持續時間
+      currentItem.color = "blue";
+      currentItem.duration = cleaningDuration;
+      
+      // 確保銜接時間與下一個項目相連
+      if (currentItem.endTime !== nextItem.startTime) {
+        currentItem.endTime = nextItem.startTime;
+      }
     }
-    // 如果普通項目時間不連續，調整結束時間
-    else if (!currentItem.isCleaningTime && !nextItem.isCleaningTime && currentItem.endTime !== nextItem.startTime) {
+    // 如果普通項目時間不連續，插入銜接時間
+    else if (currentItem.endTime !== nextItem.startTime) {
+      // 創建銜接時間項目
+      const cleaningItem = {
+        id: generateUniqueId('cleaning'),
+        doctor: '銜接時間',
+        surgery: '整理中',
+        startTime: currentItem.endTime,
+        endTime: nextItem.startTime,
+        isCleaningTime: true,
+        operatingRoomName: roomName,
+        color: "blue",
+        duration: timeToMinutes(nextItem.startTime) - timeToMinutes(currentItem.endTime)
+      };
+
       // 插入銜接時間
-      const cleaningItem = createCleaningTimeItem(
-        currentItem.endTime,
-        nextItem.startTime,
-        roomName
-      );
       roomData.splice(i + 1, 0, cleaningItem);
       i++; // 跳過新插入的銜接時間
     }

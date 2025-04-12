@@ -54,8 +54,8 @@ export const getGroupColor = (isCleaningTime, endTime, useTempSettings = false) 
   // 如果是銜接時間，返回藍色
   if (isCleaningTime) return "blue";
 
-  // 否則根據結束時間返回相應顏色
-  return getColorByEndTime(endTime, false, useTempSettings);
+  // 群組專用顏色
+  return "group";
 };
 
 // 根據顏色名稱獲取實際的色碼值
