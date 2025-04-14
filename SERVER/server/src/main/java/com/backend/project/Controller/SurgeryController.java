@@ -204,6 +204,7 @@ public class SurgeryController {
         }
         System.out.println("收到的手術 ID: " + id);
         System.out.println("清空手術群組的 estimatedSurgeryTime");
+        surgeryService.restoreSurgeryGroupEstimatedTime(id);
         surgeryService.clearSurgeryGroups(id);
     }
 }
