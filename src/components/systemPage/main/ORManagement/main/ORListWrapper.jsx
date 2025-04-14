@@ -34,8 +34,8 @@ function ORListWrapper({
             const matchesId = filterOperatingRoom.id
                 ? operatingRoom.id.toLowerCase().includes(filterOperatingRoom.id.toLowerCase())
                 : true;
-            const matchesName = filterOperatingRoom.name
-                ? operatingRoom.name.toLowerCase().includes(filterOperatingRoom.name.toLowerCase())
+            const matchesName = filterOperatingRoom.operatingRoomName
+                ? operatingRoom.operatingRoomName.toLowerCase().includes(filterOperatingRoom.operatingRoomName.toLowerCase())
                 : true;
             const matchesDepartment = filterOperatingRoom.department
                 ? operatingRoom.department.name.toLowerCase().includes(filterOperatingRoom.department.toLowerCase())
@@ -55,7 +55,7 @@ function ORListWrapper({
         setFilteredOperatingRooms(newFilteredOperatingRooms);
     }, [
         filterOperatingRoom.id,
-        filterOperatingRoom.name,
+        filterOperatingRoom.operatingRoomName,
         filterOperatingRoom.department,
         filterOperatingRoom.roomType,
         filterOperatingRoom.status,
@@ -180,7 +180,7 @@ function ORListWrapper({
                                         />
                                     </td>
                                     <td>{operatingRoom.id}</td>
-                                    <td>{operatingRoom.name}</td>
+                                    <td>{operatingRoom.operatingRoomName}</td>
                                     <td>{operatingRoom.department.name}</td>
                                     <td>{operatingRoom.roomType}</td>
                                     {/* <td> {statusDisplayMap[operatingRoom.status]}</td> */}

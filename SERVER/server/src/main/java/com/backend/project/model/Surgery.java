@@ -245,6 +245,6 @@ public class Surgery {
     }
 
     public String getOperatingRoomName() {
-        return this.operatingRoom != null ? this.operatingRoom.getName() : "未指定手術室";
+        return this.operatingRoom != null ? this.operatingRoom.getOperatingRoomName() : "未指定手術室";
     }
 }

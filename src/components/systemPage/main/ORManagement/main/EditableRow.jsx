@@ -8,7 +8,7 @@ import { BASE_URL } from "../../../../../config";
 function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
     const [editedOperatingRoom, setEditedOperatingRoom] = useState({
         id: operatingRoom.id,
-        name: operatingRoom.name,
+        name: operatingRoom.operatingRoomName,
         departmentId: operatingRoom.department.id,
         roomType: operatingRoom.roomType,
         // status: operatingRoom.status

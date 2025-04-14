@@ -153,6 +153,8 @@ public class SurgeryController {
         System.out.println("收到的 Surgery：" + updatSurgery);
 
         surgeryService.updateSurgery(id, updatSurgery);
+        Surgery surgery = surgeryService.getSurgeryById(id);
+        surgeryService.updateSurgeryPrioritySequenceByRoom(surgery.getOperatingRoom().getId());
         return ResponseEntity.ok("Surgery update successfully");
     }
 
@@ -162,6 +164,8 @@ public class SurgeryController {
         System.out.println("收到的手術室 ID：" + operatingRoomId);
 
         surgeryService.updateSurgery4DrogEnd(id, operatingRoomId);
+        Surgery surgery = surgeryService.getSurgeryById(id);
+        surgeryService.updateSurgeryPrioritySequenceByRoom(surgery.getOperatingRoom().getId());
         return ResponseEntity.ok("Surgery update successfully");
     }
 
@@ -180,12 +184,15 @@ public class SurgeryController {
     public ResponseEntity<?> addSurgery(@RequestBody Surgery surgery) {
         System.out.println("🔹 接收到的 Surgery 物件：" + surgery);
         surgeryService.addSurgery(surgery);
+        surgeryService.updateSurgeryPrioritySequenceByRoom(surgery.getOperatingRoom().getId());
         return ResponseEntity.ok("Surgery add successfully");
     }
 
     @DeleteMapping("/system/surgery/delete/{id}")
     public ResponseEntity<?> deleteSurgery(@PathVariable String id) {
         surgeryService.deleteSurgery(id);
+        Surgery surgery = surgeryService.getSurgeryById(id);
+        surgeryService.updateSurgeryPrioritySequenceByRoom(surgery.getOperatingRoom().getId());
         return ResponseEntity.ok("Surgery delete successfully");
     }
 

@@ -77,7 +77,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
         // 創建手術房對象，包含其手術
         const roomWithSurgeries = {
           roomId: room.id,
-          room: room.name,
+          room: room.operatingRoomName,
           data: []
         };
 

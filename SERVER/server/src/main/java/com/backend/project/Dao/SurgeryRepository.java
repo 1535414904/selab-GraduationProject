@@ -9,4 +9,5 @@ import com.backend.project.model.Surgery;
 
 public interface SurgeryRepository extends JpaRepository<Surgery, String> {
     List<Surgery> findByOperatingRoom(OperatingRoom operatingRoom);
+    List<Surgery> findByPrioritySequenceNot(int value);
 }

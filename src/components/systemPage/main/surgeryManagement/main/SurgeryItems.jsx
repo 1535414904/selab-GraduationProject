@@ -13,6 +13,9 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms/${operatingRoom.id}/surgery`);
             let surgeryList = response.data;
 
+            // ✅ 加入依 orderInRoom 排序
+            surgeryList.sort((a, b) => a.orderInRoom - b.orderInRoom);
+
             let startTime = 510;
             surgeryList = surgeryList.map(surgery => {
                 const endTime = startTime + surgery.estimatedSurgeryTime;
@@ -43,7 +46,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
     const handleSave = async (updateSurgery) => {
         const isConfirmed = window.confirm(`確定要儲存對申請編號 ${updateSurgery.applicationId} 的變更嗎？`);
         if (!isConfirmed) return;
-        
+
         try {
             await axios.put(
                 `${BASE_URL}/api/system/surgery/${updateSurgery.applicationId}`,
@@ -57,6 +60,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
                     ? { ...prev, ...updateSurgery }
                     : prev
             );
+
         } catch (error) {
             console.error("updated error:", error);
         }
@@ -68,10 +72,11 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
 
         try {
             await axios.delete(`${BASE_URL}/api/system/surgery/delete/${id}`)
-            setReloadKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error("刪除失敗：", error);
         }
+
+        window.location.reload();
     };
 
     const formatTime = (minutes) => {

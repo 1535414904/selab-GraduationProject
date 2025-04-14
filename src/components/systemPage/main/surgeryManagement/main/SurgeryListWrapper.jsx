@@ -19,8 +19,8 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
       const matchId = filterOperatingRoom.id
         ? or.id.toLowerCase().includes(filterOperatingRoom.id.toLowerCase())
         : true;
-      const matchName = filterOperatingRoom.name
-        ? or.name.toLowerCase().includes(filterOperatingRoom.name.toLowerCase())
+      const matchName = filterOperatingRoom.operatingRoomName
+        ? or.operatingRoomName.toLowerCase().includes(filterOperatingRoom.operatingRoomName.toLowerCase())
         : true;
       const matchDepartment = filterOperatingRoom.department
         ? or.department.name === filterOperatingRoom.department
@@ -71,7 +71,7 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
             return (
               <tr key={operatingRoom.id}>
                 <td>{operatingRoom.id}</td>
-                <td>{operatingRoom.name}</td>
+                <td>{operatingRoom.operatingRoomName}</td>
                 <td>{operatingRoom.roomType}</td>
                 <td>{operatingRoom.department.name}</td>
                 <td>{lastSurgery ? lastSurgery.lastSurgeryEndTime : "載入中..."}</td>

@@ -13,12 +13,12 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
 
   // 清除所有篩選條件
   const clearFilters = () => {
-    setFilterOperatingRoom({ id: "", name: "", department: "", roomType: "", status: "" });
+    setFilterOperatingRoom({ id: "", operatingRoomName: "", department: "", roomType: "", status: "" });
   };
 
   const hasFilters =
     filterOperatingRoom.id !== "" ||
-    filterOperatingRoom.name !== "" ||
+    filterOperatingRoom.operatingRoomName !== "" ||
     filterOperatingRoom.department !== "" ||
     filterOperatingRoom.roomType !== "" ||
     filterOperatingRoom.status !== "";

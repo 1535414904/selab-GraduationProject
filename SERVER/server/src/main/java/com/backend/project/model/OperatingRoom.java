@@ -34,11 +34,11 @@ public class OperatingRoom {
     @Column(name = "operating_room_name")
     private String operatingRoomName;
 
-    public String getName() {
+    public String getOperatingRoomName() {
         return operatingRoomName;
     }
     
-    public void setName(String operatingRoomName) {
+    public void setOperatingRoomName(String operatingRoomName) {
         this.operatingRoomName = operatingRoomName;
     }
 

@@ -147,10 +147,10 @@ function EditableDetail({ surgery, setEditingSurgery, operatingRooms, handleSave
                     <strong>手術房：</strong>
                     <Select
                         className=""
-                        options={operatingRooms.map((operatingRoom) => ({ value: operatingRoom.id, label: operatingRoom.name }))}
+                        options={operatingRooms.map((operatingRoom) => ({ value: operatingRoom.id, label: operatingRoom.operatingRoomName }))}
                         onChange={handleOperatingRoomsChange}
                         defaultValue={operatingRooms.find(room => room.id === surgery.operatingRoom.id) ?
-                            { value: surgery.operatingRoom.id, label: surgery.operatingRoom.name } : null}
+                            { value: surgery.operatingRoom.id, label: surgery.operatingRoom.operatingRoomName } : null}
                     />
                 </p>
                 <p>

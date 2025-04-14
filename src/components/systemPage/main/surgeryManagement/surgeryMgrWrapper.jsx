@@ -13,7 +13,7 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
   // 新增篩選狀態，請依需求預設所有欄位（此處包含：id, name, department, roomType）
   const [filterOperatingRoom, setFilterOperatingRoom] = useState({
     id: "",
-    name: "",
+    operatingRoomName: "",
     department: "",
     roomType: "",
     status: ""

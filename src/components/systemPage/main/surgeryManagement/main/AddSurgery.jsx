@@ -5,7 +5,7 @@ import Select from "react-select";
 import { BASE_URL } from "../../../../../config";
 import axios from "axios";
 
-function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setReloadKey }) {
+function AddSurgery({ onClose, surgeries, setSurgeries, operatingRooms, nowUsername, addingSurgery, setReloadKey, fetchSurgeries }) {
     const getTomorrowDate = () => {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -88,7 +88,9 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
 
         try {
             await axios.post(`${BASE_URL}/api/system/surgery/add`, addSurgery);
-            setReloadKey(prevKey => prevKey + 1);
+            
+            window.location.reload();
+            
             onClose();
         } catch (error) {
             console.error("Error adding data: ", error);
@@ -162,12 +164,12 @@ function AddSurgery({ onClose, operatingRooms, nowUsername, addingSurgery, setRe
                             <strong>手術房：</strong>
                             <Select
                                 className=""
-                                options={operatingRooms.map((operatingRoom) => ({ value: operatingRoom.id, label: operatingRoom.name }))}
+                                options={operatingRooms.map((operatingRoom) => ({ value: operatingRoom.id, label: operatingRoom.operatingRoomName }))}
                                 onChange={handleOperatingRoomsChange}
                                 defaultValue={operatingRooms.find(
                                     (room) => room.id === addingSurgery
                                 )
-                                    ? { value: addingSurgery, label: operatingRooms.find(room => room.id === addingSurgery).name }
+                                    ? { value: addingSurgery, label: operatingRooms.find(room => room.id === addingSurgery).operatingRoomName }
                                     : null}
                             />
                         </p>

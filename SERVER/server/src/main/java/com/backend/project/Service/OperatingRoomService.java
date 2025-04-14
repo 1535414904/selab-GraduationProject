@@ -35,7 +35,7 @@ public class OperatingRoomService {
 
         return operatingRoomRepository.findById(id).map(operatingRoom -> {
             operatingRoom.setId(updateOperatingRoom.getId());
-            operatingRoom.setName(updateOperatingRoom.getName());
+            operatingRoom.setOperatingRoomName(updateOperatingRoom.getOperatingRoomName());
             operatingRoom.setRoomType(updateOperatingRoom.getRoomType());
             operatingRoom.setStatus(updateOperatingRoom.getStatus());
             operatingRoom.setDepartment(department);
