@@ -59,7 +59,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
 
     // 2. 準備存儲所有手術房及其手術的數據
     const allRoomsWithSurgeries = [];
-    
+
     // 用於存儲群組手術識別資訊
     const groupMap = new Map();
 
@@ -98,7 +98,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
           });
 
           console.log('排序後的手術數據:', sortedSurgeries);
-          
+
           // 首先檢查哪些手術是群組的一部分
           sortedSurgeries.forEach(surgery => {
             if (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0 && !isMainPage) {
@@ -111,7 +111,7 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
                   roomName: room.name
                 });
               }
-              
+
               // 將此手術添加到對應的群組中
               groupMap.get(groupId).surgeries.push(surgery);
             }
@@ -205,13 +205,13 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
       // 遍歷每個手術房
       roomsWithSurgeries.forEach(room => {
         if (!room.data || room.data.length === 0) return;
-        
+
         // 尋找需要組成群組的手術
-        const groupedSurgeries = room.data.filter(item => 
-          !item.isCleaningTime && item.isInGroup && 
+        const groupedSurgeries = room.data.filter(item =>
+          !item.isCleaningTime && item.isInGroup &&
           item.groupApplicationIds && item.groupApplicationIds.length > 0
         );
-        
+
         // 按群組ID進行分組
         const groupsInRoom = {};
         groupedSurgeries.forEach(surgery => {
@@ -221,39 +221,39 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
           }
           groupsInRoom[groupId].push(surgery);
         });
-        
+
         // 處理每個群組
         Object.keys(groupsInRoom).forEach(groupId => {
           const surgeries = groupsInRoom[groupId];
           // 如果群組中只有一個手術，則不進行群組處理
           if (surgeries.length < 2) return;
-          
+
           // 收集群組中所有手術的ID及相關銜接時間ID
           const allRelatedIds = new Set();
           const groupSurgeryIds = surgeries.map(s => s.id);
-          
+
           groupSurgeryIds.forEach(id => {
             allRelatedIds.add(id);
             // 添加每個手術後的銜接時間ID
             allRelatedIds.add(`cleaning-${id.replace('cleaning-', '')}`);
           });
-          
+
           // 從room.data中過濾出所有相關項目
           const allRelatedItems = room.data.filter(item => allRelatedIds.has(item.id));
-          
+
           // 按開始時間排序
           allRelatedItems.sort((a, b) => {
             if (!a.startTime || !b.startTime) return 0;
             return new Date('1970/01/01 ' + a.startTime) - new Date('1970/01/01 ' + b.startTime);
           });
-          
+
           // 如果沒有相關項目，則跳過
           if (allRelatedItems.length === 0) return;
-          
+
           // 創建群組項目
           const firstItem = allRelatedItems[0];
           const lastItem = allRelatedItems[allRelatedItems.length - 1];
-          
+
           const groupItem = {
             id: `group-${groupId}`,
             doctor: `${surgeries.length} 個手術`,
@@ -269,15 +269,15 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
             applicationId: surgeries[0].applicationId,
             groupApplicationIds: surgeries[0].groupApplicationIds
           };
-          
+
           // 從room.data中移除所有相關項目
           room.data = room.data.filter(item => !allRelatedIds.has(item.id));
-          
+
           // 在第一個項目的位置插入群組項目
-          const insertIndex = room.data.findIndex(item => 
+          const insertIndex = room.data.findIndex(item =>
             item.startTime && new Date('1970/01/01 ' + item.startTime) > new Date('1970/01/01 ' + firstItem.startTime)
           );
-          
+
           if (insertIndex === -1) {
             // 如果沒有找到合適的位置，則添加到末尾
             room.data.push(groupItem);
@@ -292,15 +292,25 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
     // 計算時間和顏色
     roomsWithSurgeries.forEach(room => {
       if (room.data && room.data.length > 0) {
+        // 🔧 在計算時間前先根據 orderInRoom 排序（只排序手術，不動清潔時間）
+        const surgeriesOnly = room.data.filter(item => !item.isCleaningTime && item.orderInRoom != null);
+        const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
+
+        // 🔁 重新組合 room.data
+        room.data = sortedSurgeries.flatMap(surgery => {
+          const cleaningItem = room.data.find(item => item.id === `cleaning-${surgery.applicationId}`);
+          return cleaningItem ? [surgery, cleaningItem] : [surgery];
+        });
+
         let currentTime = initialTime;
 
         room.data.forEach((item) => {
           item.startTime = currentTime;
-          
+
           // 如果是群組，使用已計算的持續時間
           if (item.isGroup && item.duration) {
             item.endTime = addMinutesToTime(currentTime, item.duration);
-            
+
             // 更新群組內部手術的時間
             let innerCurrentTime = currentTime;
             item.surgeries.forEach(surgery => {
@@ -314,8 +324,8 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
 
           item.color = item.isCleaningTime
             ? getCleaningColor()
-            : item.isGroup 
-              ? "group" 
+            : item.isGroup
+              ? "group"
               : getColorByEndTime(item.endTime, false, useTempSettings);
 
           // 使用設定中的銜接時間
