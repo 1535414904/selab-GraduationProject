@@ -140,7 +140,8 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
               specialOrRequirements: surgery.specialOrRequirements,
               user: surgery.user,
               departmentName: surgery.departmentName || "未指定科別", // 修改科別屬性名
-              prioritySequence: surgery.prioritySequence || 999, // 保存優先順序
+              prioritySequence: surgery.prioritySequence || 99999, // 保存優先順序
+              orderInRoom: surgery.orderInRoom ?? null, // 🔧 加這一行保證排序用得到
               // 保存群組資訊
               groupApplicationIds: surgery.groupApplicationIds || [],
               // 若有群組ID且不是主頁模式，則標記為群組的一部分

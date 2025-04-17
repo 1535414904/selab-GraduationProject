@@ -581,21 +581,46 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                       <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
                         <div ref={ganttChartRef} className="gantt-chart-container">
                           <div className="gantt-chart">
-                            {filteredRows.map((room, roomIndex) => (
-                              <div
-                                key={room.room || roomIndex}
-                                className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
-                              >
-                                <RoomSection
-                                  room={room}
-                                  roomIndex={roomIndex}
-                                  readOnly={readOnly}
-                                  onSurgeryClick={handleSurgeryClick}
-                                  onGroupOperation={handleGroupOperation}
-                                  onPinStatusChange={handleRoomPinStatusChange}
-                                />
-                              </div>
-                            ))}
+                            {filteredRows.map((room, roomIndex) => {
+                              const originalData = room.data || [];
+
+                              // 1️⃣ 取出所有有 orderInRoom 的手術（不包含清潔）
+                              const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
+
+                              // 2️⃣ 排序手術
+                              const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
+
+                              // 3️⃣ 根據排序結果重建 room.data，插入對應的清潔項目
+                              const sortedData = sortedSurgeries.flatMap(surgery => {
+                                const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
+                                return cleaningItem ? [surgery, cleaningItem] : [surgery];
+                              });
+
+                              // 🪵 Debug log
+                              console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
+                              sortedData.forEach((item, i) => {
+                                if (!item.isCleaningTime) {
+                                  console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
+                                }
+                              });
+
+                              return (
+                                <div
+                                  key={room.room || roomIndex}
+                                  className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                                >
+                                  <RoomSection
+                                    room={{ ...room, data: sortedData }}
+                                    roomIndex={roomIndex}
+                                    readOnly={readOnly}
+                                    onSurgeryClick={handleSurgeryClick}
+                                    onGroupOperation={handleGroupOperation}
+                                    onPinStatusChange={handleRoomPinStatusChange}
+                                  />
+                                </div>
+                              );
+                            })}
+
                           </div>
                         </div>
                       </TimeWrapper>

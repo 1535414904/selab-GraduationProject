@@ -127,9 +127,15 @@ public class SurgeryService {
 
         // 標記群組 ID
         Set<String> groupSet = new HashSet<>(applicationIds);
+
+        List<String> sortedGroupIds = allSurgeriesInRoom.stream()
+        .filter(s -> groupSet.contains(s.getApplicationId()))
+        .map(Surgery::getApplicationId)
+        .collect(Collectors.toList());
+
         for (Surgery surgery : allSurgeriesInRoom) {
             if (groupSet.contains(surgery.getApplicationId())) {
-                surgery.setGroupApplicationIds(applicationIds);
+                surgery.setGroupApplicationIds(sortedGroupIds);
             } else {
                 surgery.setGroupApplicationIds(null);
             }
