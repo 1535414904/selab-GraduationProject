@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.backend.project.Service.DepartmentService;
 import com.backend.project.model.ChiefSurgeon;
 import com.backend.project.model.Department;
-import com.backend.project.model.User;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
