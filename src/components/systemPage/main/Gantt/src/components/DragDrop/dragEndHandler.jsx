@@ -294,50 +294,33 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
   const sourceRoomData = newRows[sourceRoomIndex].data;
   const destRoomData = newRows[destRoomIndex].data;
   const roomName = newRows[destRoomIndex].room || '手術室';
-  console.log(`拖曳到 ${destRoomIndex}`);
 
-  // 檢查被拖曳的項目是否為銜接時間
+  console.log("🔁 跨手術房拖曳操作");
+  console.log("來源房間資料:", sourceRoomData);
+  console.log("目標房間資料:", destRoomIndex);
+
   const isDraggingCleaningTime = sourceRoomData[sourceIndex]?.isCleaningTime;
-
   if (isDraggingCleaningTime) {
     console.log("禁止拖曳銜接時間到其他手術室");
-    return; // 禁止拖曳銜接時間
+    return;
   }
 
-  // 從源位置移除手術
+  // ✅ Step 1: 移除手術及可能的銜接時間
   const surgery = sourceRoomData.splice(sourceIndex, 1)[0];
-
-  // 如果手術後面有銜接時間，也一併移除
   if (sourceIndex < sourceRoomData.length && sourceRoomData[sourceIndex]?.isCleaningTime) {
-    sourceRoomData.splice(sourceIndex, 1);
+    sourceRoomData.splice(sourceIndex, 1); // 移除接續的銜接時間
   }
 
-  // 更新源房間和目標房間的時間
-  if (sourceRoomData.length > 0) {
-    updateRoomTimes(sourceRoomData, true);
-  }
-  updateRoomTimes(destRoomData);
-
-  // 更新手術室名稱
-  surgery.operatingRoomName = roomName;
-
-  // 插入到目標位置
+  // ✅ Step 2: 插入至目標房
   let targetIndex = destinationIndex;
-  // 確保目標索引不超出范圍
-  if (targetIndex > destRoomData.length) {
-    targetIndex = destRoomData.length;
-  }
-
-  // 如果目標位置是銜接時間，調整到手術位置
-  if (targetIndex < destRoomData.length && destRoomData[targetIndex]?.isCleaningTime) {
+  if (targetIndex > destRoomData.length) targetIndex = destRoomData.length;
+  if (destRoomData[targetIndex]?.isCleaningTime) {
     targetIndex = targetIndex % 2 === 0 ? targetIndex + 1 : targetIndex - 1;
   }
-
-  // 插入手術到目標位置
+  surgery.operatingRoomName = roomName;
   destRoomData.splice(targetIndex, 0, surgery);
 
-  // 檢查前後的時間連續性，插入必要的銜接時間
-  // 檢查前面是否需要插入銜接時間
+  // ✅ Step 3: 插入前後銜接時間
   if (targetIndex > 0 && !destRoomData[targetIndex - 1].isCleaningTime) {
     const prevSurgery = destRoomData[targetIndex - 1];
     const cleaningItem = createCleaningTimeItem(
@@ -349,7 +332,6 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     targetIndex++;
   }
 
-  // 檢查後面是否需要插入銜接時間
   if (targetIndex + 1 < destRoomData.length && !destRoomData[targetIndex + 1].isCleaningTime) {
     const cleaningItem = createCleaningTimeItem(
       surgery.endTime,
@@ -358,7 +340,6 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     );
     destRoomData.splice(targetIndex + 1, 0, cleaningItem);
   } else if (targetIndex === destRoomData.length - 1) {
-    // 如果是最後一個手術，也需要添加銜接時間
     const cleaningItem = createCleaningTimeItem(
       surgery.endTime,
       addMinutesToTime(surgery.endTime, getTimeSettings(true).cleaningTime),
@@ -367,19 +348,15 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     destRoomData.push(cleaningItem);
   }
 
-  // 更新目標房間的時間
-  updateRoomTimes(destRoomData);
+  // ✅ Step 4: 更新時間
+  updateRoomTimes(sourceRoomData, true);  // 更新來源房
+  updateRoomTimes(destRoomData);         // 更新目標房
 
-  // 更新後端資料庫
-  axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
-    .then(response => {
-      console.log("手術室更新成功:", response.data);
-    })
-    .catch(error => {
-      console.error("手術室更新失敗:", error);
-    }
-    );
+  // ✅ Step 5: 更新順序至後端
+  updateOrderInRoomForRoomData(sourceRoomData, newRows[sourceRoomIndex].roomId);
+  updateOrderInRoomForRoomData(destRoomData, newRows[destRoomIndex].roomId);
 };
+
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
   if (!roomData || roomData.length === 0) return;
@@ -530,4 +507,24 @@ const calculateGroupDuration = (group) => {
   }
 
   return totalMinutes;
+};
+
+const updateOrderInRoomForRoomData = (roomData, roomId) => {
+  console.log("更新手術順序和房間資料...");
+  console.log("房間資料:", roomData);
+  console.log("房間 ID:", roomId);
+  const surgeries = roomData.filter(item => !item.isCleaningTime);
+  surgeries.forEach((surgery, index) => {
+    const newOrder = index + 1;
+    surgery.orderInRoom = newOrder;
+
+    axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
+      orderInRoom: newOrder,
+      operatingRoomId: roomId
+    }).then(() => {
+      console.log(`✅ 已更新 ${surgery.applicationId} 的 orderInRoom=${newOrder} 和房間=${roomId}`);
+    }).catch(err => {
+      console.error(`❌ 更新 ${surgery.applicationId} 的順序或房間失敗`, err);
+    });
+  });
 };

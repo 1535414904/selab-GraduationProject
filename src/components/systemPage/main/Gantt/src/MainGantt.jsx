@@ -490,13 +490,13 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                       return cleaningItem ? [surgery, cleaningItem] : [surgery];
                     });
 
-                    // 🪵 Debug log
-                    console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
-                    sortedData.forEach((item, i) => {
-                      if (!item.isCleaningTime) {
-                        console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
-                      }
-                    });
+                    // // 🪵 Debug log
+                    // console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
+                    // sortedData.forEach((item, i) => {
+                    //   if (!item.isCleaningTime) {
+                    //     console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
+                    //   }
+                    // });
 
                     return (
                       <div

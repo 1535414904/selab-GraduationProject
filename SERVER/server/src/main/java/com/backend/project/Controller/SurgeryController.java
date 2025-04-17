@@ -171,13 +171,13 @@ public class SurgeryController {
 
     @PutMapping("system/surgery/{id}/order-in-room")
     public ResponseEntity<?> updateSurgery4OrderInRoom(@PathVariable String id,
-            @RequestBody Map<String, Integer> body) {
-        int orderInRoom = body.get("orderInRoom");
-        System.out.println("收到的手術 ID：" + id);
-        System.out.println("收到的手術室順序：" + orderInRoom);
+            @RequestBody Map<String, Object> body) {
 
-        surgeryService.updateSurgery4OrderInRoom(id, orderInRoom);
-        return ResponseEntity.ok("Surgery update successfully");
+        int orderInRoom = ((Number) body.get("orderInRoom")).intValue();
+        String operatingRoomId = (String) body.get("operatingRoomId");
+
+        surgeryService.updateSurgeryOrderAndRoom(id, orderInRoom, operatingRoomId);
+        return ResponseEntity.ok("Surgery updated with new order and room");
     }
 
     @PostMapping("/system/surgery/add")

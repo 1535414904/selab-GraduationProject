@@ -82,6 +82,21 @@ public class SurgeryService {
         }).orElseThrow(() -> new RuntimeException("Surgery not found"));
     }
 
+    public void updateSurgeryOrderAndRoom(String id, int orderInRoom, String operatingRoomId) {
+        Surgery surgery = surgeryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Surgery not found with id " + id));
+    
+        surgery.setOrderInRoom(orderInRoom);
+    
+        if (operatingRoomId != null && !operatingRoomId.equals(surgery.getOperatingRoom().getId())) {
+            OperatingRoom newRoom = operatingRoomRepository.findById(operatingRoomId)
+                    .orElseThrow(() -> new RuntimeException("OperatingRoom not found with id " + operatingRoomId));
+            surgery.setOperatingRoom(newRoom);
+        }
+    
+        surgeryRepository.save(surgery);
+    }
+
     public Surgery addSurgery(Surgery surgery) {
         // 若是以帳號為主關聯
         User user = userRepository.findByUsername(surgery.getUsername())

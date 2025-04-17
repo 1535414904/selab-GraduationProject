@@ -33,8 +33,8 @@ export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = fal
   // 例如加班結束時間為 19:00，則 overtimeEndTime = 19*60 + 0 = 1140
   const overtimeEndTimeMinutes = timeSettings.overtimeEndTime;
 
-  console.log(`DEBUG - 時間設定: 開始時間=${surgeryStartTime}分鐘, 正常結束=${regularEndTimeMinutes}分鐘, 加班結束=${overtimeEndTimeMinutes}分鐘`);
-  console.log(`DEBUG - 手術時間: 結束時間=${totalMinutes}分鐘`);
+  // console.log(`DEBUG - 時間設定: 開始時間=${surgeryStartTime}分鐘, 正常結束=${regularEndTimeMinutes}分鐘, 加班結束=${overtimeEndTimeMinutes}分鐘`);
+  // console.log(`DEBUG - 手術時間: 結束時間=${totalMinutes}分鐘`);
 
   // 比較總分鐘數，確定顏色
   if (totalMinutes <= regularEndTimeMinutes) {
