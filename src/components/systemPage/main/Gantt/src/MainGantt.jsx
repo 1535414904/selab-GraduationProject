@@ -530,7 +530,17 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
       )}
+      {/* 手術詳細資訊模態視窗 */}
+      {selectedSurgery && (
+        <SurgeryModal
+          surgery={selectedSurgery}
+          onClose={handleCloseModal}
+          error={modalError}
+        />
+      )}
+
     </div>
+
   );
 }
 export default MainGantt;
