@@ -462,60 +462,63 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
         </div>
 
         {/* 甘特圖主體區域 */}
-        <div className={`gantt-chart-main-area ${isFilterOpen ? 'with-filter' : 'no-filter'}`}>
-          {/* 時間刻度固定在頂部 */}
-          <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
-            <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}>
-              {/* 時間刻度部分 */}
-            </TimeWrapper>
-          </div>
+        <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
+          <div className="gantt-content">
+            {/* <div className={`gantt-chart-main-area ${isFilterOpen ? 'with-filter' : 'no-filter'}`}> */}
+            {/* 時間刻度固定在頂部 */}
+            <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+              <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}>
+                {/* 時間刻度部分 */}
+              </TimeWrapper>
+            </div>
 
-          {/* 甘特圖內容可滾動區域 */}
-          <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
-            <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
-              <div ref={ganttChartRef} className="gantt-chart-container">
-                <div className="gantt-chart">
-                  {filteredRows.map((room, roomIndex) => {
-                    const originalData = room.data || [];
+            {/* 甘特圖內容可滾動區域 */}
+            <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
+              <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
+                <div ref={ganttChartRef} className="gantt-chart-container">
+                  <div className="gantt-chart">
+                    {filteredRows.map((room, roomIndex) => {
+                      const originalData = room.data || [];
 
-                    // 1️⃣ 取出所有有 orderInRoom 的手術（不包含清潔）
-                    const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
+                      // 1️⃣ 取出所有有 orderInRoom 的手術（不包含清潔）
+                      const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
 
-                    // 2️⃣ 排序手術
-                    const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
+                      // 2️⃣ 排序手術
+                      const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
 
-                    // 3️⃣ 根據排序結果重建 room.data，插入對應的清潔項目
-                    const sortedData = sortedSurgeries.flatMap(surgery => {
-                      const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
-                      return cleaningItem ? [surgery, cleaningItem] : [surgery];
-                    });
+                      // 3️⃣ 根據排序結果重建 room.data，插入對應的清潔項目
+                      const sortedData = sortedSurgeries.flatMap(surgery => {
+                        const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
+                        return cleaningItem ? [surgery, cleaningItem] : [surgery];
+                      });
 
-                    // // 🪵 Debug log
-                    // console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
-                    // sortedData.forEach((item, i) => {
-                    //   if (!item.isCleaningTime) {
-                    //     console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
-                    //   }
-                    // });
+                      // // 🪵 Debug log
+                      // console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
+                      // sortedData.forEach((item, i) => {
+                      //   if (!item.isCleaningTime) {
+                      //     console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
+                      //   }
+                      // });
 
-                    return (
-                      <div
-                        key={room.room || roomIndex}
-                        className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
-                      >
-                        <RoomSection
-                          room={{ ...room, data: sortedData }}
-                          roomIndex={roomIndex}
-                          readOnly={readOnly}
-                          onSurgeryClick={handleSurgeryClick}
-                        />
-                      </div>
-                    );
-                  })}
+                      return (
+                        <div
+                          key={room.room || roomIndex}
+                          className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                        >
+                          <RoomSection
+                            room={{ ...room, data: sortedData }}
+                            roomIndex={roomIndex}
+                            readOnly={readOnly}
+                            onSurgeryClick={handleSurgeryClick}
+                          />
+                        </div>
+                      );
+                    })}
 
+                  </div>
                 </div>
-              </div>
-            </TimeWrapper>
+              </TimeWrapper>
+            </div>
           </div>
         </div>
       </div>
