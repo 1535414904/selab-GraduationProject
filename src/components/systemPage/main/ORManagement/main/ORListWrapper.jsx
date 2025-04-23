@@ -135,11 +135,11 @@ function ORListWrapper({
                                 className="checkbox"
                             />
                         </th>
-                        <th>手術房編號</th>
-                        <th>手術房名稱</th>
+                        <th>編號</th>
+                        <th>名稱</th>
                         <th>所屬科別</th>
-                        <th>手術房種類</th>
-                        <th>手術房狀態</th>
+                        <th>種類</th>
+                        <th>狀態</th>
                         <th>動作</th>
                     </tr>
                 </thead>

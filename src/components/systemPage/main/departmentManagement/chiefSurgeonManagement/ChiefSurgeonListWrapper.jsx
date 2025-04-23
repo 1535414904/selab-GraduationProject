@@ -58,8 +58,8 @@ const ChiefSurgeonListWrapper = forwardRef(({
                 <thead>
                     <tr>
                         <th>選取</th>
-                        <th>員工編號</th>
-                        <th>醫師姓名</th>
+                        <th>編號</th>
+                        <th>姓名</th>
                         <th>動作</th>
                     </tr>
                 </thead>

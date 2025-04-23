@@ -1,6 +1,7 @@
 import React from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas-pro";
+import "../../styles.css";
 
 const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
   const generatePDF = async () => {
@@ -49,7 +50,7 @@ const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
         padding-top: 0;
         margin-top: 0;
       `;
-      
+
       // 確保滾動位置重置為頂部
       ganttChartRef.current.scrollTop = 0;
 
@@ -145,11 +146,11 @@ const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
 
   return (
     <button
-      className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+      className="gantt-buttons flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
       onClick={generatePDF}
     >
       <svg
-        className="h-4 w-4 mr-2"
+        className="h-6 w-6 mr-1"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

@@ -180,7 +180,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                 borderRadius: '4px',
                 marginRight: '8px',
                 fontWeight: 'bold',
-
               }}>
                 <button
                   onClick={enableGroupMode}
@@ -217,25 +216,48 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
 
             {/* 群組模式下選定後的操作按鈕 */}
             {isGroupMode && selectedSurgeries.length > 0 && (
-              <div className="room-group-actions" style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#f3f4f6',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                marginLeft: '8px'
-              }}>
+              <div className="room-group-options"
+                // style={{
+                //   display: 'flex',
+                //   alignItems: 'center',
+                //   background: '#f3f4f6',
+                //   // padding: '0.7px 8px',
+                //   padding: '0 8px',
+                //   borderRadius: '4px',
+                //   marginLeft: '8px'
+
+                //   // // display: 'flex',
+                //   // alignItems: 'center',
+                //   // background: '#f3f4f6',
+                //   // // padding: '2px 8px',
+                //   // borderRadius: '4px',
+                //   // marginRight: '8px',
+                //   // fontWeight: 'bold',
+
+                // }}
+                style={{
+                  alignItems: 'center',
+                  background: '#f3f4f6',
+                  // padding: '2px 8px',
+                  padding: '0 8px',
+                  borderRadius: '4px',
+                  marginRight: '8px',
+                  fontWeight: 'bold',
+
+                }}
+              >
                 <span>{`已選擇 ${selectedSurgeries.length} 個項目`}</span>
                 <button
                   onClick={handleCreateGroup}
                   style={{
-                    background: '#3B82F6',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '2px 8px',
+                    // padding: '2px 8px',
+                    padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',
-                    marginLeft: '8px'
+                    marginLeft: '8px',
+                    background: '#3B82F6',
                   }}
                 >
                   群組
@@ -249,10 +271,11 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: '#EF4444',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '2px 8px',
+                    // padding: '2px 8px',
+                    padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',
-                    marginLeft: '4px'
+                    marginLeft: '4px',
                   }}
                 >
                   取消
@@ -262,14 +285,25 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
 
             {/* 解除模式提示 */}
             {isUngroupMode && (
-              <div className="room-ungroup-hint" style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#f3f4f6',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                marginLeft: '8px'
-              }}>
+              <div className="room-ungroup-hint"
+                style={{
+                  // display: 'flex',
+                  alignItems: 'center',
+                  background: '#f3f4f6',
+                  // padding: '1px 8px',
+                  padding: '0 8px',
+                  borderRadius: '4px',
+                  marginLeft: '8px',
+                  fontWeight: 'bold',
+
+                }}
+
+
+
+
+
+
+              >
                 <span style={{ color: '#EF4444' }}>點擊群組項目進行解除</span>
                 <button
                   onClick={() => setIsUngroupMode(false)}
@@ -277,7 +311,8 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: '#EF4444',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '2px 8px',
+                    // padding: '2px 8px',
+                    padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',
                     marginLeft: '4px'

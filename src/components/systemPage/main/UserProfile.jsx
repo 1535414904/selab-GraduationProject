@@ -101,8 +101,8 @@ function UserProfile({ user, onUpdateUser }) {
         </svg>
       </div>
       {/* 底部波浪 */}
-      <div className={`absolute left-0 w-full overflow-hidden rotate-180 transition-all duration-700 ${isChangingPassword ? "bottom-[-300px]" : "bottom-[-80px]"}`}>
-        <svg className="w-full" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 120" preserveAspectRatio="none">
+      <div className={`absolute left-0 w-full overflow-hidden rotate-180 transition-all duration-700 ${isChangingPassword ? "bottom-[-300px]" : "bottom-[65px]"}`}>
+        <svg className="w-full" style={{ marginBottom: "-1px" }} viewBox="0 0 1200 1200" preserveAspectRatio="none">
           <path
             d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
             className="fill-blue-300 opacity-40"
@@ -111,7 +111,7 @@ function UserProfile({ user, onUpdateUser }) {
       </div>
       {/* 主內容 */}
       <div className="relative z-10 flex items-center justify-center">
-        <div className="bg-white shadow-lg rounded-lg p-10 w-[500px] mt-12">
+        <div className="bg-white shadow-lg rounded-lg p-10 w-[800px] mt-50">
           <div className="text-center mb-8">
             <div className="inline-block bg-blue-100 p-4 rounded-full mb-4">
               <svg
@@ -132,7 +132,8 @@ function UserProfile({ user, onUpdateUser }) {
             <h2 className="text-3xl font-bold text-blue-900">個人資料</h2>
           </div>
 
-          <div className="space-y-5 mb-8 text-gray-700 text-lg ">
+          {/* <div className="space-y-5 mb-8 text-gray-700 text-lg "> */}
+          <div className="space-y-5 mb-8 text-gray-700 text-2xl">
             <p><strong>帳號：</strong>{user.username}</p>
             <p><strong>姓名：</strong>{user.name}</p>
             <p><strong>單位：</strong>{user.unit}</p>

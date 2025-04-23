@@ -88,9 +88,9 @@ function AddSurgery({ onClose, surgeries, setSurgeries, operatingRooms, nowUsern
 
         try {
             await axios.post(`${BASE_URL}/api/system/surgery/add`, addSurgery);
-            
+
             window.location.reload();
-            
+
             onClose();
         } catch (error) {
             console.error("Error adding data: ", error);
@@ -109,16 +109,24 @@ function AddSurgery({ onClose, surgeries, setSurgeries, operatingRooms, nowUsern
 
                 <div className="modal-body">
                     <div className="info-group action-group">
-                        <button
-                            className="action-button edit-button"
-                            onClick={() => handleAdd(addSurgery)}>
-                            <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
-                        </button>
-                        <button
-                            className="action-button delete-button"
-                            onClick={onClose}>
-                            <FontAwesomeIcon icon={faTimes} className="action-icon" />
-                        </button>
+                        <div className="action-container">
+                            <button
+                                className="action-button edit-button"
+                                onClick={() => handleAdd(addSurgery)}>
+                                <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+                            </button>
+                            <span className="action-label">儲存</span>
+
+                        </div>
+                        <div className="action-container">
+
+                            <button
+                                className="action-button delete-button"
+                                onClick={onClose}>
+                                <FontAwesomeIcon icon={faTimes} className="action-icon" />
+                            </button>
+                            <span className="action-label">取消</span>
+                        </div>
                     </div>
 
                     <div className="info-group blue flex flex-col items-start text-left">

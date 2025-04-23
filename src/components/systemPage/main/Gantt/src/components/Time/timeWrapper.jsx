@@ -248,7 +248,7 @@ const TimeWrapper = ({ children, containerWidth, useTempSettings = true, timeSca
     timeIntervals.push({
       time: formatTime(hour, minute),
       type: minute === 0 ? "hour" : minute === 30 ? "half" : "quarter",
-      isStartTime: i === 0,
+      // isStartTime: i === 0,
       is24Hour: hour === 24 && minute === 0,
       position: i * pixelsPer15Minutes,
     });

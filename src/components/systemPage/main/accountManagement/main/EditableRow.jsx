@@ -8,6 +8,7 @@
 import React, { useState } from "react"; // ✅ 只需一次導入 React 和 useState
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons"; // ✅ 整合圖示導入
+import "../../Mgr.css"; // ✅ 導入 CSS 檔案
 
 function EditableRow({ key, user, handleSave, setIsEditing }) {
     const [editedUser, setEditedUser] = useState({

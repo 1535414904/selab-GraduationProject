@@ -2,6 +2,7 @@
 import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
+import "../../Mgr.css"; // 引入 CSS 檔案
 
 function EditableRow({ key, chiefSurgeon, handleSave, onCancel }) {
     const [editedChiefSurgeon, setEditedChiefSurgeon] = useState({
