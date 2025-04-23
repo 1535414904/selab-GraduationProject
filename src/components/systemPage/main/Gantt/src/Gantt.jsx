@@ -481,34 +481,28 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   }
 
   return (
-
     <div className="gantt-main-container">
       <GanttHeader
         currentDate={currentDate}
         filteredRows={filteredRows}
         setRows={setRows}
       />
+  
       {/* ✅ 頁籤切換區 */}
       <div className="gantt-tabs">
         <ul className="gantt-tab-list">
-          <li
-            className={`gantt-tab ${activeTab === 'gantt' ? 'gantt-tab-active' : ''}`}
-            onClick={() => handleTabChange('gantt')}
-          >
+          <li className={`gantt-tab ${activeTab === 'gantt' ? 'gantt-tab-active' : ''}`} onClick={() => handleTabChange('gantt')}>
             手術排程甘特圖
           </li>
-          <li
-            className={`gantt-tab ${activeTab === 'timeSettings' ? 'gantt-tab-active' : ''}`}
-            onClick={() => handleTabChange('timeSettings')}
-          >
+          <li className={`gantt-tab ${activeTab === 'timeSettings' ? 'gantt-tab-active' : ''}`} onClick={() => handleTabChange('timeSettings')}>
             參數設定
           </li>
         </ul>
       </div>
-
+  
       {/* ✅ 甘特圖頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`}>
-        {/* ✅ 提示區塊 */}
+        {/* 使用提示 */}
         <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
           <svg className="gantt-tips-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" fill="#3B82F6" />
@@ -531,85 +525,42 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             )}
           </div>
         </div>
-
-        {/* ✅ 主內容：左右佈局 */}
+  
+        {/* ✅ 主內容區 */}
         <div className="gantt-main-layout flex w-full h-full">
-          {/* ✅ 左側固定篩選器 */}
-          {/* 篩選器區域 - 可收合的側邊欄 */}
-          <div className={` ${isFilterOpen ? 'open' : 'closed'}`}>
+          {/* ✅ 篩選器側欄 */}
+          <div className={`${isFilterOpen ? 'open' : 'closed'}`}>
             <GanttFilter
               originalRows={rows}
               onFilteredDataChange={handleFilterChange}
             />
-            {/* 切換按鈕 */}
             <button
               className="filter-toggle-button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               aria-label={isFilterOpen ? "收合篩選器" : "展開篩選器"}
-            >
-              {/* {isFilterOpen ? "←" : "→"} */}
-            </button>
+            />
           </div>
-          {/* ✅ 右側甘特圖區域 */}
+  
+          {/* ✅ 甘特圖右側主體 */}
           <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
-
-
-            {/* ✅ 甘特圖內容 */}
             {!loading && !error && filteredRows.length > 0 && (
               <div className="gantt-content">
-                {/* // <div class="w-full max-w-[95vw] mx-auto border border-gray-200 rounded-lg relative flex flex-col overflow-visible"> */}
-
-                <DragDropContext
-                  onDragStart={handleDragStart}
-                  onDragEnd={onDragEndHandler} >
-                  {/* 時間刻度區塊 */}
-                  {/* <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
-                    <div className="containerWidth" style={{ overflowX: 'auto' }}>
-                      <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true}> */}
-                  {/* 時間刻度 */}
-                  {/* </TimeWrapper>
-                    </div>
-                  </div> */}
-                  {/* <div className="gantt-timescale-container sticky-header">
-                    <div className="scrollable-container" ref={timeScaleRef}>
-                      <div style={{ width: containerWidth }}>
-                        <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} />
-                      </div>
-                    </div>
-                  </div> */}
-                  <div className="gantt-timescale-container sticky-header" ref={timeScaleRef}>
-                    <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} />
-                  </div>
-
-                  {/* 可滾動內容區域 */}
-                  <div className="gantt-chart-scroll-area" ref={scrollContainerRef}>
-                    <div style={{ width: containerWidth }}>
-                      <TimeWrapper containerWidth={containerWidth} contentOnly={true}>
+                <DragDropContext onDragStart={handleDragStart} onDragEnd={onDragEndHandler}>
+                  {/* ✅ 單一滾動容器中包住時間刻度與甘特內容 */}
+                  <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
+                    <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
+                      {/* 甘特內容 */}
                         <div ref={ganttChartRef} className="gantt-chart-container">
                           <div className="gantt-chart">
                             {filteredRows.map((room, roomIndex) => {
                               const originalData = room.data || [];
-
-                              // 1️⃣ 取出所有有 orderInRoom 的手術（不包含清潔）
                               const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
-
-                              // 2️⃣ 排序手術
                               const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
-
-                              // 3️⃣ 根據排序結果重建 room.data，插入對應的清潔項目
                               const sortedData = sortedSurgeries.flatMap(surgery => {
                                 const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
                                 return cleaningItem ? [surgery, cleaningItem] : [surgery];
                               });
-
-                              // // 🪵 Debug log
-                              // console.log(`📋 Room ${room.room || roomIndex} 排序後手術清單：`);
-                              // sortedData.forEach((item, i) => {
-                              //   if (!item.isCleaningTime) {
-                              //     console.log(`  ${i + 1}. ${item.applicationId} (orderInRoom: ${item.orderInRoom})`);
-                              //   }
-                              // });
-
+  
                               return (
                                 <div
                                   key={room.room || roomIndex}
@@ -626,17 +577,15 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                                 </div>
                               );
                             })}
-
                           </div>
                         </div>
                       </TimeWrapper>
-                    </div>
                   </div>
                 </DragDropContext>
               </div>
             )}
-
-            {/* 無資料提示 */}
+  
+            {/* 無資料時提示 */}
             {!loading && !error && filteredRows.length === 0 && (
               <div className="no-data">
                 <p className="no-data-title">尚無符合條件的排程資料</p>
@@ -645,8 +594,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             )}
           </div>
         </div>
-
-        {/* 手術詳細資訊模態視窗 */}
+  
+        {/* 模態視窗 */}
         {selectedSurgery && (
           <SurgeryModal
             surgery={selectedSurgery}
@@ -655,8 +604,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           />
         )}
       </div>
-
-      {/* 參數設定頁籤內容 */}
+  
+      {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
           onTimeSettingsChange={(newSettings, isPreview) => {
@@ -664,7 +613,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
               ...r,
               data: r.data ? [...r.data] : []
             })), isPreview);
-
+  
             setRows([]);
             setTimeout(() => {
               setRows(updatedRows);
@@ -676,8 +625,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           setInitialTimeSettings={setInitialTimeSettings}
         />
       </div>
-    </div >
+    </div>
   );
+  
 
 }
 export default Gantt;

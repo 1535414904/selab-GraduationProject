@@ -1582,6 +1582,7 @@ body {
   display: flex;
   flex-direction: row;
   height: calc(100vh - 200px); /* 可依實際情況調整，或用 100% */
+  overflow: hidden; /* ✅ 這能防止溢出 */
 }
 
 
