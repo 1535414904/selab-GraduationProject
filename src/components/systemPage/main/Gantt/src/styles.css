@@ -124,8 +124,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 93vw;  
+  max-width: 96.6vw; /* 改這裡 */
+  /* max-width: 1093vw;   */
   margin: 0 auto;
+  padding: 0.75rem; 
+;
 }
 
 /* 滾動容器 */
@@ -391,7 +394,7 @@ body.lock-scroll {
 
 /* 篩選複選框 */
 .filter-checkbox-container {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
 }
@@ -496,7 +499,7 @@ body {
   padding: 16px 0 8px;
   border-bottom: 1px solid #e5e7eb;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* 時間刻度尺 */
@@ -908,13 +911,14 @@ body {
 
 /* 時間設定頁面樣式 */
 .time-settings-container {
-  padding: 20px;
-  max-width: 800px;
+  /* padding: 18px 0; */
+  /* max-width: 800px; */
+  width: 100%;
   margin: 0 auto;
 }
 
 .time-settings-title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 20px;
@@ -950,8 +954,8 @@ body {
 }
 
 .settings-section-title {
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 2.2rem;
+  font-weight: 500;
   color: #1f2937;
   margin-bottom: 16px;
   padding-bottom: 8px;
@@ -959,14 +963,14 @@ body {
 }
 
 .settings-description {
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: #6b7280;
   margin-bottom: 16px;
 }
 
 .time-settings-form {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -993,7 +997,7 @@ body {
   padding: 6px 8px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 18px;
   color: #334155;
   background-color: #f8fafc;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -1102,6 +1106,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  font-size: 20px;
 }
 
 .confirm-rooms-button:hover {
@@ -1195,6 +1200,7 @@ body {
   list-style: none;
   padding: 0;
   margin: 0;
+  font-size: 1.2rem;
 }
 
 .gantt-tab {
@@ -1363,7 +1369,7 @@ body {
   border: none;
   padding: 10px 16px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -1394,7 +1400,7 @@ body {
 }
 
 .rooms-section-title {
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: 500;
   color: #334155;
   margin-top: 0;
@@ -1474,6 +1480,7 @@ body {
   cursor: pointer;
   transition: background-color 0.2s;
   flex: 1;
+  font-size: 18px;
 }
 
 .remove-rooms-button:hover {
@@ -1560,6 +1567,7 @@ body {
   flex-direction: row;
   width: 100%;
   overflow: hidden;
+  padding: 0.75rem; 
 }
 
 .gantt-main-scroll-section {
@@ -1577,3 +1585,15 @@ body {
 
 
 
+.surgery-label {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.label-room-info {
+  font-size: 1.2rem !important;       /* 可調整為 20px 或更大 */
+  font-weight: 500;      /* 粗一點，顯眼 */
+  color: #0f172a;        /* 深藍色，符合醫療風格 */
+  line-height: 1.6;
+}

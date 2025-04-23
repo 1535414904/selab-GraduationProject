@@ -73,6 +73,21 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [rows]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (timeScaleRef.current && scrollContainerRef.current) {
+        timeScaleRef.current.scrollLeft = scrollContainerRef.current.scrollLeft;
+      }
+    };
+
+    const scrollEl = scrollContainerRef.current;
+    scrollEl?.addEventListener('scroll', handleScroll);
+
+    return () => {
+      scrollEl?.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
 
   //  處理滾動事件，確保時間刻度和內容區域同步
   const handleDragStart = () => {
@@ -537,19 +552,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           </div>
           {/* ✅ 右側甘特圖區域 */}
           <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
-            {/* 篩選器開關按鈕（固定）
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="filter-toggle-btn"
-              style={{
-                top: '8rem',
-                left: isFilterOpen ? '18rem' : '0.25rem',
-                position: 'absolute',
-                zIndex: 50,
-              }}
-            >
-              {isFilterOpen ? '←' : '→'}
-            </button> */}
+
 
             {/* ✅ 甘特圖內容 */}
             {!loading && !error && filteredRows.length > 0 && (
@@ -567,12 +570,15 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                   {/* </TimeWrapper>
                     </div>
                   </div> */}
-                  <div className="gantt-timescale-container sticky-header">
+                  {/* <div className="gantt-timescale-container sticky-header">
                     <div className="scrollable-container" ref={timeScaleRef}>
                       <div style={{ width: containerWidth }}>
                         <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} />
                       </div>
                     </div>
+                  </div> */}
+                  <div className="gantt-timescale-container sticky-header" ref={timeScaleRef}>
+                    <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} />
                   </div>
 
                   {/* 可滾動內容區域 */}

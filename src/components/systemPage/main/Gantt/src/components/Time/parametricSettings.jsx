@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { setTempTimeSettings } from "./timeUtils";
 import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
+import "../../styles.css"
 
 const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
   // 使用 initialTimeSettings 作為初始值
@@ -195,21 +196,21 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true);
     }
-  
+
     try {
       const getMinutesDiff = (later, earlier) => {
         let diff = later - earlier;
         if (diff < 0) diff += 1440; // 若為負，表示跨過午夜
         return diff;
       };
-  
+
       const payload = {
         surgeryStartTime: timeSettings.surgeryStartTime,
         regularEndTime: getMinutesDiff(timeSettings.regularEndTime, timeSettings.surgeryStartTime),
         overtimeEndTime: getMinutesDiff(timeSettings.overtimeEndTime, timeSettings.regularEndTime),
         cleaningTime: timeSettings.cleaningTime
       };
-  
+
       const response = await axios.post(`${BASE_URL}/api/system/algorithm/time-settings/export`, payload);
       console.log("CSV 產生結果：", response.data);
       alert("參數設定已更新，您可以在甘特圖中預覽變更。");
@@ -218,7 +219,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
       alert("生成 CSV 失敗，請稍後再試。");
     }
   };
-  
+
 
   // 處理提示收合狀態變更
   const toggleTips = () => {
@@ -229,7 +230,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
 
   return (
     <div className="time-settings-container">
-      <h3 className="time-settings-title">參數設定</h3>
+      {/* <h3 className="time-settings-title">參數設定</h3> */}
 
       {/* 使用提示區域 - 添加收合功能 */}
       <div className={`parameter-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
@@ -278,7 +279,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
             <h4 className="settings-section-title">時間設定</h4>
             <div className="time-settings-form">
               <div className="time-settings-item">
-                <label>手術開始時間：</label>
+                <label className="surgery-label">手術開始時間：</label>
                 <div className="time-select-container">
                   <select
                     className="time-select hour-select"
@@ -312,7 +313,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                 </div>
               </div>
               <div className="time-settings-item">
-                <label>常規結束時間：</label>
+                <label className="surgery-label">常規結束時間：</label>
                 <div className="time-select-container">
                   <select
                     className="time-select hour-select"
@@ -346,7 +347,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                 </div>
               </div>
               <div className="time-settings-item">
-                <label>加班結束時間：</label>
+                <label className="surgery-label">加班結束時間：</label>
                 <div className="time-select-container">
                   <select
                     className="time-select hour-select"
@@ -380,7 +381,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                 </div>
               </div>
               <div className="time-settings-item">
-                <label>銜接時間 (分鐘)：</label>
+                <label className="surgery-label">銜接時間 (分鐘)：</label>
                 <input
                   type="number"
                   min="5"
@@ -426,7 +427,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                           checked={selectedReservedRooms.includes(room.id)}
                           onChange={() => handleReservedRoomSelect(room.id)}
                         />
-                        <label htmlFor={`reserved-room-${room.id}`}>
+                        <label className="label-room-info" htmlFor={`reserved-room-${room.id}`}>
                           {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
                         </label>
                       </div>
@@ -452,7 +453,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                           checked={selectedClosedRooms.includes(room.id)}
                           onChange={() => handleRoomSelect(room.id)}
                         />
-                        <label htmlFor={`room-${room.id}`}>
+                        <label className="label-room-info" htmlFor={`room-${room.id}`}>
                           {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
                         </label>
                       </div>
@@ -485,7 +486,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

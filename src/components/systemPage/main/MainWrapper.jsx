@@ -164,7 +164,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
             z-index: 9999 !important;
           }
         `}</style>
-        <div className="flex-grow p-4 md:p-6">
+        <div className="flex-grow">
           <Routes>
             <Route path="/main" element={<MainGantt rows={rows} setRows={setRows} mainGanttRef={mainGanttRef} user={user} />} />
             <Route path="/user-profile" element={<UserProfile user={user} onUpdateUser={onUpdateUser} />} />
