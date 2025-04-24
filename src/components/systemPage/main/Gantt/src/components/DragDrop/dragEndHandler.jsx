@@ -357,6 +357,24 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
 
   updateOrderInRoomForRoomData(sourceRoomData, newRows[sourceRoomIndex].roomId);
   updateOrderInRoomForRoomData(destRoomData, newRows[destRoomIndex].roomId);
+
+  axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
+    .then(response => {
+      console.log("手術室更新成功:", response.data);
+    })
+    .catch(error => {
+      console.error("手術室更新失敗:", error);
+    }
+    );
+
+  axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[sourceRoomIndex].roomId}`)
+    .then(response => {
+      console.log("手術室更新成功:", response.data);
+    })
+    .catch(error => {
+      console.error("手術室更新失敗:", error);
+    }
+    );
 };
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {

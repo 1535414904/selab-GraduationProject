@@ -76,36 +76,36 @@ public class AlgorithmService {
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
         try {
-        File batchFile = new File(BATCH_FILE_PATH);
-        System.out.println("批處理文件絕對路徑: " + batchFile.getAbsolutePath());
-        System.out.println("批處理文件是否存在: " + batchFile.exists());
-        System.out.println("工作目錄: " + System.getProperty("user.dir"));
+            File batchFile = new File(BATCH_FILE_PATH);
+            System.out.println("批處理文件絕對路徑: " + batchFile.getAbsolutePath());
+            System.out.println("批處理文件是否存在: " + batchFile.exists());
+            System.out.println("工作目錄: " + System.getProperty("user.dir"));
 
-        // 使用完整路徑執行批處理文件
-        File fullPathBatch = new File(System.getProperty("user.dir"),
-        BATCH_FILE_PATH).getAbsoluteFile();
-        System.out.println("使用完整路徑: " + fullPathBatch.getAbsolutePath());
+            // 使用完整路徑執行批處理文件
+            File fullPathBatch = new File(System.getProperty("user.dir"),
+                    BATCH_FILE_PATH).getAbsoluteFile();
+            System.out.println("使用完整路徑: " + fullPathBatch.getAbsolutePath());
 
-        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
-        fullPathBatch.getAbsolutePath());
+            ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c",
+                    fullPathBatch.getAbsolutePath());
 
-        // 設定工作目錄為批處理文件所在目錄
-        processBuilder.directory(fullPathBatch.getParentFile());
-        processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
+            // 設定工作目錄為批處理文件所在目錄
+            processBuilder.directory(fullPathBatch.getParentFile());
+            processBuilder.inheritIO(); // 讓 Java 直接顯示執行結果到主控台
 
-        System.out.println("啟動批處理...");
-        Process process = processBuilder.start();
-        System.out.println("等待批處理完成...");
-        int exitCode = process.waitFor(); // 等待執行完成
-        System.out.println("批處理執行完成，退出代碼: " + exitCode);
+            System.out.println("啟動批處理...");
+            Process process = processBuilder.start();
+            System.out.println("等待批處理完成...");
+            int exitCode = process.waitFor(); // 等待執行完成
+            System.out.println("批處理執行完成，退出代碼: " + exitCode);
 
-        if (exitCode != 0) {
-        throw new Exception("批處理執行失敗，錯誤代碼: " + exitCode);
-        }
+            if (exitCode != 0) {
+                throw new Exception("批處理執行失敗，錯誤代碼: " + exitCode);
+            }
         } catch (IOException | InterruptedException e) {
-        System.err.println("執行批處理文件時出錯: " + e.getMessage());
-        e.printStackTrace();
-        throw new Exception("演算法執行失敗: " + e.getMessage(), e);
+            System.err.println("執行批處理文件時出錯: " + e.getMessage());
+            e.printStackTrace();
+            throw new Exception("演算法執行失敗: " + e.getMessage(), e);
         }
 
         try {
@@ -171,7 +171,9 @@ public class AlgorithmService {
                         operatingRoomName,
                         surgery.getAnesthesiaMethod(),
                         EST,
-                        (surgery.getSpecialOrRequirements().isEmpty() ? "N" : "Y"),
+                        (surgery.getSpecialOrRequirements() != null && !surgery.getSpecialOrRequirements().isEmpty()
+                                ? "Y"
+                                : "N"),
                         String.valueOf(surgery.getPrioritySequence())
                 };
                 csvWriter.writeNext(data);
@@ -655,81 +657,81 @@ public class AlgorithmService {
     public void parseCsvAndUpdateOrder(String csvPath) throws Exception {
         Path path = Paths.get(csvPath);
         Charset big5 = Charset.forName("Big5");
-    
+
         List<String[]> rows;
         try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
             rows = reader.readAll();
         }
-    
+
         OperatingRoom currentRoom = null;
         int orderInRoom = 1;
-    
+
         System.out.println("🔍 開始解析 CSV，共有列數：" + rows.size());
-    
+
         int rowIndex = 0;
         for (String[] row : rows) {
             rowIndex++;
             System.out.println("➡️ 處理第 " + rowIndex + " 列: " + Arrays.toString(row));
-    
+
             if (row.length == 0 || row[0].trim().isEmpty()) {
                 System.out.println("⚠️ 空列或空白第一欄，跳過");
                 continue;
             }
-    
+
             String firstCol = row[0].trim();
-    
+
             // ✅ 優先判斷是否為手術房代號（即使只有一欄也要判斷）
             if (firstCol.matches("^[A-Z]\\d+$")) {
                 System.out.println("🏥 偵測到手術房代號：" + firstCol);
                 currentRoom = operatingRoomRepository.findByOperatingRoomName(firstCol)
-                    .orElseThrow(() -> new RuntimeException("❌ 找不到手術房：" + firstCol));
+                        .orElseThrow(() -> new RuntimeException("❌ 找不到手術房：" + firstCol));
                 System.out.println("✅ 切換到手術房：" + currentRoom.getOperatingRoomName());
                 orderInRoom = 1;
                 continue;
             }
-    
+
             // 🛑 沒有 enough 欄位，不能抓手術欄位
             if (row.length < 3) {
                 System.out.println("⚠️ 欄位數不足（非手術房也不是手術），跳過");
                 continue;
             }
-    
+
             String surgeryName = row[2].trim(); // 格式如 11106(0830) 或 "整理時間"
-    
+
             // 🛑 排除整理時間/無效手術
             if (surgeryName == null || surgeryName.contains("整理時間") || !surgeryName.matches("^\\d+\\(.*\\)$")) {
                 System.out.println("🛑 非手術資料，跳過");
                 continue;
             }
-    
+
             // ✂️ 解析手術 ID
             String applicationId = surgeryName.split("\\(")[0].trim();
             System.out.println("🔎 嘗試載入手術 ID: " + applicationId);
-    
+
             long start = System.currentTimeMillis();
             Surgery surgery = surgeryRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("❌ 找不到手術：" + applicationId));
+                    .orElseThrow(() -> new RuntimeException("❌ 找不到手術：" + applicationId));
             long end = System.currentTimeMillis();
             System.out.println("⏱️ Surgery 查詢耗時: " + (end - start) + "ms");
             if (surgery.getGroupApplicationIds() != null && !surgery.getGroupApplicationIds().isEmpty()) {
                 System.out.println("🧠 群組手術，請確認其他成員的 orderInRoom 已為 null");
             }
-    
+
             if (currentRoom == null) {
                 throw new RuntimeException("❌ 無對應手術房，手術 ID: " + applicationId);
             }
-    
+
             surgery.setOperatingRoom(currentRoom);
             surgery.setOrderInRoom(orderInRoom);
             surgeryRepository.save(surgery);
-    
+
             System.out.println("📦 已更新手術：" + applicationId + " -> 房間：" +
-                currentRoom.getOperatingRoomName() + "，順序：" + orderInRoom);
-    
+                    currentRoom.getOperatingRoomName() + "，順序：" + orderInRoom);
+
             orderInRoom++;
         }
-    
+
         System.out.println("✅ CSV 解析與更新完成");
     }
-    
+
 }
