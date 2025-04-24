@@ -3,8 +3,12 @@ package com.backend.project.model;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.backend.project.StringListConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -78,6 +82,13 @@ public class Surgery {
 
     @Transient
     private String chiefSurgeonId;
+    
+    @Transient
+    private String departmentName;
+    
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Map<String, Object> extraData = new HashMap<>();
 
     // ===== Getters and Setters =====
 
@@ -161,6 +172,14 @@ public class Surgery {
         this.estimatedSurgeryTime = estimatedSurgeryTime;
     }
 
+    public Integer getOrderInRoom() {
+        return orderInRoom;
+    }
+    
+    public void setOrderInRoom(Integer orderInRoom) {
+        this.orderInRoom = orderInRoom;
+    }
+
     public ChiefSurgeon getChiefSurgeon() {
         return chiefSurgeon;
     }
@@ -209,6 +228,14 @@ public class Surgery {
         this.chiefSurgeonId = chiefSurgeonId;
     }
 
+    public String getChiefSurgeonName() {
+        return chiefSurgeon != null ? chiefSurgeon.getName() : null;
+    }
+
+    public String getOperatingRoomName() {
+        return operatingRoom != null ? operatingRoom.getOperatingRoomName() : null;
+    }
+    
     public List<String> getGroupApplicationIds() {
         return groupApplicationIds;
     }
@@ -216,13 +243,36 @@ public class Surgery {
     public void setGroupApplicationIds(List<String> groupApplicationIds) {
         this.groupApplicationIds = groupApplicationIds;
     }
-
-    public Integer getOrderInRoom() {
-        return orderInRoom;
+    
+    public String getDepartmentName() {
+        // 如果設置了departmentName則返回
+        if (departmentName != null) {
+            return departmentName;
+        }
+        
+        // 嘗試從operatingRoom獲取科別資訊
+        if (operatingRoom != null && operatingRoom.getDepartment() != null) {
+            return operatingRoom.getDepartment().getName();
+        }
+        
+        // 嘗試從extraData中獲取
+        if (extraData != null && extraData.containsKey("departmentName")) {
+            return (String) extraData.get("departmentName");
+        }
+        
+        return "未指定科別";
     }
-
-    public void setOrderInRoom(Integer orderInRoom) {
-        this.orderInRoom = orderInRoom;
+    
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+    
+    public Map<String, Object> getExtraData() {
+        return extraData;
+    }
+    
+    public void setExtraData(Map<String, Object> extraData) {
+        this.extraData = extraData;
     }
 
     public String getFormattedTime() {
@@ -234,17 +284,5 @@ public class Surgery {
         } catch (Exception e) {
             return "00:00";
         }
-    }
-
-    public String getChiefSurgeonName() {
-        try {
-            return this.chiefSurgeon != null ? this.chiefSurgeon.getName() : "未指定醫師";
-        } catch (Exception e) {
-            return "未指定醫師";
-        }
-    }
-
-    public String getOperatingRoomName() {
-        return this.operatingRoom != null ? this.operatingRoom.getOperatingRoomName() : "未指定手術室";
     }
 }
