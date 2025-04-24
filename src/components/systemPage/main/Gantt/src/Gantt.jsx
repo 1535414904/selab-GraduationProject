@@ -546,40 +546,43 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             {!loading && !error && filteredRows.length > 0 && (
               <div className="gantt-content">
                 <DragDropContext onDragStart={handleDragStart} onDragEnd={onDragEndHandler}>
-                  {/* ✅ 單一滾動容器中包住時間刻度與甘特內容 */}
+                  {/* 時間刻度固定在頂部 */}
+                  <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+                    <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} useTempSettings={true}>
+                      {/* 時間刻度部分 */}
+                    </TimeWrapper>
+                  </div>
+                  {/* ✅ 單一滾動容器中包住甘特內容 */}
                   <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
-                    <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
-                      {/* 甘特內容 */}
-                        <div ref={ganttChartRef} className="gantt-chart-container">
-                          <div className="gantt-chart">
-                            {filteredRows.map((room, roomIndex) => {
-                              const originalData = room.data || [];
-                              const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
-                              const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
-                              const sortedData = sortedSurgeries.flatMap(surgery => {
-                                const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
-                                return cleaningItem ? [surgery, cleaningItem] : [surgery];
-                              });
-  
-                              return (
-                                <div
-                                  key={room.room || roomIndex}
-                                  className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
-                                >
-                                  <RoomSection
-                                    room={{ ...room, data: sortedData }}
-                                    roomIndex={roomIndex}
-                                    readOnly={readOnly}
-                                    onSurgeryClick={handleSurgeryClick}
-                                    onGroupOperation={handleGroupOperation}
-                                    onPinStatusChange={handleRoomPinStatusChange}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </TimeWrapper>
+                    <div ref={ganttChartRef} className="gantt-chart-container">
+                      <div className="gantt-chart">
+                        {filteredRows.map((room, roomIndex) => {
+                          const originalData = room.data || [];
+                          const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
+                          const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
+                          const sortedData = sortedSurgeries.flatMap(surgery => {
+                            const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
+                            return cleaningItem ? [surgery, cleaningItem] : [surgery];
+                          });
+
+                          return (
+                            <div
+                              key={room.room || roomIndex}
+                              className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                            >
+                              <RoomSection
+                                room={{ ...room, data: sortedData }}
+                                roomIndex={roomIndex}
+                                readOnly={readOnly}
+                                onSurgeryClick={handleSurgeryClick}
+                                onGroupOperation={handleGroupOperation}
+                                onPinStatusChange={handleRoomPinStatusChange}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </DragDropContext>
               </div>

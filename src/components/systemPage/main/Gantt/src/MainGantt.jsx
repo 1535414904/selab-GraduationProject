@@ -425,8 +425,13 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
   
         <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
           <div className="gantt-content">
+            {/* 時間刻度固定在頂部 */}
+            <div ref={timeScaleRef} className="gantt-timescale-container sticky-header">
+              <TimeWrapper containerWidth={containerWidth} timeScaleOnly={true} useTempSettings={true}>
+                {/* 時間刻度部分 */}
+              </TimeWrapper>
+            </div>
             <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
-              <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
                   <div className="gantt-chart">
                     {filteredRows.map((room, roomIndex) => {
@@ -451,7 +456,6 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                     })}
                   </div>
                 </div>
-              </TimeWrapper>
             </div>
           </div>
         </div>
