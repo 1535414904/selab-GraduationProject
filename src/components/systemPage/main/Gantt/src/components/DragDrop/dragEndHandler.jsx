@@ -296,31 +296,38 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
   const roomName = newRows[destRoomIndex].room || '手術室';
 
   console.log("🔁 跨手術房拖曳操作");
-  console.log("來源房間資料:", sourceRoomData);
-  console.log("目標房間資料:", destRoomIndex);
 
   const isDraggingCleaningTime = sourceRoomData[sourceIndex]?.isCleaningTime;
   if (isDraggingCleaningTime) {
-    console.log("禁止拖曳銜接時間到其他手術室");
+    console.log("❌ 禁止拖曳銜接時間");
     return;
   }
 
-  // ✅ Step 1: 移除手術及可能的銜接時間
-  const surgery = sourceRoomData.splice(sourceIndex, 1)[0];
-  if (sourceIndex < sourceRoomData.length && sourceRoomData[sourceIndex]?.isCleaningTime) {
-    sourceRoomData.splice(sourceIndex, 1); // 移除接續的銜接時間
+  // ✅ Step 1: 先取出 surgery 與其後的清潔項（若有）
+  const itemsToMove = [];
+  const surgery = sourceRoomData[sourceIndex];
+  itemsToMove.push(surgery);
+
+  if (sourceRoomData[sourceIndex + 1]?.isCleaningTime) {
+    itemsToMove.push(sourceRoomData[sourceIndex + 1]);
   }
+
+  // ❗ 移除前，先刪除指定 range，不能只用 splice(1)
+  sourceRoomData.splice(sourceIndex, itemsToMove.length);
 
   // ✅ Step 2: 插入至目標房
   let targetIndex = destinationIndex;
   if (targetIndex > destRoomData.length) targetIndex = destRoomData.length;
+
+  // ⛔ 如果插入點是清潔時間，避免錯位
   if (destRoomData[targetIndex]?.isCleaningTime) {
     targetIndex = targetIndex % 2 === 0 ? targetIndex + 1 : targetIndex - 1;
   }
-  surgery.operatingRoomName = roomName;
-  destRoomData.splice(targetIndex, 0, surgery);
 
-  // ✅ Step 3: 插入前後銜接時間
+  surgery.operatingRoomName = roomName;
+  destRoomData.splice(targetIndex, 0, ...itemsToMove);
+
+  // ✅ Step 3: 插入前後銜接時間（若需要）
   if (targetIndex > 0 && !destRoomData[targetIndex - 1].isCleaningTime) {
     const prevSurgery = destRoomData[targetIndex - 1];
     const cleaningItem = createCleaningTimeItem(
@@ -332,31 +339,25 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     targetIndex++;
   }
 
-  if (targetIndex + 1 < destRoomData.length && !destRoomData[targetIndex + 1].isCleaningTime) {
+  if (
+    targetIndex + itemsToMove.length < destRoomData.length &&
+    !destRoomData[targetIndex + itemsToMove.length]?.isCleaningTime
+  ) {
     const cleaningItem = createCleaningTimeItem(
       surgery.endTime,
-      destRoomData[targetIndex + 1].startTime,
+      destRoomData[targetIndex + itemsToMove.length].startTime,
       roomName
     );
-    destRoomData.splice(targetIndex + 1, 0, cleaningItem);
-  } else if (targetIndex === destRoomData.length - 1) {
-    const cleaningItem = createCleaningTimeItem(
-      surgery.endTime,
-      addMinutesToTime(surgery.endTime, getTimeSettings(true).cleaningTime),
-      roomName
-    );
-    destRoomData.push(cleaningItem);
+    destRoomData.splice(targetIndex + itemsToMove.length, 0, cleaningItem);
   }
 
-  // ✅ Step 4: 更新時間
-  updateRoomTimes(sourceRoomData, true);  // 更新來源房
-  updateRoomTimes(destRoomData);         // 更新目標房
+  // ✅ Step 4: 更新時間與順序
+  updateRoomTimes(sourceRoomData, true);
+  updateRoomTimes(destRoomData);
 
-  // ✅ Step 5: 更新順序至後端
   updateOrderInRoomForRoomData(sourceRoomData, newRows[sourceRoomIndex].roomId);
   updateOrderInRoomForRoomData(destRoomData, newRows[destRoomIndex].roomId);
 };
-
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
   if (!roomData || roomData.length === 0) return;
