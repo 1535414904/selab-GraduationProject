@@ -91,9 +91,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
 
   //  處理滾動事件，確保時間刻度和內容區域同步
   const handleDragStart = () => {
-    document.body.style.overflowY = "hidden";
+    const scrollEl = scrollContainerRef.current;
+    if (scrollEl) scrollEl.style.overflowY = "auto";
   };
-
   const handleDragEndWrapper = async (result) => {
     document.body.style.overflowY = "auto"; // 拖曳結束後恢復滾動
 
