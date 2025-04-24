@@ -469,8 +469,7 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  position: relative;
-  overflow: hidden;
+  position: sticky;
 }
 
 /* 僅時間刻度的容器 */
