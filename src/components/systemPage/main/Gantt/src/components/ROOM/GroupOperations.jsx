@@ -216,21 +216,35 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     operatingRoomName: roomName,
     // 添加必要的引用信息，用於拖曳時保持關係
     roomId: roomData[0]?.roomId,
+    orderInRoom: sortedItems[0]?.orderInRoom ?? null,
     roomIndex,
     applicationId: sortedItems[0].applicationId,
     // 保存群組內部時間信息，用於解除群組時恢復
     originalTimeInfo: {
       startTime: firstItem.startTime,
       endTime: lastEndTime,
-      items: allGroupItems.map(item => ({
+      items: allGroupItems.map((item) => ({
         id: item.id,
         startTime: item.startTime,
         endTime: item.endTime,
         isCleaningTime: item.isCleaningTime,
-        color: item.color
+        color: item.color,
       }))
+      
     }
   };
+// 🔧 在建立群組後，逐一更新每筆手術的 orderInRoom 至後端
+nonCleaningItems.forEach((item, index) => {
+  const newOrder = index + 1;
+  axios.put(`${BASE_URL}/api/system/surgery/${item.applicationId}/order-in-room`, {
+    orderInRoom: newOrder,
+    operatingRoomId: roomData[0]?.roomId
+  }).then(() => {
+    console.log(`✅ 更新手術 ${item.applicationId} 的順序為 ${newOrder}`);
+  }).catch(err => {
+    console.error(`❌ 更新手術 ${item.applicationId} 的順序失敗`, err);
+  });
+});
 
   // ===== 全新的創建群組邏輯 =====
   // 我們不再移除和添加項目，而是創建一個全新的房間數據陣列

@@ -481,8 +481,10 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                       const originalData = room.data || [];
 
                       // 1️⃣ 取出所有有 orderInRoom 的手術（不包含清潔）
-                      const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
-
+                      const surgeriesOnly = originalData.filter(item =>
+                        (!item.isCleaningTime && item.orderInRoom != null) || item.isGroup
+                      );
+                      
                       // 2️⃣ 排序手術
                       const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
 
