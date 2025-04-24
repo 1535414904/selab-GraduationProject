@@ -38,9 +38,9 @@ function ORMgrWrapper({ reloadKey }) {
             errors[idErrorKey] = `手術房編號 "${operatingRoom.id}" 已存在，請使用其他編號`;
         }
 
-        if (!operatingRoom.name.trim()) {
+        if (!operatingRoom.operatingRoomName.trim()) {
             errors[nameErrorKey] = "*手術房名稱欄位不得為空";
-        } else if (operatingRooms.some(room => room.name === operatingRoom.name)) {
+        } else if (operatingRooms.some(room => room.operatingRoomName === operatingRoom.operatingRoomName)) {
             errors[nameErrorKey] = `手術房名稱 "${operatingRoom.name}" 已存在，請使用其他名稱`;
         }
 
