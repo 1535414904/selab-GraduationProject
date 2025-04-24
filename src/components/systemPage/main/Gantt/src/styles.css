@@ -494,7 +494,7 @@ body {
 .time-scale-header {
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 500;
   background-color: white;
   padding: 16px 0 8px;
   border-bottom: 1px solid #e5e7eb;

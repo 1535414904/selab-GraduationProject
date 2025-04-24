@@ -466,7 +466,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="fixed top-[360px] left-0 z-200 bg-blue-600 text-white px-3 py-4 rounded-md shadow-md hover:bg-blue-700"
+            className="fixed top-[360px] left-0 z-600 bg-blue-600 text-white px-3 py-4 rounded-md shadow-md hover:bg-blue-700"
           >
             篩選
           </button>
