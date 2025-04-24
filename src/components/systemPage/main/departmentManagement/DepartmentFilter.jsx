@@ -132,22 +132,22 @@ function DepartmentFilter({ isOpen, onClose, departments, filterDepartment, setF
           value={filterDepartment.id}
           onChange={handleChange}
         />
+      <Select
+        className="flex flex-col gap-4"
+        options={departments.map((department) => ({
+          value: department.name,
+          label: department.name
+        }))}
+        value={
+          filterDepartment.name
+            ? { value: filterDepartment.name, label: filterDepartment.name }
+            : null
+        }
+        onChange={handleNameChange}
+        placeholder="請選擇科別名稱..."
+        isClearable
+      />
 
-        <Select
-          className="flex flex-col gap-4"
-          options={departments.map((department) => ({
-            value: department.name,
-            label: department.name
-          }))}
-          value={
-            departments.find((department) => department.name === filterDepartment.name)
-              ? { value: filterDepartment.name, label: filterDepartment.name }
-              : null
-          }
-          onChange={handleNameChange}
-          placeholder="請選擇科別名稱..."
-          isClearable
-        />
 
         <button
           onClick={clearFilters}

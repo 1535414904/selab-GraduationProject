@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-
+import Select from "react-select";
 function SurgeryFilter({ isOpen, onClose, users, operatingRooms, filterOperatingRoom, setFilterOperatingRoom }) {
   // const [isOpen, setIsOpen] = useState(false);
   const filterRef = useRef(null);
@@ -183,39 +183,98 @@ function SurgeryFilter({ isOpen, onClose, users, operatingRooms, filterOperating
           value={filterOperatingRoom.name}
           onChange={handleChange}
         />
-        <select
-          name="department"
-          className="filter-input"
-          value={filterOperatingRoom.department}
-          onChange={handleChange}
-        >
-          <option value="">全部科別</option>
-          {departmentOptions.map(dep => (
-            <option key={dep} value={dep}>{dep}</option>
-          ))}
-        </select>
-        <select
-          name="roomType"
-          className="filter-input"
-          value={filterOperatingRoom.roomType}
-          onChange={handleChange}
-        >
-          <option value="">全部手術房種類</option>
-          {roomTypeOptions.map(rt => (
-            <option key={rt} value={rt}>{rt}</option>
-          ))}
-        </select>
-        <select
-          name="status"
-          className="filter-input"
-          value={filterOperatingRoom.status}
-          onChange={handleChange}
-        >
-          <option value="">全部狀態</option>
-          {statusOptions.map(st => (
-            <option key={st} value={st}>{st === "1" ? "開啟" : st === "0" ? "關閉" : st}</option>
-          ))}
-        </select>
+      <Select
+        className="text-gray-700"
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? '#60a5fa' : '#93c5fd', // 藍色
+            boxShadow: state.isFocused ? '0 0 0 2px #bfdbfe' : 'none',
+            '&:hover': {
+              borderColor: '#60a5fa',
+            },
+          }),
+          placeholder: (base) => ({
+            ...base,
+            color: '#9ca3af', // 灰色 placeholder
+          }),
+        }}
+        options={[{ value: '', label: '全部科別' }, ...departmentOptions.map(dep => ({ value: dep, label: dep }))]}
+        onChange={(selected) =>
+          handleChange({ target: { name: "department", value: selected?.value || "" } })
+        }
+        value={
+          filterOperatingRoom.department
+            ? { value: filterOperatingRoom.department, label: filterOperatingRoom.department }
+            : null
+        }        
+        placeholder="選擇科別..."
+        isClearable
+      />
+      <Select
+        className="text-gray-700"
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? '#60a5fa' : '#93c5fd',
+            boxShadow: state.isFocused ? '0 0 0 2px #bfdbfe' : 'none',
+            '&:hover': {
+              borderColor: '#60a5fa',
+            },
+          }),
+          placeholder: (base) => ({
+            ...base,
+            color: '#9ca3af',
+          }),
+        }}
+        options={[{ value: '', label: '全部手術房種類' }, ...roomTypeOptions.map(rt => ({ value: rt, label: rt }))]}
+        onChange={(selected) =>
+          handleChange({ target: { name: "roomType", value: selected?.value || "" } })
+        }
+        value={
+          filterOperatingRoom.roomType
+            ? { value: filterOperatingRoom.roomType, label: filterOperatingRoom.roomType }
+            : null
+        }        
+        placeholder="選擇房間種類..."
+        isClearable
+      />
+      <Select
+        className="text-gray-700"
+        styles={{
+          control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? '#60a5fa' : '#93c5fd',
+            boxShadow: state.isFocused ? '0 0 0 2px #bfdbfe' : 'none',
+            '&:hover': {
+              borderColor: '#60a5fa',
+            },
+          }),
+          placeholder: (base) => ({
+            ...base,
+            color: '#9ca3af',
+          }),
+        }}
+        options={[
+          { value: '', label: '全部狀態' },
+          { value: '1', label: '開啟' },
+          { value: '0', label: '關閉' },
+        ]}
+        onChange={(selected) =>
+          handleChange({ target: { name: "status", value: selected?.value || "" } })
+        }
+        value={
+          filterOperatingRoom.status
+            ? {
+                value: filterOperatingRoom.status,
+                label: filterOperatingRoom.status === "1" ? "開啟" : "關閉",
+              }
+            : null
+        }
+        
+        placeholder="選擇狀態..."
+        isClearable
+      />
         <button
           onClick={clearFilters}
           className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 font-semibold"
