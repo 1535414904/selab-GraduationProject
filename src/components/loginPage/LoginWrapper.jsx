@@ -203,6 +203,11 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
                 placeholder="帳號"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    confirmHandler();
+                  }
+                }}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">
@@ -221,6 +226,11 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
                 placeholder="密碼"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    confirmHandler();
+                  }
+                }}
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">

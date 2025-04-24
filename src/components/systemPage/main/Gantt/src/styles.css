@@ -1599,3 +1599,9 @@ body {
   color: #0f172a;        /* 深藍色，符合醫療風格 */
   line-height: 1.6;
 }
+
+.gantt-scroll-lock {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%; /* 或你預期的高度，例如 80vh */
+}
