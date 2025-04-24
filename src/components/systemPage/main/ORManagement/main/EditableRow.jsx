@@ -29,15 +29,17 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
         });
     };
 
+    // EditableRow.jsx
+    // 不需要使用 setOperatingRooms，直接呼叫 props.handleSave
     const handleSaveClick = () => {
         if (!editedOperatingRoom.id.trim()) {
-            setError("手術房編號不能為空");
-        } else {
-            setError(null);
-            handleSave(editedOperatingRoom);
+        setError("手術房編號不能為空");
+        return;
         }
+        setError(null);
+        handleSave(editedOperatingRoom);  // 由父層做後續更新處理
     };
-
+   
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -116,9 +118,9 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     className="action-button edit-button"
                     // onClick={handleSaveClick}
                     onClick={() => {
-                        handleSaveClick(editedOperatingRoom); // 儲存當前的編輯內容
-                        setIsEditing(false); // 退出編輯模式
-                    }}
+                        handleSaveClick();  // 這裡只呼叫 props.handleSave
+                        setIsEditing(false);
+                      }}
                 >
                     <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                 </button>
@@ -127,9 +129,9 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                 <button
                     className="action-button delete-button"
                     onClick={() => {
-                        setEditedOperatingRoom({ ...operatingRoom }); // 確保還原為原始資料
-                        setIsEditing(false); // 退出編輯模式
-                    }}
+                        handleSaveClick();  // 這裡只呼叫 props.handleSave
+                        setIsEditing(false);
+                      }}
                 >
                     <FontAwesomeIcon icon={faTimes} className="action-icon" />
                 </button>

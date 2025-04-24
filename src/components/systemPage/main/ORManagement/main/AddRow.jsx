@@ -8,13 +8,14 @@ import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError, setEmptyError }) {
     const handleChange = (uniqueId, event) => {
         const { name, value } = event.target;
-        const updated = [...addOperatingRooms];
-        const operatingRoom = updated.find(room => room.uniqueId === uniqueId);
-        if (operatingRoom) {
-            operatingRoom[name] = value;
-        }
+      
+        const updated = addOperatingRooms.map((room) =>
+          room.uniqueId === uniqueId ? { ...room, [name]: value } : room
+        );
+      
         setAddOperatingRooms(updated);
-    };
+      };
+      
     const [departments, setDepartments] = useState([]);
 
     useEffect(() => {
@@ -64,8 +65,8 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                         <input
                             className={`${emptyError[`${operatingRoom.uniqueId}-name`] ? "err-input" : ""}`}
                             type="text"
-                            name="name"
-                            value={operatingRoom.name}
+                            name="operatingRoomName"
+                            value={operatingRoom.operatingRoomName}
                             onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
                         />
                         {emptyError[`${operatingRoom.uniqueId}-name`] && <span className="error">{emptyError[`${operatingRoom.uniqueId}-name`]}</span>}
@@ -113,6 +114,7 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                     <td>
                         <div className="action-buttons">
                             {/* 儲存按鈕 */}
+
                             <button className="action-button edit-button" onClick={() => {
                                 handleAdd(operatingRoom);
                             }}>

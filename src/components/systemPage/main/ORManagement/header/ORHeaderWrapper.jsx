@@ -13,7 +13,7 @@ function ORHeaderWrapper({
   const addRow = () => {
     const newOperatingRoom = {
       id: "",
-      name: "",
+      operatingRoomName: "",
       departmentId: "1",
       roomType: "",
       status: 1,

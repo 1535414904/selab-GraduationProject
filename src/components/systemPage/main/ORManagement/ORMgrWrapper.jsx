@@ -58,6 +58,7 @@ function ORMgrWrapper({ reloadKey }) {
 
         try {
             await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
+            console.log(operatingRoom);
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
             setOperatingRooms(response.data);
             cleanAddRow(operatingRoom.uniqueId);
