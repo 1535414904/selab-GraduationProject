@@ -102,7 +102,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
               </div>
               <div className="ml-2">
                 <span className="text-white text-3xl font-semibold drop-shadow-[0_0_3px_#2563eb]">
-                  MedTime
+                  智能手術排程決策支援系統
                 </span>
               </div>
             </div>

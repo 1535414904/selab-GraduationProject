@@ -191,8 +191,8 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
               />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">MedTime</h1>
-          <p className="text-2xl text-blue-600 font-medium p-2">手術排班系統登入</p>
+          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">智能手術排程決策支援系統</h1>
+          <p className="text-2xl text-blue-600 font-medium p-2">登入</p>
         </div>
 
         <div className="space-y-10 relative z-10 p-1">
@@ -246,6 +246,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
               <p className="text-sm text-red-600">{message}</p>
             </div>
           )}
+          {/* <div className="h-[160px] invisible"></div> */}
 
           <div className="flex justify-between items-center pt-2">
             <button
@@ -258,11 +259,11 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
               忘記密碼？
             </button>
             <button
-              className="text-3xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transform transition hover:scale-105 flex items-center"
+              className="text-3xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center transition duration-200"
               onClick={confirmHandler}
             >
               確定
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 ml-2" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>

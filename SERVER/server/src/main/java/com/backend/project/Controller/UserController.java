@@ -59,7 +59,7 @@ public class UserController {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom("superstory0310@gmail.com"); // 或你的 Brevo 寄件人信箱
             message.setTo(toEmail);
-            message.setSubject("【MedTime 密碼重置驗證碼】");
+            message.setSubject("【智能手術排程決策支援系統密碼重置驗證碼】");
             message.setText("親愛的使用者您好，\n\n您申請了密碼重置。\n\n您的驗證碼是： " + code +
                     "\n\n請在 5 分鐘內使用此驗證碼完成操作。\n\n若非您本人操作，請忽略此信。\n\nMedTime 系統敬上");
 
