@@ -3,10 +3,8 @@ package com.backend.project.Service;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -18,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,7 +28,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +39,6 @@ import com.backend.project.model.Surgery;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class AlgorithmService {
@@ -546,14 +540,6 @@ public class AlgorithmService {
                 continue;
             }
 
-            // // 🔽 在這裡刪掉下一行（如果存在）
-            // if (i + 1 < originalRows.size()) {
-            // System.out.println("刪除原始資料中第 " + (i + 1) + " 行，內容為: " +
-            // Arrays.toString(originalRows.get(i + 1)));
-            // originalRows.remove(i + 1);
-            // i--; // 調整索引以反映刪除的行
-            // }
-
             System.out.println("處理手術申請序號: " + applicationId);
             Surgery surgery = surgeryRepository.findById(applicationId).orElseThrow();
             if (surgery == null) {
@@ -666,7 +652,7 @@ public class AlgorithmService {
         OperatingRoom currentRoom = null;
         int orderInRoom = 1;
 
-        System.out.println("🔍 開始解析 CSV，共有列數：" + rows.size());
+        System.out.println("開始解析 CSV，共有列數：" + rows.size());
 
         int rowIndex = 0;
         for (String[] row : rows) {
@@ -674,23 +660,23 @@ public class AlgorithmService {
             System.out.println("➡️ 處理第 " + rowIndex + " 列: " + Arrays.toString(row));
 
             if (row.length == 0 || row[0].trim().isEmpty()) {
-                System.out.println("⚠️ 空列或空白第一欄，跳過");
+                System.out.println("空列或空白第一欄，跳過");
                 continue;
             }
 
             String firstCol = row[0].trim();
 
-            // ✅ 優先判斷是否為手術房代號（即使只有一欄也要判斷）
+            // 優先判斷是否為手術房代號（即使只有一欄也要判斷）
             if (firstCol.matches("^[A-Z]\\d+$")) {
                 System.out.println("🏥 偵測到手術房代號：" + firstCol);
                 currentRoom = operatingRoomRepository.findByOperatingRoomName(firstCol)
-                        .orElseThrow(() -> new RuntimeException("❌ 找不到手術房：" + firstCol));
+                        .orElseThrow(() -> new RuntimeException("找不到手術房：" + firstCol));
                 System.out.println("✅ 切換到手術房：" + currentRoom.getOperatingRoomName());
                 orderInRoom = 1;
                 continue;
             }
 
-            // 🛑 沒有 enough 欄位，不能抓手術欄位
+            // 沒有 enough 欄位，不能抓手術欄位
             if (row.length < 3) {
                 System.out.println("⚠️ 欄位數不足（非手術房也不是手術），跳過");
                 continue;
@@ -698,27 +684,36 @@ public class AlgorithmService {
 
             String surgeryName = row[2].trim(); // 格式如 11106(0830) 或 "整理時間"
 
-            // 🛑 排除整理時間/無效手術
+            // 排除整理時間/無效手術
             if (surgeryName == null || surgeryName.contains("整理時間") || !surgeryName.matches("^\\d+\\(.*\\)$")) {
-                System.out.println("🛑 非手術資料，跳過");
+                System.out.println("非手術資料，跳過");
                 continue;
             }
 
-            // ✂️ 解析手術 ID
+            // 解析手術 ID
             String applicationId = surgeryName.split("\\(")[0].trim();
             System.out.println("🔎 嘗試載入手術 ID: " + applicationId);
 
-            long start = System.currentTimeMillis();
+
             Surgery surgery = surgeryRepository.findById(applicationId)
-                    .orElseThrow(() -> new RuntimeException("❌ 找不到手術：" + applicationId));
-            long end = System.currentTimeMillis();
-            System.out.println("⏱️ Surgery 查詢耗時: " + (end - start) + "ms");
+                    .orElseThrow(() -> new RuntimeException("找不到手術：" + applicationId));
+
+            // 若為群組手術，則同步更新群組內所有手術的 operatingRoom
             if (surgery.getGroupApplicationIds() != null && !surgery.getGroupApplicationIds().isEmpty()) {
-                System.out.println("🧠 群組手術，請確認其他成員的 orderInRoom 已為 null");
+                List<String> groupIds = surgery.getGroupApplicationIds();
+                List<Surgery> groupSurgeries = surgeryRepository.findAllById(groupIds);
+
+                for (Surgery groupSurgery : groupSurgeries) {
+                    groupSurgery.setOperatingRoom(currentRoom);
+                }
+
+                surgeryRepository.saveAll(groupSurgeries);
+                System.out.println(
+                        "🔁 群組手術同步更新了 " + groupSurgeries.size() + " 台手術的手術房為：" + currentRoom.getOperatingRoomName());
             }
 
             if (currentRoom == null) {
-                throw new RuntimeException("❌ 無對應手術房，手術 ID: " + applicationId);
+                throw new RuntimeException("無對應手術房，手術 ID: " + applicationId);
             }
 
             surgery.setOperatingRoom(currentRoom);

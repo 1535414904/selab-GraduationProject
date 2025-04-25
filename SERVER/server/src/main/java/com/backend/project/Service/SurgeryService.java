@@ -182,8 +182,8 @@ public class SurgeryService {
         System.out.println("收到的手術 ID: " + id);
         Surgery initSurgery = surgeryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Surgery not found with id " + id));
-        List<String> applicationIds = initSurgery.getGroupApplicationIds();
 
+        List<String> applicationIds = initSurgery.getGroupApplicationIds();
         if (applicationIds == null || applicationIds.isEmpty()) {
             System.out.println("此手術不屬於任何群組");
             return;
@@ -192,27 +192,47 @@ public class SurgeryService {
         // 取得 OperatingRoom
         OperatingRoom room = initSurgery.getOperatingRoom();
 
-        // 取得房間內所有手術並按 orderInRoom 排序
-        List<Surgery> allSurgeriesInRoom = surgeryRepository.findByOperatingRoom(room).stream()
+        // 房內手術依照順序排列
+        List<Surgery> surgeriesInRoom = surgeryRepository.findByOperatingRoom(room).stream()
                 .sorted(Comparator.comparing(Surgery::getOrderInRoom, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
 
-        // 先把這一組的群組清掉
-        Set<String> groupSet = new HashSet<>(applicationIds);
-        for (Surgery surgery : allSurgeriesInRoom) {
-            if (groupSet.contains(surgery.getApplicationId())) {
-                surgery.setGroupApplicationIds(null);
+        // 找到 main 手術在房間中的位置
+        int mainIndex = -1;
+        for (int i = 0; i < surgeriesInRoom.size(); i++) {
+            if (surgeriesInRoom.get(i).getApplicationId().equals(id)) {
+                mainIndex = i;
+                break;
             }
         }
 
-        // 將房間內所有手術重新排序（包含原本群組的手術）
-        int currentOrder = 1;
-        for (Surgery surgery : allSurgeriesInRoom) {
-            surgery.setOrderInRoom(currentOrder++);
+        if (mainIndex == -1) {
+            throw new RuntimeException("主手術未在該房間內");
         }
 
-        // 儲存所有更新
-        surgeryRepository.saveAll(allSurgeriesInRoom);
+        // 取得群組所有手術（依 groupIds 順序）
+        List<Surgery> groupSurgeries = surgeryRepository.findAllById(applicationIds).stream()
+                .sorted(Comparator.comparingInt(s -> applicationIds.indexOf(s.getApplicationId())))
+                .collect(Collectors.toList());
+
+        // 清除每一筆群組成員的 groupApplicationIds
+        groupSurgeries.forEach(s -> s.setGroupApplicationIds(null));
+
+        // 移除所有群組手術（主+副）出手術房中現有清單
+        Set<String> groupIdSet = new HashSet<>(applicationIds);
+        surgeriesInRoom.removeIf(s -> groupIdSet.contains(s.getApplicationId()));
+
+        // 插回主手術位置（保留順序）
+        surgeriesInRoom.addAll(mainIndex, groupSurgeries);
+
+        // 重新編號 orderInRoom
+        for (int i = 0; i < surgeriesInRoom.size(); i++) {
+            surgeriesInRoom.get(i).setOrderInRoom(i + 1);
+        }
+
+        // 儲存所有手術更新
+        surgeryRepository.saveAll(surgeriesInRoom);
+        System.out.println("✅ 已解除群組並依據主手術位置展開成員");
     }
 
     // 根據 groupApplicationIds 更新手術群組的 estimatedSurgeryTime
@@ -262,41 +282,41 @@ public class SurgeryService {
     public void restoreSurgeryGroupEstimatedTime(String id) {
         Surgery initSurgery = surgeryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Surgery not found with id " + id));
-    
+
         List<String> groupIds = initSurgery.getGroupApplicationIds();
         List<Surgery> surgeries = surgeryRepository.findAllById(groupIds);
-    
+
         if (surgeries.isEmpty()) {
             return;
         }
-    
+
         TimeSettingsDTO timeSettings = algorithmService.getTimeSettingsFromCsv();
         if (timeSettings == null) {
             return;
         }
-    
+
         int cleaningTime = timeSettings.getCleaningTime();
-    
+
         // 明確取得第一台手術（根據群組傳入順序）
         String firstId = groupIds.get(0);
         Optional<Surgery> optionalFirstSurgery = surgeries.stream()
                 .filter(s -> s.getApplicationId().equals(firstId))
                 .findFirst();
-    
+
         if (!optionalFirstSurgery.isPresent()) {
             return;
         }
-    
+
         Surgery firstSurgery = optionalFirstSurgery.get();
-    
+
         // 計算其他手術的總 estimatedSurgeryTime
         int totalEstimatedTime = surgeries.stream()
                 .filter(s -> !s.getApplicationId().equals(firstId))
                 .mapToInt(s -> s.getEstimatedSurgeryTime() != null ? s.getEstimatedSurgeryTime() : 0)
                 .sum();
-    
+
         totalEstimatedTime += (surgeries.size() - 1) * cleaningTime;
-    
+
         // 還原第一台手術的 estimatedTime
         Integer currentGroupEstimated = firstSurgery.getEstimatedSurgeryTime();
         if (currentGroupEstimated != null && currentGroupEstimated > totalEstimatedTime) {
@@ -305,7 +325,6 @@ public class SurgeryService {
             surgeryRepository.save(firstSurgery);
         }
     }
-    
 
     public void updateSurgery4DrogEnd(String id, String operatingRoomId) {
         Surgery surgery = surgeryRepository.findById(id)
