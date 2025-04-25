@@ -108,6 +108,58 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
         }
     };
 
+    const handleAddAll = async (newDepartments) => {
+        const newEmptyError = {};
+        const existingIds = new Set(departments.map(d => d.id.trim()));
+        const existingNames = new Set(departments.map(d => d.name.trim()));
+        const seenIds = new Set();
+        const seenNames = new Set();
+    
+        newDepartments.forEach(dept => {
+            const trimmedId = dept.id?.trim();
+            const trimmedName = dept.name?.trim();
+            const idKey = `${dept.uniqueId}-id`;
+            const nameKey = `${dept.uniqueId}-name`;
+    
+            // 編號檢查
+            if (!trimmedId) {
+                newEmptyError[idKey] = "*科別編號欄位不得為空";
+            } else if (existingIds.has(trimmedId)) {
+                newEmptyError[idKey] = `科別編號 "${trimmedId}" 已存在`;
+            } else if (seenIds.has(trimmedId)) {
+                newEmptyError[idKey] = `科別編號 "${trimmedId}" 重複`;
+            } else {
+                seenIds.add(trimmedId);
+            }
+    
+            // 名稱檢查
+            if (!trimmedName) {
+                newEmptyError[nameKey] = "*科別名稱欄位不得為空";
+            } else if (existingNames.has(trimmedName)) {
+                newEmptyError[nameKey] = `科別名稱 "${trimmedName}" 已存在`;
+            } else if (seenNames.has(trimmedName)) {
+                newEmptyError[nameKey] = `科別名稱 "${trimmedName}" 重複`;
+            } else {
+                seenNames.add(trimmedName);
+            }
+        });
+    
+        // 若有任何錯誤就不送出，顯示錯誤
+        if (Object.keys(newEmptyError).length > 0) {
+            setEmptyError(newEmptyError);
+            return;
+        }
+    
+        try {
+            await axios.post(`${BASE_URL}/api/system/departments/add`, newDepartments);
+            const response = await axios.get(`${BASE_URL}/api/system/departments`);
+            setDepartments(response.data);
+            setAddDepartments([]);
+        } catch (error) {
+            console.error("批次新增錯誤：", error);
+        }
+    };
+    
 
 
     const cleanAddRow = (uniqueId) => {
@@ -283,6 +335,7 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
                 handleDelete={handleDeleteAll}
                 addDepartments={addDepartments}
                 setAddDepartments={setAddDepartments}
+                handleAddAll={handleAddAll}
             />
 
             <div className="flex w-full transition-all duration-500 ease-in-out ">
@@ -326,6 +379,7 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
                             setEmptyError={setEmptyError}
                             refreshKey={refreshKey}
                             setRefreshKey={setRefreshKey}
+                            handleAddAll={handleAddAll}
                         />
                     </div>
                 </div>

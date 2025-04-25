@@ -1,14 +1,13 @@
+import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+/* eslint-disable react/prop-types */
 function DepartmentHeaderWrapper({
-  departments,
-  setDepartments,
-  filterDepartment,
-  setFilterDepartment,
   selectedDepartments,
-  setSelectedDepartments,
-  setEmptyError,
   handleDelete,
   addDepartments,
   setAddDepartments,
+  handleAddAll,
 }) {
   const addRow = () => {
     const newDepartment = {
@@ -75,6 +74,14 @@ function DepartmentHeaderWrapper({
           </svg>
           新增
         </button>
+
+        {addDepartments.length > 0 && (
+          <button className="account-button" onClick={() => handleAddAll(addDepartments)} style={{ display: "flex", alignItems: "center", gap: "8px" }} >
+            <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
+            一鍵保存
+          </button>
+        )}
+
         <button
           className="account-button mgr-cancel"
           onClick={() => handleDelete(selectedDepartments)}

@@ -26,6 +26,7 @@ function AccountListWrapper({
 
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
+    const [selectAll, setSelectAll] = useState(false);
 
     const roleDisplayMap = {
         1: <p>查看者</p>,
@@ -66,7 +67,7 @@ function AccountListWrapper({
     const handleSave = async (updatedUser) => {
         const isConfirmed = window.confirm(`確定要儲存 ${updatedUser.username} 的變更嗎？`);
         if (!isConfirmed) return; // 如果使用者按下取消，則不進行儲存
-        
+
         try {
             await axios.put(`${BASE_URL}/api/system/user/${updatedUser.username}`, updatedUser);
             setUsers(users.map(user => (user.username === updatedUser.username ? updatedUser : user)));
@@ -84,6 +85,16 @@ function AccountListWrapper({
         );
     };
 
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setSelectedUsers([]);
+        } else {
+            // setSelectedDepartments(filteredDepartments);
+            setSelectedUsers(filteredUsers.map((d) => d.username));
+        }
+        setSelectAll(!selectAll);
+    };
+
     return (
         <div className="mgr-list">
             {/* // <div
@@ -98,7 +109,18 @@ function AccountListWrapper({
             <table className="system-table table-accounts">
                 <thead>
                     <tr>
-                        <th>選取</th>
+                        <th
+                            className="selectable-cell"
+                            onClick={handleSelectAll} // 整個 th 點了也可以全選（可選）
+
+                        >
+                            <input
+                                type="checkbox"
+                                checked={selectAll}
+                                onChange={handleSelectAll}
+                                className="checkbox"
+                            />
+                        </th>
                         <th>帳號</th>
                         <th>姓名</th>
                         <th>單位</th>

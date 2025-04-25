@@ -8,7 +8,8 @@ function ORHeaderWrapper({
   filterOperatingRoom, setFilterOperatingRoom,
   selectedOperatingRooms, setSelectedOperatingRooms,
   setEmptyError, handleDelete,
-  addOperatingRooms, setAddOperatingRooms
+  addOperatingRooms, setAddOperatingRooms,
+  handleAddAll
 }) {
   const addRow = () => {
     const newOperatingRoom = {
@@ -79,6 +80,14 @@ function ORHeaderWrapper({
           </svg>
           新增
         </button>
+
+        {addOperatingRooms.length > 0 && (
+          <button className="account-button" onClick={() => handleAddAll(addOperatingRooms)} style={{ display: "flex", alignItems: "center", gap: "8px" }} >
+            <FontAwesomeIcon icon={faMagnifyingGlass} className="action-icon" />
+            一鍵保存
+          </button>
+        )}
+
         <button className="account-button mgr-cancel" onClick={() => handleDelete(selectedOperatingRooms)} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* <svg
             xmlns="http://www.w3.org/2000/svg"

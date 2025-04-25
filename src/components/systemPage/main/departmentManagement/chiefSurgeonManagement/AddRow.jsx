@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function AddRow({
     addChiefSurgeons, setAddChiefSurgeons,
-    handleAdd, emptyError }) {
+    handleAdd, emptyError, setEmptyError }) {
 
     const handleChange = (index, event) => {
         const { name, value } = event.target;

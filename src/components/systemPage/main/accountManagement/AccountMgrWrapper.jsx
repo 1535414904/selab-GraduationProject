@@ -321,7 +321,6 @@ function AccountMgrWrapper({ reloadKey }) {
     };
 
     const handleAddAll = async (newUsers) => {
-        const errors = {};
         const existingUsernames = new Set(users.map(u => u.username.trim()));
         const seenUsernames = new Set();
 
@@ -337,12 +336,12 @@ function AccountMgrWrapper({ reloadKey }) {
             }
 
             if (existingUsernames.has(trimmedUsername)) {
-                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 已存在，請使用其他帳號`;
+                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 已存在`;
                 return;
             }
 
             if (seenUsernames.has(trimmedUsername)) {
-                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 重複，請修改後再新增`;
+                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 重複`;
                 return;
             }
 

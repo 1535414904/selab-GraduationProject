@@ -67,6 +67,55 @@ function ORMgrWrapper({ reloadKey }) {
         }
     };
 
+    const handleAddAll = async (newOperatingRooms) => {
+        const newEmptyError = {};
+        const existingIds = new Set(operatingRooms.map(d => d.id.trim()));
+        const existingNames = new Set(operatingRooms.map(d => d.operatingRoomName.trim()));
+        const seenIds = new Set();
+        const seenNames = new Set();
+
+        newOperatingRooms.forEach(room => {
+            const trimmedId = room.id?.trim();
+            const trimmedName = room.operatingRoomName?.trim();
+            const idKey = `${room.uniqueId}-id`;
+            const nameKey = `${room.uniqueId}-name`;
+
+            if (!trimmedId) {
+                newEmptyError[idKey] = "*手術房編號欄位不得為空";
+            } else if (existingIds.has(trimmedId)) {
+                newEmptyError[idKey] = `手術房編號 "${trimmedId}" 已存在`;
+            } else if (seenIds.has(trimmedId)) {
+                newEmptyError[idKey] = `手術房編號 "${trimmedId}" 重複`;
+            } else {
+                seenIds.add(trimmedId);
+            }
+
+            if (!trimmedName) {
+                newEmptyError[nameKey] = "*手術房名稱欄位不得為空";
+            } else if (existingNames.has(trimmedName)) {
+                newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 已存在`;
+            } else if (seenNames.has(trimmedName)) {
+                newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 重複`;
+            } else {
+                seenNames.add(trimmedName);
+            }
+        });
+
+        if (Object.keys(newEmptyError).length > 0) {
+            setEmptyError(newEmptyError);
+            return;
+        }
+
+        try {
+            await axios.post(`${BASE_URL}/api/system/operating-rooms/add`, room);
+            const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
+            setOperatingRooms(response.data);
+            cleanAddRow(room.uniqueId);
+        } catch (error) {
+            console.error("批次新增錯誤： ", error);
+        }
+    }
+
     const cleanAddRow = (uniqueId) => {
         setAddOperatingRooms(prev => prev.filter(room => room.uniqueId !== uniqueId));
         setEmptyError(prev => {
@@ -158,6 +207,7 @@ function ORMgrWrapper({ reloadKey }) {
                 handleDelete={handleDeleteAll}
                 addOperatingRooms={addOperatingRooms}
                 setAddOperatingRooms={setAddOperatingRooms}
+                handleAddAll={handleAddAll}
             />
 
             <div className="flex w-full transition-all duration-500 ease-in-out">
