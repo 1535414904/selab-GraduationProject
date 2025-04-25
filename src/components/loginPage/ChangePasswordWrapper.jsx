@@ -149,7 +149,7 @@ function ChangePasswordWrapper({ togglePage, username }) {
                 transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`} />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-blue-900 mb-1 ">MedTime</h1>
+          <h1 className="text-3xl font-bold text-blue-900 mb-1 ">智能手術排程決策支援系統</h1>
           <p className="text-sm text-blue-600 font-medium">更改密碼</p>
         </div>
 

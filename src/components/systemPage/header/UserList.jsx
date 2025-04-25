@@ -31,19 +31,17 @@ function UserList({ fullTogglePage, name }) {
     <div className="relative" ref={dropdownRef}>
       {/* 用戶按鈕 */}
       <button
-        className={`cursor-pointer font-bold flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${
-          isListOpen
+        className={`cursor-pointer font-bold flex items-center text-2xl space-x-2 py-2 px-3 rounded-full ${isListOpen
             ? "bg-white text-blue-500"
             : "text-white font-bold hover:bg-blue-500"
-        } transition-all duration-300`}
+          } transition-all duration-300`}
         onClick={toggleMenu}
       >
         <FontAwesomeIcon icon={faUser} className="text-sm" />
         <span className="hidden md:inline text-2xl font-medium">{name}</span>
         <svg
-          className={`h-4 w-4 transition-transform duration-300 ${
-            isListOpen ? "transform rotate-180" : ""
-          }`}
+          className={`h-4 w-4 transition-transform duration-300 ${isListOpen ? "transform rotate-180" : ""
+            }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"

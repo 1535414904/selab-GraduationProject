@@ -197,23 +197,48 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
       <div className="z-10 bg-white bg-opacity-95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 border border-blue-50 hover:shadow-blue-100 transition duration-300 relative">
         {/* LOGO */}
         <div className="flex flex-col items-center mb-8 relative z-10">
+          {/* MedTime Logo SVG - 動態時鐘+十字設計 */}
           <div className="w-30 h-30 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="w-full h-full">
               <circle cx="100" cy="100" r="90" fill="#0d6efd" />
               <circle cx="100" cy="100" r="75" fill="#FFFFFF" />
+
+              {/* 時鐘刻度 */}
               <line x1="100" y1="40" x2="100" y2="50" stroke="#0d6efd" strokeWidth="5" />
               <line x1="100" y1="150" x2="100" y2="160" stroke="#0d6efd" strokeWidth="5" />
               <line x1="40" y1="100" x2="50" y2="100" stroke="#0d6efd" strokeWidth="5" />
               <line x1="150" y1="100" x2="160" y2="100" stroke="#0d6efd" strokeWidth="5" />
+
+              {/* 時針與分針 - 動態顯示現在時間 */}
               <line x1="100" y1="100" x2={hourHand.x2} y2={hourHand.y2} stroke="#0d6efd" strokeWidth="6" strokeLinecap="round" />
               <line x1="100" y1="100" x2={minuteHand.x2} y2={minuteHand.y2} stroke="#0d6efd" strokeWidth="4" strokeLinecap="round" />
+
+              {/* 中心點 */}
               <circle cx="100" cy="100" r="8" fill="#0d6efd" />
-              <rect x={cross.horizontal.x} y={cross.horizontal.y} width="30" height="8" rx="4" fill="#0d6efd" transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.horizontal.x + 15}, ${cross.horizontal.y + 4})`} />
-              <rect x={cross.vertical.x} y={cross.vertical.y} width="8" height="30" rx="4" fill="#0d6efd" transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`} />
+
+              {/* 醫療十字 - 跟隨分針移動 */}
+              <rect
+                x={cross.horizontal.x}
+                y={cross.horizontal.y}
+                width="30"
+                height="8"
+                rx="4"
+                fill="#0d6efd"
+                transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.horizontal.x + 15}, ${cross.horizontal.y + 4})`}
+              />
+              <rect
+                x={cross.vertical.x}
+                y={cross.vertical.y}
+                width="8"
+                height="30"
+                rx="4"
+                fill="#0d6efd"
+                transform={`rotate(${currentTime.getMinutes() * 6}, ${cross.vertical.x + 4}, ${cross.vertical.y + 15})`}
+              />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">MedTime</h1>
-          <p className="text-2xl text-blue-600 font-medium p-1">找回密碼</p>
+          <h1 className="text-5xl font-bold text-blue-900 mb-1 p-2">智能手術排程決策支援系統</h1>
+          <p className="text-2xl text-blue-600 font-medium p-2">找回密碼</p>
         </div>
 
         <div className="space-y-10 relative z-10 p-1">
@@ -259,7 +284,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
             <div>
               <div className="relative">
                 <input
-                  className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-blue-300"
+                  className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
                   placeholder="驗證碼"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
@@ -285,7 +310,7 @@ function ForgotPasswordWrapper({ togglePage, setNowUsername }) {
               )}
               {countdown === 0 && (
                 <button
-                  className="text-3xl text-sm text-blue-700 hover:underline mt-2"
+                  className="text-3xl bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                   onClick={resendCode}
                 >
                   重新發送驗證碼
