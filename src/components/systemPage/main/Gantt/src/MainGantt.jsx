@@ -37,7 +37,10 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
     const initializeData = async () => {
       setLoading(true);
       try {
-        await fetchSurgeryData(setRows, setLoading, setError, true);
+        console.log("主頁開始初始化數據，使用isMainPage=true參數");
+        // 確保使用isMainPage=true參數
+        const formattedData = await fetchSurgeryData(setRows, setLoading, setError, true);
+        console.log("主頁獲取數據成功:", formattedData);
 
         // 如果沒有通過props獲取到用戶角色，才嘗試從API獲取
         if (!user || user.role === undefined) {

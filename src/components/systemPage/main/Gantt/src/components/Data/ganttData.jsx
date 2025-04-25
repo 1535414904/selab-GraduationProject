@@ -133,21 +133,28 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
               date: surgery.date,
               surgeryName: surgery.surgeryName,
               chiefSurgeonName: surgery.chiefSurgeonName,
-              operatingRoomName: room.name,
+              operatingRoomName: room.operatingRoomName || room.name,
               estimatedSurgeryTime: surgery.estimatedSurgeryTime,
               anesthesiaMethod: surgery.anesthesiaMethod,
               surgeryReason: surgery.surgeryReason,
               specialOrRequirements: surgery.specialOrRequirements,
               user: surgery.user,
-              departmentName: surgery.departmentName || "未指定科別", // 修改科別屬性名
+              departmentName: surgery.departmentName || (room.department ? room.department.name : "未指定科別"), // 加強科別獲取邏輯
               prioritySequence: surgery.prioritySequence || 99999, // 保存優先順序
-              orderInRoom: surgery.orderInRoom ?? null, // 🔧 加這一行保證排序用得到
+              orderInRoom: surgery.orderInRoom ?? null, // 保證排序用得到
               // 保存群組資訊
               groupApplicationIds: surgery.groupApplicationIds || [],
               // 若有群組ID且不是主頁模式，則標記為群組的一部分
               isInGroup: !isMainPage && (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0)
             };
-            console.log('手術項目:', surgeryItem);
+            
+            // 調試日誌：檢查科別資料
+            console.log(`手術 ${surgery.applicationId} 的科別資料:`, {
+              從surgery直接獲取: surgery.departmentName,
+              從手術房獲取: room.department ? room.department.name : "無科別資料",
+              最終使用: surgeryItem.departmentName
+            });
+
             // 銜接時間項目
             const cleaningItem = {
               id: `cleaning-${surgery.applicationId}`,

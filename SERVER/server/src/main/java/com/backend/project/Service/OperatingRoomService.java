@@ -3,6 +3,8 @@ package com.backend.project.Service;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -84,6 +86,25 @@ public class OperatingRoomService {
             // 確保手術房和科別資訊已加載
             if (surgery.getOperatingRoom() != null && surgery.getOperatingRoom().getDepartment() != null) {
                 Department department = surgery.getOperatingRoom().getDepartment();
+                // 將科別名稱添加到手術對象中，以便前端訪問
+                try {
+                    // 使用反射設置departmentName字段
+                    java.lang.reflect.Field field = Surgery.class.getDeclaredField("departmentName");
+                    field.setAccessible(true);
+                    field.set(surgery, department.getName());
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    // 如果沒有departmentName字段，則在手術對象的transient map中添加科別名稱
+                    Map<String, Object> extraData = new HashMap<>();
+                    extraData.put("departmentName", department.getName());
+                    // 使用反射設置額外的數據到手術對象
+                    try {
+                        java.lang.reflect.Field extraDataField = Surgery.class.getDeclaredField("extraData");
+                        extraDataField.setAccessible(true);
+                        extraDataField.set(surgery, extraData);
+                    } catch (NoSuchFieldException | IllegalAccessException ex) {
+                        System.out.println("無法設置科別信息: " + ex.getMessage());
+                    }
+                }
             }
         }
         
