@@ -28,7 +28,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.backend.project.Dao.OperatingRoomRepository;
@@ -38,6 +40,7 @@ import com.backend.project.model.OperatingRoom;
 import com.backend.project.model.Surgery;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvValidationException;
 
 @Service
@@ -52,16 +55,17 @@ public class AlgorithmService {
 
     private String ORSM_GUIDELINES_FILE_PATH = "ORSM 2025/Guidelines";
 
-    private final SurgeryRepository surgeryRepository;
+    @Autowired
+    private SurgeryRepository surgeryRepository;
 
-    private final OperatingRoomRepository operatingRoomRepository;
+    @Autowired
+    private OperatingRoomRepository operatingRoomRepository;
+
+    @Autowired
+    @Lazy
+    private SurgeryService surgeryService;
 
     private final Map<String, Boolean> pinnedRooms = new ConcurrentHashMap<>(); // 儲存釘選的手術房
-
-    public AlgorithmService(SurgeryRepository surgeryRepository, OperatingRoomRepository operatingRoomRepository) {
-        this.surgeryRepository = surgeryRepository;
-        this.operatingRoomRepository = operatingRoomRepository;
-    }
 
     public void runBatchFile() throws Exception {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
@@ -103,6 +107,7 @@ public class AlgorithmService {
         }
 
         try {
+            cleanEmptySurgeonsAndShiftForward("ORSM 2025/Guidelines/Guidelines.csv");
             addPinnedOperatingRoomToCsv();
             // processGuidelinesCsv("ORSM 2025/Guidelines/Guidelines.csv");
             parseCsvAndUpdateOrder("ORSM 2025/Guidelines/Guidelines.csv");
@@ -114,6 +119,7 @@ public class AlgorithmService {
 
     public void exportSurgeriesToCsv() {
         List<Surgery> surgeries = surgeryRepository.findAll();
+        List<OperatingRoom> operatingRooms = operatingRoomRepository.findAllWithoutSurgeries();
         String filePath = TIME_TABLE_FILE_PATH + "/TimeTable.csv";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String tomorrowDate = LocalDate.now().plusDays(1).format(formatter);
@@ -165,12 +171,33 @@ public class AlgorithmService {
                         operatingRoomName,
                         surgery.getAnesthesiaMethod(),
                         EST,
-                        (surgery.getSpecialOrRequirements() != null && !surgery.getSpecialOrRequirements().isEmpty()
+                        (surgery.getSpecialOrRequirements() == "N"
                                 ? "Y"
                                 : "N"),
                         String.valueOf(surgery.getPrioritySequence())
                 };
                 csvWriter.writeNext(data);
+            }
+
+            if (operatingRooms != null && !operatingRooms.isEmpty()) {
+                for (OperatingRoom room : operatingRooms) {
+                    if (room.getStatus() == 1) {
+                        String[] data = {
+                                tomorrowDate + " 0830",
+                                "000000",
+                                "000000",
+                                room.getDepartment().getName(),
+                                "空醫師",
+                                room.getOperatingRoomName(),
+                                "GA",
+                                "0",
+                                "N",
+                                "99999", };
+                        csvWriter.writeNext(data);
+                    }
+
+                }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -180,55 +207,58 @@ public class AlgorithmService {
     public void exportOperatingRoomToCsv() {
         List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
         String filePath = ORSM_FILE_PATH + "/room.csv";
-
-        Set<String> roomNamesOfAll = new HashSet<>();
-        Set<String> roomNames4Orth = new HashSet<>();
-
+    
+        List<String> roomNamesOfAll = new ArrayList<>();
+        List<String> roomNames4Orth = new ArrayList<>();
+    
         System.out.println("=== 加入手術房列表 ===");
-
+    
         for (OperatingRoom room : operatingRooms) {
             if (room.getStatus() == 0 || Boolean.TRUE.equals(pinnedRooms.get(room.getId()))) {
                 continue; // 跳過狀態為 0 的手術房
             }
-
-            roomNamesOfAll.add(room.getOperatingRoomName());
-
-            if ("鉛牆房".equals(room.getRoomType())) {
-                roomNames4Orth.add(room.getOperatingRoomName());
+    
+            String name = room.getOperatingRoomName();
+    
+            if (!roomNamesOfAll.contains(name)) {
+                roomNamesOfAll.add(name);
+            }
+            System.out.println("房號: " + room.getOperatingRoomName() + " 類型: [" + room.getRoomType() + "]");
+    
+            if ("鉛牆房".equals(room.getRoomType()) && !roomNames4Orth.contains(name)) {
+                roomNames4Orth.add(name);
             }
         }
-
-        System.out.println("加入手術房roomNamesOfAll: " + roomNamesOfAll);
-        System.out.println("加入手術房roomNames4Orth: " + roomNames4Orth);
-
-        System.out.println("=== 手術房列表加入完成 ===");
+    
+        System.out.println("roomNamesOfAll: " + roomNamesOfAll);
+        System.out.println("roomNames4Orth: " + roomNames4Orth);
+    
         System.out.println("=== 開始匯出 CSV 檔案 ===");
-
+    
         try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
-                BufferedWriter writer = new BufferedWriter(osw);
-                CSVWriter csvWriter = new CSVWriter(writer,
-                        CSVWriter.DEFAULT_SEPARATOR,
-                        CSVWriter.DEFAULT_QUOTE_CHARACTER, // 保留雙引號用於房號列表
-                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                        CSVWriter.DEFAULT_LINE_END)) {
-
-            // 寫入註解行（手動寫，不經過 CSVWriter，避免雙引號）
+             BufferedWriter writer = new BufferedWriter(osw);
+             CSVWriter csvWriter = new CSVWriter(writer,
+                     CSVWriter.DEFAULT_SEPARATOR,
+                     CSVWriter.DEFAULT_QUOTE_CHARACTER,
+                     CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                     CSVWriter.DEFAULT_LINE_END)) {
+    
+            // 註解行手動寫
             writer.write("# roomNamesOfAll");
             writer.newLine();
-            csvWriter.writeNext(new String[] { String.join(",", roomNamesOfAll) });
-
+            csvWriter.writeNext(new String[]{String.join(",", roomNamesOfAll)});
+    
             writer.write("# roomNames4Orth");
             writer.newLine();
-            csvWriter.writeNext(new String[] { String.join(",", roomNames4Orth) });
-
-            System.out.println("CSV 檔案已成功匯出至: " + filePath);
-
+            csvWriter.writeNext(new String[]{String.join(",", roomNames4Orth)});
+    
+            System.out.println("room.csv 已成功匯出至: " + filePath);
         } catch (IOException e) {
-            System.err.println("匯出 CSV 時發生錯誤: " + e.getMessage());
+            System.err.println("匯出 room.csv 時發生錯誤: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
+    
     public void addPinnedOperatingRoomToCsv() {
         String filePath = ORSM_GUIDELINES_FILE_PATH + "/Guidelines.csv";
         String argumentsFilePath = ORSM_FILE_PATH + "/Arguments4Exec.csv";
@@ -668,6 +698,11 @@ public class AlgorithmService {
 
             // 優先判斷是否為手術房代號（即使只有一欄也要判斷）
             if (firstCol.matches("^[A-Z]\\d+$")) {
+
+                if (currentRoom != null) {
+                    surgeryService.updateSurgeryPrioritySequenceByRoom(currentRoom.getId());
+                }
+
                 System.out.println("🏥 偵測到手術房代號：" + firstCol);
                 currentRoom = operatingRoomRepository.findByOperatingRoomName(firstCol)
                         .orElseThrow(() -> new RuntimeException("找不到手術房：" + firstCol));
@@ -693,7 +728,6 @@ public class AlgorithmService {
             // 解析手術 ID
             String applicationId = surgeryName.split("\\(")[0].trim();
             System.out.println("🔎 嘗試載入手術 ID: " + applicationId);
-
 
             Surgery surgery = surgeryRepository.findById(applicationId)
                     .orElseThrow(() -> new RuntimeException("找不到手術：" + applicationId));
@@ -726,7 +760,98 @@ public class AlgorithmService {
             orderInRoom++;
         }
 
+        if (currentRoom != null) {
+            surgeryService.updateSurgeryPrioritySequenceByRoom(currentRoom.getId());
+        }
+
         System.out.println("✅ CSV 解析與更新完成");
+    }
+
+    public void cleanEmptySurgeonsAndShiftForward(String csvPath) throws IOException {
+        Path path = Paths.get(csvPath);
+        Charset big5 = Charset.forName("Big5");
+
+        List<String[]> originalRows;
+        try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
+            originalRows = reader.readAll();
+        } catch (IOException | CsvException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        TimeSettingsDTO settings = getTimeSettingsFromCsv();
+        if (settings == null) {
+            System.out.println("❌ 無法取得 cleaningTime 設定，終止處理");
+            return;
+        }
+        int cleaningTime = settings.getCleaningTime();
+        System.out.println("🧼 將使用 cleaningTime: " + cleaningTime + " 分鐘");
+
+        List<String[]> filteredRows = new ArrayList<>();
+        int i = 0;
+        while (i < originalRows.size()) {
+            String[] row = originalRows.get(i);
+
+            if (row.length == 1 && !row[0].trim().isEmpty()) {
+                filteredRows.add(row); // 房間代碼
+                i++;
+                continue;
+            }
+
+            if (row.length < 6) {
+                filteredRows.add(row); // 無效或無格式行照樣保留
+                i++;
+                continue;
+            }
+
+            String surgeon = row[1].trim();
+            String status = row[5].trim();
+
+            if ((surgeon.equals("空醫師") || surgeon.equals("null")) && status.equals("1")) {
+                System.out.println("⚠️ 移除空醫師手術於第 " + (i + 1) + " 行: " + Arrays.toString(row));
+                i += 2; // 跳過手術與整理時間
+                continue;
+            }
+
+            filteredRows.add(row);
+            i++;
+        }
+
+        // 重新調整時間：後續所有手術統一前移 cleaningTime 分鐘
+        List<String[]> adjustedRows = new ArrayList<>();
+        for (String[] row : filteredRows) {
+            if (row.length == 1) {
+                adjustedRows.add(row); // 房間行不調整
+                continue;
+            }
+
+            if (row.length < 6) {
+                adjustedRows.add(row);
+                continue;
+            }
+
+            try {
+                LocalTime start = parseCustomTime(row[3]);
+                LocalTime end = parseCustomTime(row[4]);
+
+                start = start.minusMinutes(cleaningTime);
+                end = end.minusMinutes(cleaningTime);
+
+                row[3] = formatCustomTime(start);
+                row[4] = formatCustomTime(end);
+            } catch (Exception e) {
+                System.err.println("時間格式錯誤於列：" + Arrays.toString(row));
+            }
+
+            adjustedRows.add(row);
+        }
+
+        // 寫回原檔案
+        try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(path.toFile()), big5))) {
+            writer.writeAll(adjustedRows);
+        }
+
+        System.out.println("✅ 檔案處理完成並覆蓋寫回: " + csvPath);
     }
 
 }
