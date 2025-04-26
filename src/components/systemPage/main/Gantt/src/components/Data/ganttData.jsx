@@ -144,8 +144,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
               orderInRoom: surgery.orderInRoom ?? null, // 保證排序用得到
               // 保存群組資訊
               groupApplicationIds: surgery.groupApplicationIds || [],
-              // 若有群組ID且不是主頁模式，則標記為群組的一部分
-              isInGroup: !isMainPage && (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0)
+              // 若有群組ID，不論是否為主頁模式，都標記為群組的一部分
+              isInGroup: (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0),
+              // 標記是否在主頁顯示群組成員
+              isMainPageGroupMember: isMainPage && (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0)
             };
             
             // 調試日誌：檢查科別資料
@@ -405,11 +407,22 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
             item.endTime = addMinutesToTime(currentTime, item.duration);
           }
 
-          item.color = item.isCleaningTime
-            ? getCleaningColor()
-            : item.isGroup
-              ? "group"
-              : getColorByEndTime(item.endTime, false, useTempSettings);
+          // 計算項目顯示顏色
+          if (item.isCleaningTime) {
+            // 銜接時間都顯示藍色
+            item.color = getCleaningColor();
+          } else if (item.isGroup) {
+            // 如果是群組，顯示群組顏色（橘色）
+            item.color = "group";
+          } else if (item.isMainPageGroupMember) {
+            // 主頁上的群組成員手術顯示為橘色
+            item.color = "group";
+            // 加入標記讓其可以在前端顯示群組標記
+            item.isGroupMember = true;
+          } else {
+            // 一般手術根據結束時間計算顏色
+            item.color = getColorByEndTime(item.endTime, false, useTempSettings);
+          }
 
           // 使用設定中的銜接時間
           if (item.isCleaningTime) {
