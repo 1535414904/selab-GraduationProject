@@ -553,13 +553,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                         <div ref={ganttChartRef} className="gantt-chart-container">
                           <div className="gantt-chart">
                             {filteredRows.map((room, roomIndex) => {
-                              const originalData = room.data || [];
-                              const surgeriesOnly = originalData.filter(item => !item.isCleaningTime && item.orderInRoom != null);
-                              const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
-                              const sortedData = sortedSurgeries.flatMap(surgery => {
-                                const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
-                                return cleaningItem ? [surgery, cleaningItem] : [surgery];
-                              });
+                              // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
+                              const sortedData = room.data || [];
   
                               return (
                                 <div
@@ -609,10 +604,11 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
           onTimeSettingsChange={(newSettings, isPreview) => {
+            // 格式化數據時明確傳入 useTempSettings=true 參數
             const updatedRows = formatRoomData([...rows].map(r => ({
               ...r,
               data: r.data ? [...r.data] : []
-            })), isPreview);
+            })), true, false);
   
             setRows([]);
             setTimeout(() => {
