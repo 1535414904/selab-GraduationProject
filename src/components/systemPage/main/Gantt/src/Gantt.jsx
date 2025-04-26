@@ -292,6 +292,11 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       setTimeout(() => {
         setFilteredRows(updatedRows);
       }, 10);
+      
+      // 成功解除群組後，稍後重新整理頁面以確保狀態完全更新
+      setTimeout(() => {
+        window.location.reload();
+      }, 100); // 延遲0.1秒後重新載入頁面
     }
 
     // 觸發 DOM 更新
