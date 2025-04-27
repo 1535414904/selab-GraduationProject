@@ -341,106 +341,37 @@ public class SurgeryService {
     }
 
     public void updateSurgeryPrioritySequenceByRoom(String roomId) {
-        System.out.println("開始更新手術房 ID: " + roomId + " 的 prioritySequence");
+        System.out.println("開始以『estimatedSurgeryTime』來全院排序 prioritySequence（房間ID: " + roomId + "）");
 
-        OperatingRoom room = operatingRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("OperatingRoom not found with id " + roomId));
-        List<Surgery> surgeries = surgeryRepository.findByOperatingRoom(room);
-        if (surgeries == null || surgeries.isEmpty()) {
-            System.out.println("此手術房無手術資料，跳過處理");
+        // 撈出整院所有手術
+        List<Surgery> allSurgeries = surgeryRepository.findAll();
+        if (allSurgeries == null || allSurgeries.isEmpty()) {
+            System.out.println("❌ 全院沒有任何手術資料，結束");
             return;
         }
 
-        // 按照 orderInRoom 排序
-        surgeries.sort(Comparator.comparingInt(Surgery::getOrderInRoom));
-        System.out.println("依照 orderInRoom 排序完成，共有 " + surgeries.size() + " 台刀");
+        System.out.println("共撈出 " + allSurgeries.size() + " 台手術，開始依 estimatedSurgeryTime 排序...");
 
-        // 時間設定
-        TimeSettingsDTO timeSettings = algorithmService.getTimeSettingsFromCsv();
-        if (timeSettings == null) {
-            System.out.println("無法取得時間設定，跳過處理");
-            return;
-        }
+        // 按 estimatedSurgeryTime 排序（大的排前面）
+        allSurgeries.sort((s1, s2) -> {
+            int est1 = s1.getEstimatedSurgeryTime() != null ? s1.getEstimatedSurgeryTime() : 0;
+            int est2 = s2.getEstimatedSurgeryTime() != null ? s2.getEstimatedSurgeryTime() : 0;
+            return Integer.compare(est2, est1); // 大到小
+        });
 
-        int currentTime = timeSettings.getSurgeryStartTime();
-        int overtimeThreshold = timeSettings.getSurgeryStartTime() +
-                timeSettings.getRegularEndTime() +
-                timeSettings.getOvertimeEndTime();
-        int cleaningTime = timeSettings.getCleaningTime();
-        System.out.println("加班門檻時間為: " + overtimeThreshold);
+        System.out.println("✅ 排序完成");
 
-        // 1. 處理這個房間的手術，決定是否為加班
-        List<Surgery> newOvertimeSurgeries = new ArrayList<>();
-
-        for (Surgery surgery : surgeries) {
-            int estimated = surgery.getEstimatedSurgeryTime();
-            currentTime += estimated;
-
-            System.out.println("➡️ 手術 " + surgery.getApplicationId() +
-                    "，estimated = " + estimated +
-                    "，累積時間(不含清潔) = " + currentTime);
-
-            if (currentTime <= overtimeThreshold) {
-                surgery.setPrioritySequence(99999); // ✅ 未超時
-                System.out.println("✅ 未超時，設定 prioritySequence = 99999");
-            } else {
-                newOvertimeSurgeries.add(surgery); // ⚠️ 超時
-                System.out.println("⚠️ 超時，加入加班排序清單");
-            }
-
-            // 不論是否超時都要加上清潔時間
-            currentTime += cleaningTime;
-            System.out.println("🧹 加上清潔時間後，累積時間 = " + currentTime);
-        }
-
-        // 2. 查詢全院已標示為加班的手術（prioritySequence ≠ 99999）
-        List<Surgery> existingOvertimeSurgeries = surgeryRepository.findByPrioritySequenceNot(99999);
-        System.out.println("目前資料庫中已有的超時手術數量: " + existingOvertimeSurgeries.size());
-
-        // 3. 移除這間房間內本次被判定為未加班的手術（避免被誤排）
-        Set<String> currentRoomNonOvertimeIds = surgeries.stream()
-                .filter(s -> s.getPrioritySequence() == 99999)
-                .map(Surgery::getApplicationId)
-                .collect(Collectors.toSet());
-
-        existingOvertimeSurgeries.removeIf(s -> currentRoomNonOvertimeIds.contains(s.getApplicationId()));
-        System.out.println("移除本房間重新判定為正常的手術，共 " + currentRoomNonOvertimeIds.size() + " 台");
-
-        // 4. 合併新的加班手術（避免重複）
-        Set<String> existingIds = existingOvertimeSurgeries.stream()
-                .map(Surgery::getApplicationId)
-                .collect(Collectors.toSet());
-
-        for (Surgery newSurgery : newOvertimeSurgeries) {
-            if (!existingIds.contains(newSurgery.getApplicationId())) {
-                existingOvertimeSurgeries.add(newSurgery);
-                System.out.println("✅ 新增手術 " + newSurgery.getApplicationId() + " 至加班清單");
-            }
-        }
-
-        // 5. 根據 estimatedSurgeryTime 進行排序並重新設定 prioritySequence
-        existingOvertimeSurgeries
-                .sort((a, b) -> Integer.compare(b.getEstimatedSurgeryTime(), a.getEstimatedSurgeryTime()));
-        System.out.println("所有加班手術已依 estimatedSurgeryTime 排序");
-
+        // 從 1 開始重新設定 prioritySequence
         int sequence = 1;
-        for (Surgery surgery : existingOvertimeSurgeries) {
+        for (Surgery surgery : allSurgeries) {
             surgery.setPrioritySequence(sequence++);
             System.out.println(
                     "手術 " + surgery.getApplicationId() + " 設定 prioritySequence = " + surgery.getPrioritySequence());
         }
 
-        // 6. 存回所有異動資料
-        Set<Surgery> allToSave = new HashSet<>();
-        allToSave.addAll(surgeries);
-        allToSave.addAll(existingOvertimeSurgeries);
-        System.out.println("總共需要更新 " + allToSave.size() + " 筆手術資料");
+        // 一次存回
+        surgeryRepository.saveAll(allSurgeries);
 
-        for (Surgery s : allToSave) {
-            surgeryRepository.save(s);
-        }
-
-        System.out.println("✅ 完成手術房 ID: " + roomId + " 的 prioritySequence 更新");
+        System.out.println("✅ 已全部更新 prioritySequence 完成");
     }
-
 }
