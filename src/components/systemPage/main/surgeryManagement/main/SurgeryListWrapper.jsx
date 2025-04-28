@@ -8,7 +8,7 @@ import { BASE_URL } from "../../../../../config";
 import "../../Mgr.css";
 
 /* eslint-disable react/prop-types */
-function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, nowUsername }) {
+function SurgerListWrapper({ user, operatingRooms, filterOperatingRoom, setReloadKey, nowUsername }) {
   const [lastSurgeryTimes, setLastSurgeryTimes] = useState([]);
   const [addingSurgery, setAddingSurgery] = useState(null);
   const [filteredOperatingRooms, setFilteredOperatingRooms] = useState([]);
@@ -76,7 +76,7 @@ function SurgerListWrapper({ operatingRooms, filterOperatingRoom, setReloadKey, 
                 <td>{operatingRoom.department.name}</td>
                 <td>{lastSurgery ? lastSurgery.lastSurgeryEndTime : "載入中..."}</td>
                 <td>
-                  <SurgeryItems operatingRoom={operatingRoom} operatingRooms={operatingRooms} setReloadKey={setReloadKey} />
+                  <SurgeryItems user={user} operatingRoom={operatingRoom} operatingRooms={operatingRooms} setReloadKey={setReloadKey} />
                 </td>
                 <td>
                   <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>

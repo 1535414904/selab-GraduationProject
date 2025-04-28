@@ -6,7 +6,7 @@ import { BASE_URL } from "../../../../config";
 import SurgeryFilter from "./SurgeryFilter";
 
 
-function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
+function SurgeryMgrWrapper({ user, reloadKey, setReloadKey, nowUsername }) {
   const [operatingRooms, setOperatingRooms] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -62,6 +62,7 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
   return (
     <div key={reloadKey} className="mgr-wrapper relative overflow-hidden">
       <SurgeryHeaderWrapper
+        user={user}
         operatingRooms={operatingRooms}
         filterOperatingRoom={filterOperatingRoom}
         setFilterOperatingRoom={setFilterOperatingRoom}
@@ -98,6 +99,7 @@ function SurgeryMgrWrapper({ reloadKey, setReloadKey, nowUsername }) {
 
           <div className="p-4">
             <SurgeryListWrapper
+              user={user}
               operatingRooms={operatingRooms}
               filterOperatingRoom={filterOperatingRoom}
               setReloadKey={() => { }}

@@ -171,7 +171,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
             <Route path="/account-mgr" element={<AccountMgrWrapper user={user} onUpdateUser={onUpdateUser} reloadKey={reloadKey} />} />
             <Route path="/department-mgr" element={<DepartmentMgrWrapper reloadKey={reloadKey} />} />
             <Route path="/OR-mgr" element={<ORMgrWrapper reloadKey={reloadKey} />} />
-            <Route path="/surgery-mgr" element={<SurgeryMgrWrapper reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />} />
+            <Route path="/surgery-mgr" element={<SurgeryMgrWrapper user={user} reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />} />
             <Route path="/shift-mgr" element={<Gantt rows={rows} setRows={setRows} initialTimeSettings={initialTimeSettings} setInitialTimeSettings={setInitialTimeSettings} />} />
           </Routes>
         </div>

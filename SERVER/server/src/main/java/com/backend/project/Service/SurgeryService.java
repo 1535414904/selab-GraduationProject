@@ -1,15 +1,24 @@
 package com.backend.project.Service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.project.Dao.ChiefSurgeonRepository;
 import com.backend.project.Dao.OperatingRoomRepository;
@@ -374,4 +383,114 @@ public class SurgeryService {
 
         System.out.println("✅ 已全部更新 prioritySequence 完成");
     }
+
+    public List<String> uploadTimeTable(MultipartFile file, String username) {
+        List<String> failedApplications = new ArrayList<>();
+        List<Surgery> surgeriesToSave = new ArrayList<>(); // 批次存比較快
+        Map<String, Integer> roomIdToNextOrderMap = new HashMap<>(); // 手動記錄每間房的 orderInRoom
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            int lineNumber = 0;
+
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+
+                if (lineNumber == 1) {
+                    // ⚡ 第一行是標題，跳過
+                    continue;
+                }
+
+                String[] columns = line.split(",", -1);
+                if (columns.length < 10) {
+                    failedApplications.add("第 " + lineNumber + " 行欄位數不足");
+                    continue;
+                }
+
+                String applicationId = columns[1].trim();
+                String medicalRecordNumber = columns[2].trim();
+                String departmentName = columns[3].trim();
+                String chiefSurgeonName = columns[4].trim();
+                String operatingRoomName = columns[5].trim();
+                String anesthesiaMethod = columns[6].trim();
+                String estimatedTimeStr = columns[7].trim();
+                String specialRequirements = columns[8].trim();
+
+                // 檢查申請編號是否已存在
+                if (surgeryRepository.existsById(applicationId)) {
+                    failedApplications.add(applicationId + " 已存在，無法新增");
+                    continue;
+                }
+
+                // 查找手術房
+                Optional<OperatingRoom> optionalRoom = operatingRoomRepository
+                        .findByOperatingRoomName(operatingRoomName);
+                if (optionalRoom.isEmpty()) {
+                    failedApplications.add(applicationId + " 找不到手術房：" + operatingRoomName);
+                    continue;
+                }
+                OperatingRoom room = optionalRoom.get();
+
+                // 驗證科別是否符合
+                if (room.getDepartment() == null || !room.getDepartment().getName().equals(departmentName)) {
+                    failedApplications.add(applicationId + " 手術房與科別不一致（房間科別: " +
+                            (room.getDepartment() != null ? room.getDepartment().getName() : "無科別") + "）");
+                    continue;
+                }
+
+                // 查找主刀醫師
+                Optional<ChiefSurgeon> optionalSurgeon = chiefSurgeonRepository.findByPhysicianName(chiefSurgeonName);
+                if (optionalSurgeon.isEmpty()) {
+                    failedApplications.add(applicationId + " 找不到主刀醫師：" + chiefSurgeonName);
+                    continue;
+                }
+                ChiefSurgeon chiefSurgeon = optionalSurgeon.get();
+
+                // 決定 orderInRoom
+                String roomId = room.getId();
+                int nextOrder = roomIdToNextOrderMap.getOrDefault(roomId, room.getSurgeries().size() + 1);
+                roomIdToNextOrderMap.put(roomId, nextOrder + 1);
+
+                // 設定使用者
+                User user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                // 建立 Surgery
+                Surgery surgery = new Surgery();
+                surgery.setApplicationId(applicationId);
+                surgery.setMedicalRecordNumber(medicalRecordNumber);
+                surgery.setOperatingRoom(room);
+                surgery.setChiefSurgeon(chiefSurgeon);
+                surgery.setAnesthesiaMethod(anesthesiaMethod);
+                surgery.setDate(Date.valueOf(LocalDate.now().plusDays(1)));
+                surgery.setOrderInRoom(nextOrder);
+                surgery.setUser(user);
+
+                try {
+                    surgery.setEstimatedSurgeryTime(Integer.parseInt(estimatedTimeStr));
+                } catch (NumberFormatException e) {
+                    failedApplications.add(applicationId + " 手術預估時間格式錯誤");
+                    continue;
+                }
+
+                surgery.setSpecialOrRequirements(specialRequirements.equalsIgnoreCase("Y") ? "Y" : "N");
+
+                surgeriesToSave.add(surgery);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("讀取上傳檔案失敗: " + e.getMessage());
+        }
+
+        // 批次存入資料庫
+        surgeryRepository.saveAll(surgeriesToSave);
+
+        List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
+        for (OperatingRoom room : operatingRooms) {
+            updateSurgeryPrioritySequenceByRoom(room.getId());
+        }
+
+        return failedApplications;
+    }
+
 }

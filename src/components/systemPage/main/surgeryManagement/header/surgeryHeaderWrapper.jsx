@@ -1,14 +1,56 @@
+/* eslint-disable react/prop-types */
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import SurgeryFilter from "../SurgeryFilter";  // 引入新建立的篩選器元件
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
+import { BASE_URL } from "../../../../../config";
 
-function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOperatingRoom, addOperatingRooms, setAddOperatingRooms, handleDelete }) {
-  const addRow = () => {
-    // 假設新增的資料格式，請依照需求修改
-    setAddOperatingRooms(prev => [...prev, { id: "", name: "", department: "", roomType: "", status: 1 }]);
+function SurgeryHeaderWrapper({ user }) {
+
+  const fileInputRef = useRef(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click(); // 模擬點擊隱藏的input
   };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+  
+    if (!file.name.endsWith('.csv')) {
+      alert('請上傳 CSV 檔案');
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('username', user.username);
+  
+    try {
+      const response = await axios.post(`${BASE_URL}/api/system/surgeries/upload-time-table`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('上傳成功:', response.data);
+      alert(response.data);
+    } catch (error) {
+      console.error('上傳失敗:', error);
+      if (error.response && error.response.data) {
+        if (error.response.data.failedApplications) {
+          alert(`部分手術無法新增:\n${error.response.data.failedApplications.join('\n')}`);
+        } else {
+          alert('上傳失敗: ' + JSON.stringify(error.response.data));
+        }
+      } else {
+        alert('上傳失敗');
+      }
+    }
+  };
+  
+  
+
   return (
     <div className="header-wrapper">
       <div className="title">
@@ -36,7 +78,7 @@ function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOp
           setFilterOperatingRoom={setFilterOperatingRoom}
         /> */}
 
-        <button className="account-button" onClick={addRow} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <button className="account-button" onClick={handleButtonClick} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -53,6 +95,13 @@ function SurgeryHeaderWrapper({ operatingRooms, filterOperatingRoom, setFilterOp
           </svg>
           新增手術csv檔
         </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          accept=".csv"
+        />
       </div>
     </div>
   );

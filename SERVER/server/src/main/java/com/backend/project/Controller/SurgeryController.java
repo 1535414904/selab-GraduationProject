@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.project.Dao.OperatingRoomRepository;
 import com.backend.project.Service.SurgeryService;
@@ -214,4 +216,25 @@ public class SurgeryController {
         surgeryService.restoreSurgeryGroupEstimatedTime(id);
         surgeryService.clearSurgeryGroups(id);
     }
+
+    @PostMapping("/system/surgeries/upload-time-table")
+public ResponseEntity<?> uploadTimeTable(@RequestParam("file") MultipartFile file, @RequestParam("username") String username) {
+    if (file.isEmpty() || !file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+        return ResponseEntity.badRequest().body("請上傳CSV檔案！");
+    }
+    try {
+        List<String> failedList = surgeryService.uploadTimeTable(file, username);
+        if (failedList.isEmpty()) {
+            return ResponseEntity.ok("✅ 全部手術新增成功！");
+        } else {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "⚠️ 有部分手術無法新增");
+            response.put("failedApplications", failedList);
+            return ResponseEntity.badRequest().body(response);
+        }
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body("檢查失敗：" + e.getMessage());
+    }
+}
+
 }

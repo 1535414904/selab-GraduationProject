@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../config";
 import SurgeryDetail from "./SurgeryDetail";
 
-function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
+function SurgeryItems({ user, operatingRoom, operatingRooms, setReloadKey }) {
     const [surgeries, setSurgeries] = useState([]);
     const [selectedSurgery, setSelectedSurgery] = useState(null);
 
@@ -89,14 +89,33 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
         console.log("選中的手術：", selectedSurgery);
     }, [selectedSurgery]);
 
+    useEffect(() => {
+        console.log(user);
+    }, []);
+
     return (
         <div className="surgeries-list">
-            {surgeries.map(surgery => (
-                <div key={surgery.applicationId} className="surgery-item" onClick={() => setSelectedSurgery(surgery)}>
-                    <div>{surgery.medicalRecordNumber || "未指定"}</div>
-                    <div>{surgery.patientName || "未指定"}</div>
-                </div>
-            ))}
+            {surgeries.map(surgery => {
+                const isHighlightBlue = (user.username === surgery.user.username) || (user.role === "3");
+                const isClickable = (user.username === surgery.user.username) || (user.role === "3");
+
+                return (
+                    <div
+                        key={surgery.applicationId}
+                        className="surgery-item"
+                        onClick={isClickable ? () => setSelectedSurgery(surgery) : undefined}
+                        style={{
+                            backgroundColor: isHighlightBlue ? '#76b5f0' : '',
+                            cursor: isClickable ? 'pointer' : 'default',
+                            pointerEvents: isClickable ? 'auto' : 'none',
+                            opacity: isClickable ? 1 : 0.8,
+                        }}
+                    >
+                        <div>{surgery.medicalRecordNumber || "未指定"}</div>
+                        <div>{surgery.patientName || "未指定"}</div>
+                    </div>
+                );
+            })}
             {selectedSurgery && (
                 <SurgeryDetail
                     onClose={() => setSelectedSurgery(null)}
@@ -107,6 +126,7 @@ function SurgeryItems({ operatingRoom, operatingRooms, setReloadKey }) {
                 />
             )}
         </div>
+
     );
 }
 
