@@ -1,146 +1,176 @@
 import React from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas-pro";
-import "../../styles.css";
 
 const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
   const generatePDF = async () => {
     if (!timeScaleRef.current || !ganttChartRef.current) {
-      console.error("參考的 DOM 元素不存在");
-      alert("發生錯誤：無法找到 Gantt 圖表或時間刻度");
+      console.error("參考的 DOM 元素不存在！");
+      alert("無法找到甘特圖或時間刻度，請稍後再試");
       return;
     }
 
-    // 儲存原始狀態
-    const originalTimeScaleStyle = timeScaleRef.current.style.cssText;
-    const originalGanttStyle = ganttChartRef.current.style.cssText;
-    const originalScrollTop = ganttChartRef.current.scrollTop;
-    const originalTimeScaleParentStyle = timeScaleRef.current.parentElement.style.cssText;
-
     try {
-      // 創建臨時容器來分別渲染時間刻度和甘特圖
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      document.body.appendChild(tempContainer);
+      // 展開滾動區域
+      const originalTimeScaleStyle = timeScaleRef.current.style.cssText;
+      const originalGanttStyle = ganttChartRef.current.style.cssText;
+      timeScaleRef.current.style.overflow = "visible";
+      ganttChartRef.current.style.overflow = "visible";
 
-      // 複製時間刻度到臨時容器
-      const timeScaleClone = timeScaleRef.current.cloneNode(true);
-      tempContainer.appendChild(timeScaleClone);
+      await new Promise(resolve => setTimeout(resolve, 300)); // 等待樣式刷新
 
-      // 調整時間刻度樣式
-      timeScaleClone.style.cssText = `
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: ${ganttChartRef.current.scrollWidth}px;
-        height: 120px;
-        visibility: visible;
-        z-index: 999;
-        background-color: #f0f0f0;
-        transform: none;
-      `;
+      // 使用較合理的縮放比以控制檔案大小
+      const scale = 1.5;
 
-      // 調整甘特圖樣式
-      ganttChartRef.current.style.cssText = `
-        position: relative;
-        overflow: visible;
-        height: ${ganttChartRef.current.scrollHeight}px;
-        width: ${ganttChartRef.current.scrollWidth}px;
-        padding-top: 0;
-        margin-top: 0;
-      `;
-
-      // 確保滾動位置重置為頂部
-      ganttChartRef.current.scrollTop = 0;
-
-      // 等待樣式應用與重繪
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 擷取時間刻度畫布
-      const timeScaleCanvas = await html2canvas(timeScaleClone, {
-        scale: 5,
+      // 擷取時間刻度 canvas
+      const timeScaleCanvas = await html2canvas(timeScaleRef.current, {
+        scale: scale,
         useCORS: true,
-        backgroundColor: "#f0f0f0",
-        logging: false,
-        width: ganttChartRef.current.scrollWidth,
-        height: 100,
-      });
-
-      // 擷取甘特圖畫布
-      const ganttChartCanvas = await html2canvas(ganttChartRef.current, {
-        scale: 1,
-        useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff",
-        width: ganttChartRef.current.scrollWidth,
-        height: ganttChartRef.current.scrollHeight,
-        windowWidth: ganttChartRef.current.scrollWidth,
-        windowHeight: ganttChartRef.current.scrollHeight,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
       });
 
-      // 轉換為圖片
-      const timeScaleImgData = timeScaleCanvas.toDataURL("image/png", 1.0);
-      const ganttChartImgData = ganttChartCanvas.toDataURL("image/png", 1.0);
+      // 擷取甘特圖 canvas
+      const ganttCanvas = await html2canvas(ganttChartRef.current, {
+        scale: scale,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
 
-      // 創建 PDF
+      // 使用 A4 尺寸
+      // A4 在 jsPDF 中的尺寸為 210 x 297 mm
       const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "px",
-        format: [
-          ganttChartCanvas.width + 50,
-          ganttChartCanvas.height + timeScaleCanvas.height + 50,
-        ],
+        orientation: "landscape", // 橫向 A4
+        unit: "mm",
+        format: "a4",
       });
 
-      // 計算並添加圖片
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const timeScaleHeight = 120;
+      // 取得 PDF 頁面的尺寸
+      const pageWidth = pdf.internal.pageSize.getWidth(); // 寬度 (297mm 在橫向)
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 高度 (210mm 在橫向)
 
-      // 添加時間刻度（在頂部）
+      // 保留頁面邊距
+      const margin = 10; // 10mm 邊距
+      const usableWidth = pageWidth - (margin * 2);
+      const usableHeight = pageHeight - (margin * 2);
+
+      // 計算時間刻度在 PDF 中的高度
+      const timeScaleRatio = timeScaleCanvas.height / timeScaleCanvas.width;
+      const timeScaleHeight = usableWidth * timeScaleRatio;
+
+      // 將甘特圖分割成多頁
+      const ganttRatio = ganttCanvas.height / ganttCanvas.width;
+      const ganttHeightInPDF = usableWidth * ganttRatio;
+
+      let position = 0;
+      let isFirstPage = true;
+
+      // 處理時間刻度和第一部分的甘特圖
+      const firstPageGanttHeight = usableHeight - timeScaleHeight;
+      const firstPageGanttPercent = firstPageGanttHeight / ganttHeightInPDF;
+      const firstPageCanvasHeight = Math.floor(ganttCanvas.height * firstPageGanttPercent);
+
+      // 加時間刻度在第一頁頂部
       pdf.addImage(
-        timeScaleImgData,
-        "PNG",
-        25,
-        25,
-        pageWidth - 50,
-        timeScaleHeight,
-        "",
-        "FAST"
+        timeScaleCanvas.toDataURL("image/jpeg", 0.9), // 使用 JPEG 並設定品質為 0.9 以減少檔案大小
+        "JPEG",
+        margin,
+        margin,
+        usableWidth,
+        timeScaleHeight
       );
 
-      // 添加甘特圖（在時間刻度下方）
-      pdf.addImage(
-        ganttChartImgData,
-        "PNG",
-        25,
-        timeScaleHeight + 35,
-        pageWidth - 50,
-        ganttChartCanvas.height * ((pageWidth - 50) / ganttChartCanvas.width),
-        "",
-        "FAST"
-      );
+      // 如果甘特圖非常短，可能在第一頁就完成
+      if (firstPageCanvasHeight >= ganttCanvas.height) {
+        pdf.addImage(
+          ganttCanvas.toDataURL("image/jpeg", 0.9),
+          "JPEG",
+          margin,
+          margin + timeScaleHeight,
+          usableWidth,
+          ganttHeightInPDF
+        );
+      } else {
+        // 擷取第一頁的甘特圖部分
+        const firstPagePartialCanvas = document.createElement("canvas");
+        const firstPageContext = firstPagePartialCanvas.getContext("2d");
+        firstPagePartialCanvas.width = ganttCanvas.width;
+        firstPagePartialCanvas.height = firstPageCanvasHeight;
 
-      // 下載 PDF
-      pdf.save("gantt-chart.pdf");
+        firstPageContext.drawImage(
+          ganttCanvas,
+          0,
+          0,
+          ganttCanvas.width,
+          firstPageCanvasHeight,
+          0,
+          0,
+          ganttCanvas.width,
+          firstPageCanvasHeight
+        );
 
-      // 清理臨時元素
-      document.body.removeChild(tempContainer);
-    } catch (error) {
-      console.error("生成 PDF 時發生錯誤:", error);
-      alert("生成 PDF 時發生錯誤，請稍後再試");
-    } finally {
-      // 恢復原始樣式和滾動位置
+        pdf.addImage(
+          firstPagePartialCanvas.toDataURL("image/jpeg", 0.9),
+          "JPEG",
+          margin,
+          margin + timeScaleHeight,
+          usableWidth,
+          firstPageGanttHeight
+        );
+
+        position = firstPageCanvasHeight;
+
+        // 處理剩餘的甘特圖部分
+        while (position < ganttCanvas.height) {
+          pdf.addPage();
+
+          const remainingHeight = ganttCanvas.height - position;
+          const heightToUse = Math.min(
+            remainingHeight,
+            Math.floor(ganttCanvas.height * (usableHeight / ganttHeightInPDF))
+          );
+
+          const partialCanvas = document.createElement("canvas");
+          const context = partialCanvas.getContext("2d");
+          partialCanvas.width = ganttCanvas.width;
+          partialCanvas.height = heightToUse;
+
+          context.drawImage(
+            ganttCanvas,
+            0,
+            position,
+            ganttCanvas.width,
+            heightToUse,
+            0,
+            0,
+            ganttCanvas.width,
+            heightToUse
+          );
+
+          pdf.addImage(
+            partialCanvas.toDataURL("image/jpeg", 0.9),
+            "JPEG",
+            margin,
+            margin,
+            usableWidth,
+            (heightToUse / ganttCanvas.height) * ganttHeightInPDF
+          );
+
+          position += heightToUse;
+        }
+      }
+
+      // 自動加日期
+      const today = new Date();
+      const fileName = `gantt-chart-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.pdf`;
+
+      pdf.save(fileName);
+
+      // 恢復原本樣式
       timeScaleRef.current.style.cssText = originalTimeScaleStyle;
       ganttChartRef.current.style.cssText = originalGanttStyle;
-      ganttChartRef.current.scrollTop = originalScrollTop;
-      if (timeScaleRef.current.parentElement) {
-        timeScaleRef.current.parentElement.style.cssText = originalTimeScaleParentStyle;
-      }
+    } catch (error) {
+      console.error("生成 PDF 失敗：", error);
+      alert("生成 PDF 失敗，請稍後再試！");
     }
   };
 
@@ -149,19 +179,8 @@ const GeneratePDFButton = ({ timeScaleRef, ganttChartRef }) => {
       className="gantt-buttons flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
       onClick={generatePDF}
     >
-      <svg
-        className="h-6 w-6 mr-1"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-        />
+      <svg className="h-6 w-6 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
       生成 PDF
     </button>

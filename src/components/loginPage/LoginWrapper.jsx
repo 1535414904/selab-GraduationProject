@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react"; // 加 useRef
 import axios from "axios";
 import { BASE_URL } from "../../config";
 
@@ -8,6 +8,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState({ username: "", password: "" });
   const [currentTime, setCurrentTime] = useState(new Date());
+  const passwordInputRef = useRef(null);
 
   // 更新當前時間
   useEffect(() => {
@@ -205,7 +206,8 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    confirmHandler();
+                    // 按 Enter → 跳到密碼欄 focus
+                    passwordInputRef.current?.focus();
                   }
                 }}
               />
@@ -222,6 +224,7 @@ function LoginWrapper({ togglePage, fullTogglePage, setNowUsername }) {
             <div className="relative">
               <input
                 type="password"
+                ref={passwordInputRef} // ⭐這裡加 ref
                 className="text-3xl w-full pl-15 pr-4 py-5 bg-blue-50 bg-opacity-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition placeholder-blue-300"
                 placeholder="密碼"
                 value={password}

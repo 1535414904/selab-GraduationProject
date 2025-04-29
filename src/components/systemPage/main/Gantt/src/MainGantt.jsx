@@ -430,6 +430,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
         <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
           <div className="gantt-content">
             <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
+              <div className="gantt-chart-scrollable" ref={timeScaleRef}>
               <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
                 <div ref={ganttChartRef} className="gantt-chart-container">
                   <div className="gantt-chart">
@@ -456,6 +457,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                   </div>
                 </div>
               </TimeWrapper>
+              </div>
             </div>
           </div>
         </div>
