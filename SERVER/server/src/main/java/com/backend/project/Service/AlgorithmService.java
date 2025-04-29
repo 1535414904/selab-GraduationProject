@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -127,7 +126,7 @@ public class AlgorithmService {
         Map<String, Boolean> firstSurgeryMap = new HashMap<>();
         Set<String> processedGroupIds = new HashSet<>(); // 已處理過的群組 id
 
-        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), Charset.forName("Big5"));
                 BufferedWriter writer = new BufferedWriter(osw);
                 CSVWriter csvWriter = new CSVWriter(writer,
                         CSVWriter.DEFAULT_SEPARATOR,
@@ -235,7 +234,7 @@ public class AlgorithmService {
     
         System.out.println("=== 開始匯出 CSV 檔案 ===");
     
-        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), Charset.forName("Big5"));
              BufferedWriter writer = new BufferedWriter(osw);
              CSVWriter csvWriter = new CSVWriter(writer,
                      CSVWriter.DEFAULT_SEPARATOR,
@@ -268,7 +267,7 @@ public class AlgorithmService {
         int connectionTime = 0;
 
         try {
-            List<String> lines = Files.readAllLines(Paths.get(argumentsFilePath), StandardCharsets.UTF_8);
+            List<String> lines = Files.readAllLines(Paths.get(argumentsFilePath), Charset.forName("Big5"));
 
             // 用來追蹤行號
             int lineNumber = 0;
@@ -430,13 +429,13 @@ public class AlgorithmService {
                 Reader readerOfGuidelines = Files.newBufferedReader(inputPathOfGuidelines, Charset.forName("Big5"));
                 CSVReader csvReaderOfGuidelines = new CSVReader(readerOfGuidelines);
 
-                Reader readerOfTimeTable = Files.newBufferedReader(inputPathOfTimeTable, StandardCharsets.UTF_8);
+                Reader readerOfTimeTable = Files.newBufferedReader(inputPathOfTimeTable, Charset.forName("Big5"));
                 CSVReader csvReaderOfTimeTable = new CSVReader(readerOfTimeTable);
 
-                Writer writerGuidelines = Files.newBufferedWriter(outputPathOfGuidelines, StandardCharsets.UTF_8);
+                Writer writerGuidelines = Files.newBufferedWriter(outputPathOfGuidelines, Charset.forName("Big5"));
                 CSVWriter csvWriterGuidelines = new CSVWriter(writerGuidelines);
 
-                Writer writerTimeTable = Files.newBufferedWriter(outputPathOfTimeTable, StandardCharsets.UTF_8);
+                Writer writerTimeTable = Files.newBufferedWriter(outputPathOfTimeTable, Charset.forName("Big5"));
                 CSVWriter csvWriterTimeTable = new CSVWriter(writerTimeTable)) {
 
             String[] nextLine;
@@ -464,7 +463,7 @@ public class AlgorithmService {
             String bridgeTime) {
         String filePath = ORSM_FILE_PATH + "/Arguments4Exec.csv";
 
-        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8);
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), Charset.forName("Big5"));
                 BufferedWriter writer = new BufferedWriter(osw);
                 CSVWriter csvWriter = new CSVWriter(writer,
                         CSVWriter.DEFAULT_SEPARATOR, // 分隔符號
@@ -495,7 +494,7 @@ public class AlgorithmService {
         TimeSettingsDTO dto = new TimeSettingsDTO();
 
         try (CSVReader csvReader = new CSVReader(
-                new FileReader(ORSM_FILE_PATH + "/Arguments4Exec.csv", StandardCharsets.UTF_8))) {
+                new FileReader(ORSM_FILE_PATH + "/Arguments4Exec.csv", Charset.forName("Big5")))) {
             String[] nextLine;
             int lineNumber = 0;
 
@@ -675,7 +674,7 @@ public class AlgorithmService {
         Charset big5 = Charset.forName("Big5");
 
         List<String[]> rows;
-        try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), big5))) {
+            try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(path.toFile()), Charset.forName("Big5")))) {
             rows = reader.readAll();
         }
 
@@ -728,7 +727,12 @@ public class AlgorithmService {
             // 解析手術 ID
             String applicationId = surgeryName.split("\\(")[0].trim();
             System.out.println("🔎 嘗試載入手術 ID: " + applicationId);
-
+            
+            // ➡️ 加這段：遇到 000000 就跳過
+            if ("000000".equals(applicationId)) {
+                System.out.println("⚠️ 偵測到空房手術 000000，直接跳過");
+                continue;
+            }
             Surgery surgery = surgeryRepository.findById(applicationId)
                     .orElseThrow(() -> new RuntimeException("找不到手術：" + applicationId));
 
