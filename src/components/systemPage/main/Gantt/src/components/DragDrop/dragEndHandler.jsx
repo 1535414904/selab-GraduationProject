@@ -303,7 +303,7 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     return;
   }
 
-  // ✅ Step 1: 先取出 surgery 與其後的清潔項（若有）
+  // ✅ Step 1: 取出 surgery + 可能存在的 cleaningTime
   const itemsToMove = [];
   const surgery = sourceRoomData[sourceIndex];
   itemsToMove.push(surgery);
@@ -312,60 +312,36 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     itemsToMove.push(sourceRoomData[sourceIndex + 1]);
   }
 
-  // ❗ 移除前，先刪除指定 range，不能只用 splice(1)
   sourceRoomData.splice(sourceIndex, itemsToMove.length);
 
-  // ✅ Step 2: 插入至目標房
   let targetIndex = destinationIndex;
   if (targetIndex > destRoomData.length) targetIndex = destRoomData.length;
 
-  // ⛔ 如果插入點是清潔時間，避免錯位
+  // 如果插入點是 cleaningTime，調整到附近的手術
   if (destRoomData[targetIndex]?.isCleaningTime) {
     targetIndex = targetIndex % 2 === 0 ? targetIndex + 1 : targetIndex - 1;
   }
 
   surgery.operatingRoomName = roomName;
+
+  // ✅ Step 2: 直接插入 surgery + 已有的 cleaningTime
   destRoomData.splice(targetIndex, 0, ...itemsToMove);
 
-  // ✅ Step 3: 插入前後銜接時間（若需要）
-  if (targetIndex > 0 && !destRoomData[targetIndex - 1].isCleaningTime) {
-    const prevSurgery = destRoomData[targetIndex - 1];
-    const cleaningItem = createCleaningTimeItem(
-      prevSurgery.endTime,
-      surgery.startTime,
-      roomName
-    );
-    destRoomData.splice(targetIndex, 0, cleaningItem);
-    targetIndex++;
-  }
-
-  if (
-    targetIndex + itemsToMove.length < destRoomData.length &&
-    !destRoomData[targetIndex + itemsToMove.length]?.isCleaningTime
-  ) {
-    const cleaningItem = createCleaningTimeItem(
-      surgery.endTime,
-      destRoomData[targetIndex + itemsToMove.length].startTime,
-      roomName
-    );
-    destRoomData.splice(targetIndex + itemsToMove.length, 0, cleaningItem);
-  }
-
-  // ✅ Step 4: 更新時間與順序
+  // ✅ Step 3: 更新時間（不再插銜接時間了！）
   updateRoomTimes(sourceRoomData, true);
   updateRoomTimes(destRoomData);
 
   updateOrderInRoomForRoomData(sourceRoomData, newRows[sourceRoomIndex].roomId);
   updateOrderInRoomForRoomData(destRoomData, newRows[destRoomIndex].roomId);
 
+  // 更新後端手術室資料
   axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
     .then(response => {
       console.log("手術室更新成功:", response.data);
     })
     .catch(error => {
       console.error("手術室更新失敗:", error);
-    }
-    );
+    });
 
   axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[sourceRoomIndex].roomId}`)
     .then(response => {
@@ -373,9 +349,9 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     })
     .catch(error => {
       console.error("手術室更新失敗:", error);
-    }
-    );
+    });
 };
+
 
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
   if (!roomData || roomData.length === 0) return;
