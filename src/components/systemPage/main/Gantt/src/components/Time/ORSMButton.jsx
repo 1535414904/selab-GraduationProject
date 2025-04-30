@@ -54,13 +54,13 @@ const ORSMButton = () => {
                         d="M5 13l4 4L19 7"
                     />
                 </svg>
-                {isLoading ? '執行中...' : '開始排班'}
+                {isLoading ? '執行中...' : '開始排程'}
             </button>
             {isLoading && (
                 <div className="modal-overlay">
                     <div className="spin-wrapper">
                         <div className="spinner"></div>
-                        <div className="loading-text">排班中...</div>
+                        <div className="loading-text">排程中...</div>
                     </div>
                 </div>)}
 
@@ -72,8 +72,8 @@ const ORSMButton = () => {
                                 <path d="M14 27 L22 35 L38 19" />
                             </svg>
                         </div>
-                        <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300" 
-                        onClick={handleCloseResultButton}>排班完成！</button>
+                        <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+                            onClick={handleCloseResultButton}>排程完成！</button>
                     </div>
                 </div>
             )}

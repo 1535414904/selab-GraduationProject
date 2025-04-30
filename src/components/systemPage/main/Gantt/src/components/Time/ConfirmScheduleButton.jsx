@@ -8,7 +8,7 @@ const ConfirmScheduleButton = ({ rows }) => {
   const confirmChanges = async () => {
     try {
       // 開始確認修改
-      console.log('開始確認修改排班...');
+      console.log('開始確認修改排程...');
 
       const updatePromises = [];
 
@@ -44,12 +44,12 @@ const ConfirmScheduleButton = ({ rows }) => {
       }
 
       // 通知用戶更新成功
-      alert('排班已成功更新！');
+      alert('排程已成功更新！');
 
       // 重新載入頁面，確保所有組件都使用新的設定
       window.location.reload();
     } catch (error) {
-      console.error('確認修改排班時發生錯誤:', error);
+      console.error('確認修改排程時發生錯誤:', error);
       alert(`確認修改失敗: ${error.message}`);
     }
   };

@@ -14,7 +14,7 @@ export const addMinutesToTime = (time, minutes) => {
   return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
 };
 
-// 用於暫存排班管理頁面的時間設定
+// 用於暫存排程管理頁面的時間設定
 let tempTimeSettings = null;
 
 // 設置臨時時間設定（用於預覽）
@@ -41,7 +41,7 @@ export const getTimeSettings = (useTempSettings = false) => {
     cleaningTime: 45,      // 預設值 45 分鐘
   };
 
-  // 如果是排班管理頁面且有臨時設定，則使用臨時設定
+  // 如果是排程管理頁面且有臨時設定，則使用臨時設定
   if (useTempSettings && tempTimeSettings) {
     console.log('從getTimeSettings取得臨時設定:', tempTimeSettings);
     return tempTimeSettings;

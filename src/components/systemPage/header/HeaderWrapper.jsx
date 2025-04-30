@@ -263,7 +263,7 @@ function HeaderWrapper({ fullTogglePage, user, toggleMainPage, setReloadKey }) {
                         />
                       </svg>
 
-                      排班管理
+                      排程管理
                     </button>
                   )}
 

@@ -22,7 +22,7 @@ import {
   ungroup
 } from "./components/ROOM/GroupOperations";
 
-// 排班管理專用的甘特圖組件
+// 排程管理專用的甘特圖組件
 function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
@@ -99,7 +99,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
 
     if (!result.destination) return;
 
-    console.log("排班管理甘特圖拖曳結束，更新界面", result);
+    console.log("排程管理甘特圖拖曳結束，更新界面", result);
 
     if (!result.draggableId) {
       console.error("拖曳操作缺少draggableId，無法處理");
@@ -292,7 +292,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       setTimeout(() => {
         setFilteredRows(updatedRows);
       }, 10);
-      
+
       // 成功解除群組後，稍後重新整理頁面以確保狀態完全更新
       setTimeout(() => {
         window.location.reload();
@@ -367,7 +367,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const onDragEndHandler = async (result) => {
     if (!result.destination) return;
 
-    console.log("排班管理甘特圖拖曳結束，更新界面", result);
+    console.log("排程管理甘特圖拖曳結束，更新界面", result);
 
     // 檢查是否有ID相關問題
     if (!result.draggableId) {
@@ -492,7 +492,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
         filteredRows={filteredRows}
         setRows={setRows}
       />
-  
+
       {/* ✅ 頁籤切換區 */}
       <div className="gantt-tabs">
         <ul className="gantt-tab-list">
@@ -504,7 +504,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           </li>
         </ul>
       </div>
-  
+
       {/* ✅ 甘特圖頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'gantt' ? 'gantt-tab-panel-hidden' : ''}`}>
         {/* 使用提示 */}
@@ -530,7 +530,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             )}
           </div>
         </div>
-  
+
         {/* ✅ 主內容區 */}
         <div className="gantt-main-layout flex w-full h-full">
           {/* ✅ 篩選器側欄 */}
@@ -545,7 +545,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
               aria-label={isFilterOpen ? "收合篩選器" : "展開篩選器"}
             />
           </div>
-  
+
           {/* ✅ 甘特圖右側主體 */}
           <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
             {!loading && !error && filteredRows.length > 0 && (
@@ -555,36 +555,36 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                   <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
                     <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
                       {/* 甘特內容 */}
-                        <div ref={ganttChartRef} className="gantt-chart-container">
-                          <div className="gantt-chart">
-                            {filteredRows.map((room, roomIndex) => {
-                              // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
-                              const sortedData = room.data || [];
-  
-                              return (
-                                <div
-                                  key={room.room || roomIndex}
-                                  className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
-                                >
-                                  <RoomSection
-                                    room={{ ...room, data: sortedData }}
-                                    roomIndex={roomIndex}
-                                    readOnly={readOnly}
-                                    onSurgeryClick={handleSurgeryClick}
-                                    onGroupOperation={handleGroupOperation}
-                                    onPinStatusChange={handleRoomPinStatusChange}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
+                      <div ref={ganttChartRef} className="gantt-chart-container">
+                        <div className="gantt-chart">
+                          {filteredRows.map((room, roomIndex) => {
+                            // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
+                            const sortedData = room.data || [];
+
+                            return (
+                              <div
+                                key={room.room || roomIndex}
+                                className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                              >
+                                <RoomSection
+                                  room={{ ...room, data: sortedData }}
+                                  roomIndex={roomIndex}
+                                  readOnly={readOnly}
+                                  onSurgeryClick={handleSurgeryClick}
+                                  onGroupOperation={handleGroupOperation}
+                                  onPinStatusChange={handleRoomPinStatusChange}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
-                      </TimeWrapper>
+                      </div>
+                    </TimeWrapper>
                   </div>
                 </DragDropContext>
               </div>
             )}
-  
+
             {/* 無資料時提示 */}
             {!loading && !error && filteredRows.length === 0 && (
               <div className="no-data">
@@ -594,7 +594,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
             )}
           </div>
         </div>
-  
+
         {/* 模態視窗 */}
         {selectedSurgery && (
           <SurgeryModal
@@ -604,7 +604,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
           />
         )}
       </div>
-  
+
       {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
@@ -614,7 +614,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
               ...r,
               data: r.data ? [...r.data] : []
             })), true, false);
-  
+
             setRows([]);
             setTimeout(() => {
               setRows(updatedRows);
@@ -628,7 +628,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       </div>
     </div>
   );
-  
+
 
 }
 export default Gantt;

@@ -132,7 +132,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
         console.error("處理拖曳時發生錯誤:", error);
       }
     }
-    // 處理 Gantt (排班管理) 的拖曳
+    // 處理 Gantt (排程管理) 的拖曳
     else if (mainState === "shiftMgr") {
       // 首先嘗試解析拖曳源和目標索引
       try {

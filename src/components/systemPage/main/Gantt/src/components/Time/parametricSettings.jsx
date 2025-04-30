@@ -149,7 +149,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
     // 將選中的關閉手術房信息存儲到localStorage，供ganttData.jsx使用
     localStorage.setItem("reservedClosedRooms", JSON.stringify(uniqueRooms));
 
-    alert(`已選擇 ${selectedRooms.length} 個關閉手術房加入本次排班`);
+    alert(`已選擇 ${selectedRooms.length} 個關閉手術房加入本次排程`);
 
     // 清空選中列表
     setSelectedClosedRooms([]);
@@ -262,8 +262,8 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
           {!tipsCollapsed && (
             <ul className="parameter-tips-list">
               <li><strong>時間設定區域</strong>：調整手術起始時間、常規與加班結束時間，以及手術間銜接所需時間</li>
-              <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排班，但不會更改手術房管理中的狀態</li>
-              <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排班</li>
+              <li><strong>保留手術房區域</strong>：您可以選擇將目前關閉的手術房暫時加入排程，但不會更改手術房管理中的狀態</li>
+              <li><strong>確認加入選中的手術房</strong>：將勾選的關閉狀態手術房加入甘特圖排程</li>
               <li><strong>確認時間設定</strong>：僅將時間參數設定應用到甘特圖中</li>
               <li><strong>移除選中的保留手術房</strong>：從甘特圖中移除已加入的關閉手術房</li>
             </ul>
@@ -410,14 +410,14 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
         <div className="parameters-column">
           <div className="settings-section">
             <h4 className="settings-section-title">保留手術房</h4>
-            <p className="settings-description">可選擇將目前關閉的手術房加入本次排班（不會改變手術房管理中的狀態）</p>
+            <p className="settings-description">可選擇將目前關閉的手術房加入本次排程（不會改變手術房管理中的狀態）</p>
 
             {/* 整合的手術房列表區域 */}
             <div className="operating-rooms-container">
               {/* 已保留的手術房列表 */}
               {reservedRooms.length > 0 && (
                 <div className="reserved-rooms-section">
-                  <h5 className="rooms-section-title">已加入排班的關閉手術房</h5>
+                  <h5 className="rooms-section-title">已加入排程的關閉手術房</h5>
                   <div className="rooms-list">
                     {reservedRooms.map(room => (
                       <div key={`reserved-${room.id}`} className="room-item">

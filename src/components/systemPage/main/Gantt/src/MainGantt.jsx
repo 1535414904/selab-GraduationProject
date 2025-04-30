@@ -371,7 +371,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             <p className="gantt-subtitle">顯示所有手術室的排程安排</p>
           </div>
         </div>
-  
+
         <div className="gantt-actions">
           <div className="gantt-room-count">
             <svg className="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -379,7 +379,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             </svg>
             <span className="gantt-room-count-text">共 {filteredRows.length} 間手術室</span>
           </div>
-  
+
           <div className="gantt-buttons">
             {Number(userRole) === 3 && (
               <button
@@ -394,7 +394,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           </div>
         </div>
       </div>
-  
+
       <div className={`gantt-tips ${tipsCollapsed ? 'tips-collapsed' : ''}`}>
         <svg className="gantt-tips-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
           <circle cx="12" cy="12" r="10" fill="#3B82F6" />
@@ -414,62 +414,62 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
               <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
               <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
               <li>點擊手術項目可查看詳細資訊</li>
-              <li>如果手術呈現橘色表示手術正與其他手術一起群組，<b>無須驚慌</b></li>
+              {/* <li>如果手術呈現橘色表示手術正與其他手術一起群組，<b>無須驚慌</b></li> */}
               {!readOnly && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
             </ul>
           )}
         </div>
       </div>
-  
+
       <div className="gantt-main-content-area" style={{ display: "flex", height: "100%" }}>
         <div className={` ${isFilterOpen ? 'open' : 'closed'}`}>
           <GanttFilter originalRows={rows} onFilteredDataChange={handleFilterChange} />
           <button className="filter-toggle-button" onClick={() => setIsFilterOpen(!isFilterOpen)} aria-label={isFilterOpen ? "收合篩選器" : "展開篩選器"}></button>
         </div>
-  
+
         <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
           <div className="gantt-content">
             <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
               <div className="gantt-chart-scrollable" ref={timeScaleRef}>
-              <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
-                <div ref={ganttChartRef} className="gantt-chart-container">
-                  <div className="gantt-chart">
-                    {filteredRows.map((room, roomIndex) => {
-                      const originalData = room.data || [];
-                      const surgeriesOnly = originalData.filter(item => (!item.isCleaningTime && item.orderInRoom != null) || item.isGroup);
-                      const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
-                      const sortedData = sortedSurgeries.flatMap(surgery => {
-                        const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
-                        return cleaningItem ? [surgery, cleaningItem] : [surgery];
-                      });
-                      return (
-                        <div key={room.room || roomIndex} className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}>
-                          <RoomSection
-                            room={{ ...room, data: sortedData }}
-                            roomIndex={roomIndex}
-                            readOnly={readOnly}
-                            onSurgeryClick={handleSurgeryClick}
-                            isMainPage={true}
-                          />
-                        </div>
-                      );
-                    })}
+                <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
+                  <div ref={ganttChartRef} className="gantt-chart-container">
+                    <div className="gantt-chart">
+                      {filteredRows.map((room, roomIndex) => {
+                        const originalData = room.data || [];
+                        const surgeriesOnly = originalData.filter(item => (!item.isCleaningTime && item.orderInRoom != null) || item.isGroup);
+                        const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
+                        const sortedData = sortedSurgeries.flatMap(surgery => {
+                          const cleaningItem = originalData.find(item => item.id === `cleaning-${surgery.applicationId}`);
+                          return cleaningItem ? [surgery, cleaningItem] : [surgery];
+                        });
+                        return (
+                          <div key={room.room || roomIndex} className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}>
+                            <RoomSection
+                              room={{ ...room, data: sortedData }}
+                              roomIndex={roomIndex}
+                              readOnly={readOnly}
+                              onSurgeryClick={handleSurgeryClick}
+                              isMainPage={true}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              </TimeWrapper>
+                </TimeWrapper>
               </div>
             </div>
           </div>
         </div>
       </div>
-  
+
       {!loading && !error && filteredRows.length === 0 && (
         <div className="no-data">
           <p className="no-data-title">尚無符合條件的排程資料</p>
           <p className="no-data-subtitle">請更改篩選條件或稍後再試</p>
         </div>
       )}
-  
+
       {selectedSurgery && (
         <SurgeryModal
           surgery={selectedSurgery}
