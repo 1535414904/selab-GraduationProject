@@ -559,7 +559,9 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                       {/* 甘特內容 */}
                       <div ref={ganttChartRef} className="gantt-chart-container">
                         <div className="gantt-chart">
-                          {filteredRows.map((room, roomIndex) => {
+                          {/* {filteredRows.map((room, roomIndex) => { */}
+                          {[...filteredRows].sort((a, b) => (a.room || '').localeCompare(b.room || '')).map((room, roomIndex) => {
+
                             // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
                             const sortedData = room.data || [];
 
