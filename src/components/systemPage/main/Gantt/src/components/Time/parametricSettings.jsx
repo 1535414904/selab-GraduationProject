@@ -5,21 +5,23 @@ import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 import "../../styles.css"
 
-const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
+const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRooms, setSelectedClosedRooms, onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
   // 使用 initialTimeSettings 作為初始值
   const [timeSettings, setTimeSettings] = useState(initialTimeSettings);
   // 關閉的手術房列表
   const [closedRooms, setClosedRooms] = useState([]);
-  // 選中的關閉手術房 ID 列表
-  const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
-  // 已保留的手術房列表
-  const [reservedRooms, setReservedRooms] = useState([]);
   // 選中的已保留手術房 ID 列表
   const [selectedReservedRooms, setSelectedReservedRooms] = useState([]);
   // 加載狀態
   const [loading, setLoading] = useState(false);
   // 使用提示的折疊狀態
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
+
+  useEffect(() => {
+    console.log("closedRooms:", closedRooms);
+    console.log("selectedClosedRooms:", selectedClosedRooms);
+    console.log("reservedRooms:", reservedRooms);
+  }, [closedRooms, reservedRooms, selectedClosedRooms]);
 
   useEffect(() => {
     // 獲取所有關閉的手術房

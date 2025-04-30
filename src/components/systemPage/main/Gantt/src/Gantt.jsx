@@ -40,6 +40,10 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // 選中的關閉手術房 ID 列表
+  const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
+  // 已保留的手術房列表
+  const [reservedRooms, setReservedRooms] = useState([]);
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
@@ -488,6 +492,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   return (
     <div className="gantt-main-container">
       <GanttHeader
+        reservedRooms={reservedRooms}
+        selectedClosedRooms={selectedClosedRooms}
         currentDate={currentDate}
         filteredRows={filteredRows}
         setRows={setRows}
@@ -608,6 +614,10 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
+          reservedRooms={reservedRooms}
+          setReservedRooms={setReservedRooms}
+          selectedClosedRooms={selectedClosedRooms}
+          setSelectedClosedRooms={setSelectedClosedRooms}
           onTimeSettingsChange={(newSettings, isPreview) => {
             // 格式化數據時明確傳入 useTempSettings=true 參數
             const updatedRows = formatRoomData([...rows].map(r => ({
