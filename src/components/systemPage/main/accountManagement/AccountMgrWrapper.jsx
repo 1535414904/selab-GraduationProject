@@ -322,46 +322,40 @@ function AccountMgrWrapper({ reloadKey }) {
     const handleAddAll = async (newUsers) => {
         const existingUsernames = new Set(users.map(u => u.username.trim()));
         const seenUsernames = new Set();
-
-        // 每次先重設錯誤
-        const newEmptyError = {};
-
-        newUsers.forEach(user => {
+    
+        for (const user of newUsers) {
             const trimmedUsername = user.username?.trim();
-
+    
             if (!trimmedUsername) {
-                newEmptyError[user.uniqueId] = "*帳號欄位不得為空";
+                alert(`❗ 使用者 ID "${user.uniqueId}"：帳號欄位不得為空`);
                 return;
             }
-
+    
             if (existingUsernames.has(trimmedUsername)) {
-                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 已存在`;
+                alert(`❗ 帳號 "${trimmedUsername}" 已存在，請使用其他帳號`);
                 return;
             }
-
+    
             if (seenUsernames.has(trimmedUsername)) {
-                newEmptyError[user.uniqueId] = `帳號 "${trimmedUsername}" 重複`;
+                alert(`❗ 帳號 "${trimmedUsername}" 在本次新增中重複`);
                 return;
             }
-
-            seenUsernames.add(trimmedUsername); // 無誤才加入
-        });
-
-        setEmptyError(newEmptyError); // 這裡會更新所有錯誤訊息（同時也會清除已修正的）
-
-        if (Object.keys(newEmptyError).length > 0) {
-            return; // 有錯誤就中止
+    
+            seenUsernames.add(trimmedUsername);
         }
-
+    
         try {
             await axios.post(`${BASE_URL}/api/system/users/add`, newUsers);
             const response = await axios.get(`${BASE_URL}/api/system/users`);
             setUsers(response.data);
-            setAddUsers([]); // 清空新增暫存區
+            setAddUsers([]);
+            alert("✅ 批次新增成功！");
         } catch (error) {
-            console.log("Error add data: ", error);
+            console.error("Error add data: ", error);
+            alert("❌ 批次新增失敗，請稍後再試");
         }
     };
+    
 
     const cleanAddRow = (uniqueId) => {
         const updated = addUsers.filter((user) => user.uniqueId !== uniqueId);
