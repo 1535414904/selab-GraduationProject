@@ -27,45 +27,39 @@ function ORMgrWrapper({ reloadKey }) {
     }, []);
 
     const handleAdd = async (operatingRoom) => {
-        let errors = {};
-        // 確保錯誤訊息的 key 是唯一的
-        const idErrorKey = `${operatingRoom.uniqueId}-id`;
-        const nameErrorKey = `${operatingRoom.uniqueId}-name`;
-        // 檢查是否為空
-        if (!operatingRoom.id.trim()) {
-            errors[idErrorKey] = "*手術房編號欄位不得為空";
-        } else if (operatingRooms.some(room => room.id === operatingRoom.id)) {
-            errors[idErrorKey] = `手術房編號 "${operatingRoom.id}" 已存在，請使用其他編號`;
-        }
-
-        if (!operatingRoom.operatingRoomName.trim()) {
-            errors[nameErrorKey] = "*手術房名稱欄位不得為空";
-        } else if (operatingRooms.some(room => room.operatingRoomName === operatingRoom.operatingRoomName)) {
-            errors[nameErrorKey] = `手術房名稱 "${operatingRoom.name}" 已存在，請使用其他名稱`;
-        }
-
-        if (Object.keys(errors).length > 0) {
-            setEmptyError(prev => ({ ...prev, ...errors }));
+        const trimmedId = operatingRoom.id.trim();
+        const trimmedName = operatingRoom.operatingRoomName.trim();
+    
+        if (!trimmedId) {
+            alert("❗ 手術房編號欄位不得為空");
             return;
         }
-
-        setEmptyError(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[idErrorKey];
-            delete newErrors[nameErrorKey];
-            return newErrors;
-        });
-
+        if (operatingRooms.some(room => room.id === trimmedId)) {
+            alert(`❗ 手術房編號 "${trimmedId}" 已存在`);
+            return;
+        }
+    
+        if (!trimmedName) {
+            alert("❗ 手術房名稱欄位不得為空");
+            return;
+        }
+        if (operatingRooms.some(room => room.operatingRoomName === trimmedName)) {
+            alert(`❗ 手術房名稱 "${trimmedName}" 已存在`);
+            return;
+        }
+    
         try {
             await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
-            console.log(operatingRoom);
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
             setOperatingRooms(response.data);
             cleanAddRow(operatingRoom.uniqueId);
+            alert(`✅ 手術房 "${trimmedName}" 新增成功`);
         } catch (error) {
             console.error("Error add data: ", error);
+            alert("❌ 新增失敗，請稍後再試");
         }
     };
+    
 
     const handleAddAll = async (newOperatingRooms) => {
         const newEmptyError = {};

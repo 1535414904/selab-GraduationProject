@@ -52,61 +52,41 @@ function DepartmentMgrWrapper({ reloadKey, refreshKey, setRefreshKey }) {
         }
     }*/
 
-    const handleAdd = async (department) => {
-        let errors = {};
-
-        // 確保錯誤訊息的 key 是唯一的
-        const idErrorKey = `${department.uniqueId}-id`;
-        const nameErrorKey = `${department.uniqueId}-name`;
-
-        // 檢查是否為空
-        if (!department.id.trim()) {
-            errors[idErrorKey] = "*科別編號欄位不得為空";
-        } else {
-            // 只有在不為空的情況下，才檢查是否重複
-            const isDuplicateId = departments.some(existingDepartment => existingDepartment.id === department.id);
-            if (isDuplicateId) {
-                errors[idErrorKey] = `科別編號 "${department.id}" 已存在，請使用其他編號`;
-            } else {
-                delete errors[idErrorKey];// 清除錯誤訊息
+        const handleAdd = async (department) => {
+            const trimmedId = department.id.trim();
+            const trimmedName = department.name.trim();
+        
+            // 編號檢查
+            if (!trimmedId) {
+                alert("❗ 科別編號不得為空");
+                return;
             }
-        }
-
-        if (!department.name.trim()) {
-            errors[nameErrorKey] = "*科別名稱欄位不得為空";
-        } else {
-            // 只有在不為空的情況下，才檢查是否重複
-            const isDuplicateName = departments.some(existingDepartment => existingDepartment.name === department.name);
-            if (isDuplicateName) {
-                errors[nameErrorKey] = `科別名稱 "${department.name}" 已存在，請使用其他名稱`;
-            } else {
-                delete errors[nameErrorKey] // 清除錯誤訊息
+            if (departments.some(d => d.id === trimmedId)) {
+                alert(`❗ 科別編號 "${trimmedId}" 已存在，請使用其他編號`);
+                return;
             }
-        }
-
-        // 如果有錯誤，設定錯誤訊息並中止新增
-        if (Object.keys(errors).length > 0) {
-            setEmptyError(prevErrors => ({ ...prevErrors, ...errors }));
-            return;
-        }
-
-        // 若無錯誤，清除該列的錯誤訊息
-        setEmptyError(prevErrors => {
-            const newErrors = { ...prevErrors };
-            delete newErrors[idErrorKey];
-            delete newErrors[nameErrorKey];
-            return newErrors;
-        });
-
-        try {
-            await axios.post(`${BASE_URL}/api/system/department/add`, department);
-            const response = await axios.get(BASE_URL + "/api/system/departments");
-            setDepartments(response.data);
-            cleanAddRow(department.uniqueId); // 刪除新增的科別
-        } catch (error) {
-            console.error("Error add data: ", error);
-        }
-    };
+        
+            // 名稱檢查
+            if (!trimmedName) {
+                alert("❗ 科別名稱不得為空");
+                return;
+            }
+            if (departments.some(d => d.name === trimmedName)) {
+                alert(`❗ 科別名稱 "${trimmedName}" 已存在，請使用其他名稱`);
+                return;
+            }
+        
+            try {
+                await axios.post(`${BASE_URL}/api/system/department/add`, department);
+                const response = await axios.get(BASE_URL + "/api/system/departments");
+                setDepartments(response.data);
+                cleanAddRow(department.uniqueId);
+                alert(`✅ 科別 "${trimmedName}" 新增成功`);
+            } catch (error) {
+                console.error("新增失敗：", error);
+                alert("❌ 新增失敗，請稍後再試");
+            }
+        };
 
     const handleAddAll = async (newDepartments) => {
         const newEmptyError = {};

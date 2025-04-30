@@ -68,21 +68,33 @@ const ChiefSurgeonListWrapper = forwardRef(({
                         addChiefSurgeons={addChiefSurgeons}
                         setAddChiefSurgeons={setAddChiefSurgeons}
                         handleAdd={async (chiefSurgeon) => {
-                            if (!chiefSurgeon.id.trim()) {
-                                setEmptyError("*員工編號欄位不得為空");
-                            } else {
-                                try {
-                                    await axios.post(`${BASE_URL}/api/system/${departmentId}/chief-surgeon/add`, chiefSurgeon);
-                                    const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
-                                    setChiefSurgeons(response.data);
-                                    const responseDpartments = await axios.get(BASE_URL + "/api/system/departments");
-                                    setDepartments(responseDpartments.data);
-                                    setEmptyError(null);
-                                } catch (error) {
-                                    console.error("Error add data: ", error);
-                                }
+                            const trimmedId = chiefSurgeon.id.trim();
+                        
+                            if (!trimmedId) {
+                                alert("❗ 員工編號欄位不得為空");
+                                return;
+                            }
+                        
+                            // 重複檢查（可選）
+                            const isDuplicate = chiefSurgeons.some(cs => cs.id === trimmedId);
+                            if (isDuplicate) {
+                                alert(`❗ 員工編號 "${trimmedId}" 已存在，請使用其他編號`);
+                                return;
+                            }
+                        
+                            try {
+                                await axios.post(`${BASE_URL}/api/system/${departmentId}/chief-surgeon/add`, chiefSurgeon);
+                                const response = await axios.get(`${BASE_URL}/api/system/department/${departmentId}/chief-surgeons`);
+                                setChiefSurgeons(response.data);
+                        
+                                const responseDepartments = await axios.get(BASE_URL + "/api/system/departments");
+                                setDepartments(responseDepartments.data);
+                            } catch (error) {
+                                console.error("Error add data: ", error);
+                                alert("❌ 新增失敗，請稍後再試");
                             }
                         }}
+                        
                         emptyError={emptyError}
                     />
                     {chiefSurgeons.map((cs) => (

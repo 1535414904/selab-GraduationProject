@@ -293,32 +293,31 @@ function AccountMgrWrapper({ reloadKey }) {
     }, [users]);
 
     const handleAdd = async (user) => {
-        if (!user.username.trim()) {
-            setEmptyError((prevErrors) => ({
-                ...prevErrors,
-                [user.uniqueId]: "*帳號欄位不得為空",
-            }));
+        const trimmedUsername = user.username.trim();
+    
+        if (!trimmedUsername) {
+            alert("❗ 帳號編號不得為空");
             return;
         }
-
-        const isDuplicate = users.some(existingUser => existingUser.username === user.username);
+    
+        const isDuplicate = users.some(existingUser => existingUser.username === trimmedUsername);
         if (isDuplicate) {
-            setEmptyError((prevErrors) => ({
-                ...prevErrors,
-                [user.uniqueId]: `帳號 "${user.username}" 已存在，請使用其他帳號`,
-            }));
+            alert(`❗ 帳號 "${trimmedUsername}" 已存在，請使用其他帳號`);
             return;
         }
-
+    
         try {
             await axios.post(`${BASE_URL}/api/system/user/add`, user);
             const response = await axios.get(BASE_URL + "/api/system/users");
             setUsers(response.data);
             cleanAddRow(user.uniqueId);
+            alert(`✅ 帳號 "${trimmedUsername}" 新增成功`);
         } catch (error) {
-            console.log("Error add data: ", error);
+            console.error("Error add data: ", error);
+            alert("❌ 新增失敗，請稍後再試");
         }
     };
+    
 
     const handleAddAll = async (newUsers) => {
         const existingUsernames = new Set(users.map(u => u.username.trim()));

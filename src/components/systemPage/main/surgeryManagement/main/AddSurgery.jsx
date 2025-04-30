@@ -75,14 +75,19 @@ function AddSurgery({ onClose, surgeries, setSurgeries, operatingRooms, nowUsern
     }, [addSurgery.operatingRoomId, operatingRooms]);
 
     const validateForm = () => {
-        let newErrors = {};
-        if (!addSurgery.applicationId.trim()) newErrors.applicationId = "* 申請編號不得為空";
-        if (!addSurgery.chiefSurgeonId) newErrors.chiefSurgeonId = "* 主刀醫師不得為空";
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        if (!addSurgery.applicationId.trim()) {
+            alert("❗ 申請編號不得為空");
+            return false;
+        }
+    
+        if (!addSurgery.chiefSurgeonId) {
+            alert("❗ 請選擇主刀醫師");
+            return false;
+        }
+    
+        return true;
     };
-
+    
     const handleAdd = async () => {
         if (!validateForm()) return;
 
