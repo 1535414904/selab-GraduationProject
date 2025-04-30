@@ -33,13 +33,13 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
     // 不需要使用 setOperatingRooms，直接呼叫 props.handleSave
     const handleSaveClick = () => {
         if (!editedOperatingRoom.id.trim()) {
-        setError("手術房編號不能為空");
-        return;
+            setError("手術房編號不能為空");
+            return;
         }
         setError(null);
         handleSave(editedOperatingRoom);  // 由父層做後續更新處理
     };
-   
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -94,7 +94,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     <option value="普通房">普通房</option>
                     <option value="鉛牆房">鉛牆房</option>
                 </select>
-                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
+                {operatingRoom.hasSurgeries && <span className="error"></span>}
             </td>
             <td>
                 <select
@@ -106,7 +106,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     <option value={0}>關閉</option>
                     <option value={1}>開啟</option>
                 </select>
-                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
+                {operatingRoom.hasSurgeries && <span className="error"></span>}
             </td>
             {/* <td>
                 <FontAwesomeIcon className="edit-button" icon={faFloppyDisk}
@@ -120,7 +120,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     onClick={() => {
                         handleSaveClick();  // 這裡只呼叫 props.handleSave
                         setIsEditing(false);
-                      }}
+                    }}
                 >
                     <FontAwesomeIcon icon={faFloppyDisk} className="action-icon" />
                 </button>
@@ -131,7 +131,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     onClick={() => {
                         handleSaveClick();  // 這裡只呼叫 props.handleSave
                         setIsEditing(false);
-                      }}
+                    }}
                 >
                     <FontAwesomeIcon icon={faTimes} className="action-icon" />
                 </button>

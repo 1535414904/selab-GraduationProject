@@ -29,7 +29,7 @@ function ORMgrWrapper({ reloadKey }) {
     const handleAdd = async (operatingRoom) => {
         const trimmedId = operatingRoom.id.trim();
         const trimmedName = operatingRoom.operatingRoomName.trim();
-    
+
         if (!trimmedId) {
             alert("❗ 手術房編號欄位不得為空");
             return;
@@ -38,7 +38,7 @@ function ORMgrWrapper({ reloadKey }) {
             alert(`❗ 手術房編號 "${trimmedId}" 已存在`);
             return;
         }
-    
+
         if (!trimmedName) {
             alert("❗ 手術房名稱欄位不得為空");
             return;
@@ -47,7 +47,7 @@ function ORMgrWrapper({ reloadKey }) {
             alert(`❗ 手術房名稱 "${trimmedName}" 已存在`);
             return;
         }
-    
+
         try {
             await axios.post(`${BASE_URL}/api/system/operating-room/add`, operatingRoom);
             const response = await axios.get(`${BASE_URL}/api/system/operating-rooms`);
@@ -59,7 +59,7 @@ function ORMgrWrapper({ reloadKey }) {
             alert("❌ 新增失敗，請稍後再試");
         }
     };
-    
+
 
     const handleAddAll = async (newOperatingRooms) => {
         const newEmptyError = {};
@@ -74,25 +74,64 @@ function ORMgrWrapper({ reloadKey }) {
             const idKey = `${room.uniqueId}-id`;
             const nameKey = `${room.uniqueId}-name`;
 
-            if (!trimmedId) {
-                newEmptyError[idKey] = "*手術房編號欄位不得為空";
-            } else if (existingIds.has(trimmedId)) {
-                newEmptyError[idKey] = `手術房編號 "${trimmedId}" 已存在`;
-            } else if (seenIds.has(trimmedId)) {
-                newEmptyError[idKey] = `手術房編號 "${trimmedId}" 重複`;
-            } else {
-                seenIds.add(trimmedId);
-            }
+            // if (!trimmedId) {
+            //     newEmptyError[idKey] = "*手術房編號欄位不得為空";
+            // } else if (existingIds.has(trimmedId)) {
+            //     newEmptyError[idKey] = `手術房編號 "${trimmedId}" 已存在`;
+            // } else if (seenIds.has(trimmedId)) {
+            //     newEmptyError[idKey] = `手術房編號 "${trimmedId}" 重複`;
+            // } else {
+            //     seenIds.add(trimmedId);
+            // }
 
-            if (!trimmedName) {
-                newEmptyError[nameKey] = "*手術房名稱欄位不得為空";
-            } else if (existingNames.has(trimmedName)) {
-                newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 已存在`;
-            } else if (seenNames.has(trimmedName)) {
-                newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 重複`;
-            } else {
+            // if (!trimmedName) {
+            //     newEmptyError[nameKey] = "*手術房名稱欄位不得為空";
+            // } else if (existingNames.has(trimmedName)) {
+            //     newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 已存在`;
+            // } else if (seenNames.has(trimmedName)) {
+            //     newEmptyError[nameKey] = `手術房名稱 "${trimmedName}" 重複`;
+            // } else {
+            //     seenNames.add(trimmedName);
+            // }
+            for (const room of newOperatingRooms) {
+                const trimmedId = room.id?.trim();
+                const trimmedName = room.operatingRoomName?.trim();
+
+                if (!trimmedId) {
+                    alert(`❗ 手術房 ID：編號欄位不得為空`);
+                    return;
+                }
+
+                if (existingIds.has(trimmedId)) {
+                    alert(`❗ 手術房編號 "${trimmedId}" 已存在，請使用其他編號`);
+                    return;
+                }
+
+                if (seenIds.has(trimmedId)) {
+                    alert(`❗ 手術房編號 "${trimmedId}" 在本次新增中重複`);
+                    return;
+                }
+
+                seenIds.add(trimmedId);
+
+                if (!trimmedName) {
+                    alert(`❗ 手術房 ID "${trimmedId}"：名稱欄位不得為空`);
+                    return;
+                }
+
+                if (existingNames.has(trimmedName)) {
+                    alert(`❗ 手術房名稱 "${trimmedName}" 已存在，請使用其他名稱`);
+                    return;
+                }
+
+                if (seenNames.has(trimmedName)) {
+                    alert(`❗ 手術房名稱 "${trimmedName}" 在本次新增中重複`);
+                    return;
+                }
+
                 seenNames.add(trimmedName);
             }
+
         });
 
         if (Object.keys(newEmptyError).length > 0) {
@@ -145,7 +184,7 @@ function ORMgrWrapper({ reloadKey }) {
     };
 
     const handleDelete = async (room) => {
-        const confirmed = window.confirm(`請確認是否刪除手術房 ${room.name} (ID: ${room.id})？`);
+        const confirmed = window.confirm(`請確認是否刪除手術房  (ID: ${room.id})？`);
         if (!confirmed) return;
 
         try {
