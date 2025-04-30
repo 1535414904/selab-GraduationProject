@@ -8,7 +8,7 @@ import { BASE_URL } from "../../../../../config";
 function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
     const [editedOperatingRoom, setEditedOperatingRoom] = useState({
         id: operatingRoom.id,
-        name: operatingRoom.operatingRoomName,
+        operatingRoomName: operatingRoom.operatingRoomName,
         departmentId: operatingRoom.department.id,
         roomType: operatingRoom.roomType,
         // status: operatingRoom.status
@@ -65,7 +65,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     onChange={handleChange} />
                 <p className="error">{error}</p>
             </td> */}
-            <td><input type="text" name="name" value={editedOperatingRoom.name}
+            <td><input type="text" name="operatingRoomName" value={editedOperatingRoom.operatingRoomName}
                 onChange={handleChange} /></td>
             <td>
                 <select
