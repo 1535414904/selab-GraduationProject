@@ -128,13 +128,22 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     const result = [];
 
     // 建立房間名稱清單，並排序（A → Z）
-    const roomNames = Array.isArray(originalRows)
-      ? Array.from(
-        new Set(
-          originalRows.map((row) => row.room || row.name || "未指定手術室")
-        )
-      ).sort((a, b) => a.localeCompare(b))
+    // const roomNames = Array.isArray(originalRows)
+    //   ? Array.from(
+    //     new Set(
+    //       originalRows.map((row) => row.room || row.name || "未指定手術室")
+    //     )
+    //   ).sort((a, b) => a.localeCompare(b))
+    // : [];
+    const sortedRoomRows = Array.isArray(originalRows)
+      ? [...originalRows].sort((a, b) =>
+        String(a.id).localeCompare(String(b.id), undefined, { numeric: true })
+      )
       : [];
+
+    const roomNames = sortedRoomRows.map((row) => row.room || row.name || "未指定手術室");
+
+
 
     // 初始化每個房間區塊
     roomNames.forEach((roomName) => {
@@ -344,7 +353,7 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   };
   return (
     // <div className="h-full w-full bg-white border-r border-gray-200 flex flex-col overflow-auto p-4">
-<div className="flex h-full min-h-full w-full transition-all duration-500 ease-in-out">
+    <div className="flex h-full min-h-full w-full transition-all duration-500 ease-in-out">
 
 
       {/* 篩選器區塊 */}

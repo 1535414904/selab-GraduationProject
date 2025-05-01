@@ -27,6 +27,9 @@ function SurgeryMgrWrapper({ user, reloadKey, setReloadKey, nowUsername }) {
         // 過濾掉status為0（關閉）的手術房
         const openOperatingRooms = response.data.filter(room => room.status !== 0);
         console.log('手術管理頁面: 顯示狀態為開啟的手術房，過濾了關閉的手術房');
+        const sortedRooms = openOperatingRooms.sort((a, b) =>
+          a.id.toString().localeCompare(b.id.toString(), undefined, { numeric: true, sensitivity: 'base' })
+        );
         setOperatingRooms(openOperatingRooms);
       } catch (error) {
         console.error("Error fetching data: ", error);
