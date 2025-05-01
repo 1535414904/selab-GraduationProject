@@ -454,7 +454,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                           onChange={() => handleRoomSelect(room.id)}
                         />
                         <label className="label-room-info" htmlFor={`room-${room.id}`}>
-                          {room.operatingRoomName} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
+                          {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
                         </label>
                       </div>
                     ))}
