@@ -47,7 +47,7 @@ function DepartmentListWrapper({
       return matchesId && matchesName;
     });
 
-    setFilteredDepartments(newFilteredDepartments.sort((a, b) => b.role - a.role));
+    setFilteredDepartments(newFilteredDepartments.sort((a, b) => parseInt(a.id) - parseInt(b.id)));
   }, [departments, filterDepartment.id, filterDepartment.name]);
 
   const toggleRow = (index) => {
