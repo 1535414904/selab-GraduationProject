@@ -5,7 +5,7 @@ import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 import "../../styles.css"
 
-const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings,rows }) => {
+const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings, rows }) => {
   // 使用 initialTimeSettings 作為初始值
   const [timeSettings, setTimeSettings] = useState(initialTimeSettings);
   // 關閉的手術房列表
@@ -166,37 +166,37 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
       alert("請至少選擇一個要移除的保留手術房");
       return;
     }
-  
+
     if (!rows || !Array.isArray(rows)) {
       alert("目前無法取得手術資料，請稍後再試");
       return;
     }
-  
+
     // 注意：roomId 是字串，要確保型別一致
     const roomsWithSurgeries = selectedReservedRooms.filter(roomId => {
       const roomData = rows.find(r => r.roomId === String(roomId));
       return roomData && Array.isArray(roomData.data) && roomData.data.length > 0;
     });
-  
+
     if (roomsWithSurgeries.length > 0) {
       const msg = roomsWithSurgeries.map(id => `ID ${id} 仍有手術`).join("\n");
       alert(`無法移除以下保留手術房，仍有手術存在：\n${msg}`);
       return;
     }
-  
+
     const updatedReservedRooms = reservedRooms.filter(room => !selectedReservedRooms.includes(room.id));
     setReservedRooms(updatedReservedRooms);
     localStorage.setItem("reservedClosedRooms", JSON.stringify(updatedReservedRooms));
     alert(`已移除 ${selectedReservedRooms.length} 個保留手術房`);
     setSelectedReservedRooms([]);
-  
+
     if (onTimeSettingsChange) {
       onTimeSettingsChange(timeSettings, true);
     }
   };
-  
-  
-  
+
+
+
 
   // 僅更新時間設定
   const applyTimeSettings = async (event) => {
@@ -439,7 +439,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                           onChange={() => handleReservedRoomSelect(room.id)}
                         />
                         <label className="label-room-info" htmlFor={`reserved-room-${room.id}`}>
-                          {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
+                          {room.operatingRoomName} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
                         </label>
                       </div>
                     ))}
@@ -465,7 +465,7 @@ const ParametricSettings = ({ onTimeSettingsChange, initialTimeSettings, setInit
                           onChange={() => handleRoomSelect(room.id)}
                         />
                         <label className="label-room-info" htmlFor={`room-${room.id}`}>
-                          {room.name} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
+                          {room.operatingRoomName} (ID: {room.id}) - {room.department?.name || '未指定科別'} - {room.roomType}
                         </label>
                       </div>
                     ))}
