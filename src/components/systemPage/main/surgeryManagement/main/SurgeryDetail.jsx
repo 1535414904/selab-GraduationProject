@@ -10,8 +10,18 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDel
     const handleEdit = (surgery) => {
         setEditingSurgery(surgery);
     };
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflowY = "scroll"; // 保留 scrollbar 占位
+    document.body.style.width = "100%";
+
+
 
     return (
+
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
