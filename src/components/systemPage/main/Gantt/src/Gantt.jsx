@@ -612,6 +612,7 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
+          rows={rows}
           onTimeSettingsChange={(newSettings, isPreview) => {
             // 格式化數據時明確傳入 useTempSettings=true 參數
             const updatedRows = formatRoomData([...rows].map(r => ({
