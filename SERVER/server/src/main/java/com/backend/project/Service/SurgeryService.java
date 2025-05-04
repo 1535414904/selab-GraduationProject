@@ -3,6 +3,7 @@ package com.backend.project.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -390,17 +391,12 @@ public class SurgeryService {
         Map<String, Integer> roomIdToNextOrderMap = new HashMap<>(); // 手動記錄每間房的 orderInRoom
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+                new InputStreamReader(file.getInputStream(), Charset.forName("Big5")))) {
             String line;
             int lineNumber = 0;
 
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-
-                if (lineNumber == 1) {
-                    // ⚡ 第一行是標題，跳過
-                    continue;
-                }
 
                 String[] columns = line.split(",", -1);
                 if (columns.length < 10) {
@@ -431,6 +427,9 @@ public class SurgeryService {
                     continue;
                 }
                 OperatingRoom room = optionalRoom.get();
+
+                System.out.println("CSV 科別：" + departmentName + "；房間科別：" +
+                        (room.getDepartment() != null ? room.getDepartment().getName() : "null"));
 
                 // 驗證科別是否符合
                 if (room.getDepartment() == null || !room.getDepartment().getName().equals(departmentName)) {
