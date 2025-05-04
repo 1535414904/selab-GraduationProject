@@ -87,17 +87,43 @@ const ORSMButton = () => {
                 </div>)}
 
             {showResultButton && !isLoading && (
+                // <div className="modal-overlay">
+                //     <div className="spin-wrapper">
+                //         <div className="checkmark">
+                //             <svg viewBox="0 0 52 52">
+                //                 <path d="M14 27 L22 35 L38 19" />
+                //             </svg>
+                //         </div>
+                //         <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+                //             onClick={handleCloseResultButton}>確認</button>
+                //     </div>
+                // </div>
                 <div className="modal-overlay">
-                    <div className="spin-wrapper">
-                        <div className="checkmark">
-                            <svg viewBox="0 0 52 52">
-                                <path d="M14 27 L22 35 L38 19" />
+                    <div className="spin-wrapper flex flex-col items-center space-y-4">
+                        <div className="text-xl font-semibold text-gray-700">排程完成！</div>
+
+                        <div className="checkmark w-16 h-16">
+                            <svg viewBox="0 0 52 52" className="w-full h-full">
+                                <path
+                                    d="M14 27 L22 35 L38 19"
+                                    fill="none"
+                                    stroke="green"
+                                    strokeWidth="5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
-                        <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
-                            onClick={handleCloseResultButton}>排程完成！</button>
+
+                        <button
+                            className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+                            onClick={handleCloseResultButton}
+                        >
+                            確認
+                        </button>
                     </div>
                 </div>
+
             )}
         </>
 
