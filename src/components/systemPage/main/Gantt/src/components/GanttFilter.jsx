@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import "../styles.css";
+import { getCleaningDuration } from './ROOM/GroupOperations';
 
 // 從外部引入銜接時間顏色
 export const getCleaningColor = () => "blue";
@@ -109,18 +110,62 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
   }, [isOpen]);
 
   // 計算銜接時間時間的輔助函式
-  const calculateCleaningEndTime = (
-    surgeryEndTime,
-    cleaningDurationMinutes = 45
-  ) => {
-    if (!surgeryEndTime) return "10:00";
-    const [hours, minutes] = surgeryEndTime.split(":").map(Number);
-    const endTimeDate = new Date();
-    endTimeDate.setHours(hours, minutes + cleaningDurationMinutes, 0, 0);
-    return `${String(endTimeDate.getHours()).padStart(2, "0")}:${String(
-      endTimeDate.getMinutes()
-    ).padStart(2, "0")}`;
+  // const calculateCleaningEndTime = (
+  //   surgeryEndTime,
+  //   cleaningDurationMinutes = 65
+  // ) => {
+  //   if (!surgeryEndTime) return "10:00";
+  //   const [hours, minutes] = surgeryEndTime.split(":").map(Number);
+  //   // const endTimeDate = new Date();
+  //   // endTimeDate.setHours(hours, minutes + cleaningDurationMinutes, 0, 0);
+  //   const startTime = new Date();
+  //   startTime.setHours(hours);
+  //   startTime.setMinutes(minutes);
+  //   const endTimeDate = new Date(startTime.getTime() + cleaningDurationMinutes * 60 * 1000);
+
+
+  //   return `${String(endTimeDate.getHours()).padStart(2, "0")}:${String(
+  //     endTimeDate.getMinutes()
+  //   ).padStart(2, "0")}`;
+  // };
+
+  // const calculateCleaningEndTime = (surgeryEndTime) => {
+  //   if (!surgeryEndTime) return "10:00";
+
+  //   const cleaningDurationMinutes = getCleaningDuration(true); // ✅ 改為統一讀取設定值
+
+  //   const [hours, minutes] = surgeryEndTime.split(":").map(Number);
+  //   const startTime = new Date();
+  //   startTime.setHours(hours);
+  //   startTime.setMinutes(minutes);
+  //   const endTimeDate = new Date(startTime.getTime() + cleaningDurationMinutes * 60 * 1000);
+
+  //   return `${String(endTimeDate.getHours()).padStart(2, "0")}:${String(
+  //     endTimeDate.getMinutes()
+  //   ).padStart(2, "0")}`;
+  // };
+  // 將時間字串轉為分鐘數
+  const timeToMinutes = (timeString) => {
+    if (!timeString) return 0;
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return hours * 60 + minutes;
   };
+
+  // 將分鐘數轉回時間字串（支援 >24:00）
+  const minutesToTime = (totalMinutes) => {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
+
+  // 改寫 calculateCleaningEndTime 為分鐘制版本
+  const calculateCleaningEndTime = (surgeryEndTime) => {
+    const cleaningDurationMinutes = getCleaningDuration(true);
+    const endTimeMinutes = timeToMinutes(surgeryEndTime);
+    return minutesToTime(endTimeMinutes + cleaningDurationMinutes);
+  };
+
+
 
   // 依手術室分組，並為每個手術添加銜接時間
   const groupByRoom = (surgeries) => {
@@ -484,233 +529,6 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       </div>
     </div >
   );
-
-  // return (
-  //   <>
-  //     <div
-  //       ref={filterRef}
-  //       className={`filter-panel-container ${isOpen ? "filter-panel-open" : "filter-panel-closed"
-  //         }`}
-  //     >
-  //       <div className="filter-panel">
-  //         <div className="filter-header">
-  //           <h3 className="filter-title">篩選條件</h3>
-  //           <button onClick={() => setIsOpen(false)} className="filter-close-btn">
-  //             ✕
-  //           </button>
-  //         </div>
-  //         <div className="filter-content">
-  //           <Select
-  //             options={filterOptions}
-  //             onChange={handleAddFilter}
-  //             placeholder="新增篩選條件..."
-  //           />
-  //           {selectedFilters.map((filter) => (
-  //             <div key={filter.value} className="filter-item">
-  //               <div className="filter-item-header">
-  //                 <span className="filter-item-title">{filter.label}</span>
-  //                 <button
-  //                   onClick={() => handleRemoveFilter(filter.value)}
-  //                   className="filter-remove-btn"
-  //                 >
-  //                   ✕
-  //                 </button>
-  //               </div>
-  //               {/* 使用範圍選擇器替代多選下拉選單 */}
-  //               {filter.value === "estimatedSurgeryTime" && (
-  //                 <div className="range-selector" style={{ marginTop: "10px" }}>
-  //                   <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-  //                     <label style={{ marginRight: "10px", width: "60px" }}>最小值(分):</label>
-  //                     <input
-  //                       type="number"
-  //                       value={timeRange.min}
-  //                       onChange={(e) => handleTimeRangeChange("min", e.target.value)}
-  //                       style={{
-  //                         flex: 1,
-  //                         padding: "8px",
-  //                         border: "1px solid #ccc",
-  //                         borderRadius: "4px"
-  //                       }}
-  //                       min={minEstimatedTime}
-  //                       max={maxEstimatedTime}
-  //                     />
-  //                   </div>
-  //                   <div style={{ display: "flex", alignItems: "center" }}>
-  //                     <label style={{ marginRight: "10px", width: "60px" }}>最大值(分):</label>
-  //                     <input
-  //                       type="number"
-  //                       value={timeRange.max}
-  //                       onChange={(e) => handleTimeRangeChange("max", e.target.value)}
-  //                       style={{
-  //                         flex: 1,
-  //                         padding: "8px",
-  //                         border: "1px solid #ccc",
-  //                         borderRadius: "4px"
-  //                       }}
-  //                       min={minEstimatedTime}
-  //                       max={maxEstimatedTime}
-  //                     />
-  //                   </div>
-  //                   <div style={{ marginTop: "8px" }}>
-  //                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-  //                       <span>最小：{minEstimatedTime}(分)</span>
-  //                       <span>目前：{timeRange.min}(分)</span>
-  //                     </div>
-  //                     <input
-  //                       type="range"
-  //                       min={minEstimatedTime}
-  //                       max={maxEstimatedTime}
-  //                       value={timeRange.min}
-  //                       onChange={(e) => handleTimeRangeChange("min", e.target.value)}
-  //                       style={{ width: "100%" }}
-  //                     />
-
-  //                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
-  //                       <span>最大：{maxEstimatedTime}(分)</span>
-  //                       <span>目前：{timeRange.max}(分)</span>
-  //                     </div>
-  //                     <input
-  //                       type="range"
-  //                       min={minEstimatedTime}
-  //                       max={maxEstimatedTime}
-  //                       value={timeRange.max}
-  //                       onChange={(e) => handleTimeRangeChange("max", e.target.value)}
-  //                       style={{ width: "100%" }}
-  //                     />
-  //                   </div>
-  //                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
-  //                     {/* <span>{minEstimatedTime}</span>
-  //                     <span>{maxEstimatedTime}</span> */}
-  //                   </div>
-  //                 </div>
-  //               )}
-  //               {filter.value === "departmentName" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableSpecialties.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) => handleFilterChange("departmentName", selected)}
-  //                   placeholder="選擇科別..."
-  //                 />
-  //               )}
-  //               {filter.value === "surgeryName" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableSurgeryNames.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) => handleFilterChange("surgeryName", selected)}
-  //                   placeholder="選擇手術名稱..."
-  //                 />
-  //               )}
-  //               {filter.value === "chiefSurgeonName" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableChiefSurgeonNames.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) =>
-  //                     handleFilterChange("chiefSurgeonName", selected)
-  //                   }
-  //                   placeholder="選擇主刀醫師..."
-  //                 />
-  //               )}
-  //               {filter.value === "operatingRoomName" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableOperatingRoomNames.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) =>
-  //                     handleFilterChange("operatingRoomName", selected)
-  //                   }
-  //                   placeholder="選擇手術室..."
-  //                 />
-  //               )}
-  //               {filter.value === "anesthesiaMethod" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableAnesthesiaMethods.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) =>
-  //                     handleFilterChange("anesthesiaMethod", selected)
-  //                   }
-  //                   placeholder="選擇麻醉方式..."
-  //                 />
-  //               )}
-  //               {filter.value === "surgeryReason" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableSurgeryReasons.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) =>
-  //                     handleFilterChange("surgeryReason", selected)
-  //                   }
-  //                   placeholder="選擇手術原因..."
-  //                 />
-  //               )}
-  //               {filter.value === "specialOrRequirements" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableSpecialOrRequirements.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) =>
-  //                     handleFilterChange("specialOrRequirements", selected)
-  //                   }
-  //                   placeholder="選擇特殊需求..."
-  //                 />
-  //               )}
-  //               {filter.value === "userName" && (
-  //                 <Select
-  //                   isMulti
-  //                   options={availableUserNames.map((v) => ({
-  //                     value: v,
-  //                     label: v,
-  //                   }))}
-  //                   onChange={(selected) => handleFilterChange("userName", selected)}
-  //                   placeholder="選擇申請人..."
-  //                 />
-  //               )}
-  //             </div>
-  //           ))}
-  //           {selectedFilters.length > 0 && (
-  //             <button
-  //               onClick={handleClearAllFilters}
-  //               className="clear-filters-btn"
-  //               style={{
-  //                 backgroundColor: "#3b82f6",
-  //                 color: "white",
-  //                 padding: "8px 16px",
-  //                 border: "none",
-  //                 borderRadius: "4px",
-  //                 cursor: "pointer",
-  //                 marginTop: "12px",
-  //                 fontWeight: "500",
-  //                 width: "100%",
-  //               }}
-  //             >
-  //               清除所有篩選條件
-  //             </button>
-  //           )}
-  //         </div>
-  //       </div>
-  //       <button className="filter-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-  //         篩選
-  //       </button>
-  //     </div>
-  //   </>
-  // );
 };
 
 export default GanttFilter;
