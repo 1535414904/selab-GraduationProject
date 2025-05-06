@@ -3,6 +3,7 @@ package com.backend.project.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -341,12 +342,35 @@ public class SurgeryService {
         OperatingRoom operatingRoom = operatingRoomRepository.findById(operatingRoomId)
                 .orElseThrow(() -> new RuntimeException("OperatingRoom not found with id " + operatingRoomId));
 
-        // 更新手術的 operatingRoom
-        surgery.setOperatingRoom(operatingRoom);
-        surgery.setOrderInRoom(operatingRoom.getSurgeries().size() + 1); // 設定手術在手術房中的順序
-
-        // 保存更新後的手術資料
-        surgeryRepository.save(surgery);
+        // 檢查該手術是否屬於群組
+        List<String> groupApplicationIds = surgery.getGroupApplicationIds();
+        if (groupApplicationIds != null && !groupApplicationIds.isEmpty()) {
+            // 如果屬於群組，則更新群組中所有手術的手術室
+            System.out.println("手術 " + id + " 屬於群組 " + groupApplicationIds + "，將更新群組所有手術的手術室");
+            
+            for (String groupMemberId : groupApplicationIds) {
+                Surgery groupMember = surgeryRepository.findById(groupMemberId)
+                        .orElseThrow(() -> new RuntimeException("Group member surgery not found with id " + groupMemberId));
+                
+                // 更新群組成員的手術室
+                groupMember.setOperatingRoom(operatingRoom);
+                // 只有主手術才設置順序，附屬手術保持原來的順序值（通常為null）
+                if (groupMemberId.equals(groupApplicationIds.get(0))) {
+                    groupMember.setOrderInRoom(operatingRoom.getSurgeries().size() + 1);
+                }
+                
+                // 保存更新後的手術資料
+                surgeryRepository.save(groupMember);
+                System.out.println("✅ 已更新群組成員 " + groupMemberId + " 的手術室");
+            }
+        } else {
+            // 如果不屬於群組，只更新這一個手術
+            surgery.setOperatingRoom(operatingRoom);
+            surgery.setOrderInRoom(operatingRoom.getSurgeries().size() + 1); // 設定手術在手術房中的順序
+            
+            // 保存更新後的手術資料
+            surgeryRepository.save(surgery);
+        }
     }
 
     public void updateSurgeryPrioritySequenceByRoom(String roomId) {
@@ -390,17 +414,12 @@ public class SurgeryService {
         Map<String, Integer> roomIdToNextOrderMap = new HashMap<>(); // 手動記錄每間房的 orderInRoom
 
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+                new InputStreamReader(file.getInputStream(), Charset.forName("Big5")))) {
             String line;
             int lineNumber = 0;
 
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-
-                if (lineNumber == 1) {
-                    // ⚡ 第一行是標題，跳過
-                    continue;
-                }
 
                 String[] columns = line.split(",", -1);
                 if (columns.length < 10) {
@@ -431,6 +450,9 @@ public class SurgeryService {
                     continue;
                 }
                 OperatingRoom room = optionalRoom.get();
+
+                System.out.println("CSV 科別：" + departmentName + "；房間科別：" +
+                        (room.getDepartment() != null ? room.getDepartment().getName() : "null"));
 
                 // 驗證科別是否符合
                 if (room.getDepartment() == null || !room.getDepartment().getName().equals(departmentName)) {

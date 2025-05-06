@@ -35,7 +35,7 @@ public class OperatingRoomController {
     @PutMapping("/system/operating-room/{id}")
     public ResponseEntity<?> updateOperatingRoom(@PathVariable String id,
             @RequestBody OperatingRoom updatOperatingRoom) {
-        System.out.println("updateOperatingRoom: " + updatOperatingRoom.getStatus() +"\n");
+        System.out.println("updateOperatingRoom: " + updatOperatingRoom.getStatus() + "\n");
         operatingRoomService.updateOperatingRoom(id, updatOperatingRoom);
         return ResponseEntity.ok("OperatingRoom update successfully");
     }

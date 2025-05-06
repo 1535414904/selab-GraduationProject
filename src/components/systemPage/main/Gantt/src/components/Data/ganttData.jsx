@@ -267,35 +267,45 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
           // 獲取時間設定（使用臨時設定）
           const timeSettings = getTimeSettings(true);
 
-          // 查找 orderInRoom = 1 的手術
-          const order1Surgery = surgeries.find(surgery => surgery.orderInRoom === 1);
+          // 查找所有有 orderInRoom 值的手術（不僅限於 orderInRoom = 1）
+          const orderedSurgeries = surgeries.filter(surgery => surgery.orderInRoom != null);
 
-          // 如果找到 orderInRoom = 1 的手術，使用其時間 + 一個銜接時間
-          // 否則使用所有項目的時間（維持原邏輯）
+          // 如果找到有 orderInRoom 值的手術
           let groupDuration = 0;
           let groupEndTime = lastItem.endTime;
 
           let groupOrderInRoom = null;
           let groupSurgeries = [...allRelatedItems]; // 預設保留所有手術
 
-          if (order1Surgery) {
-            // 使用 orderInRoom=1 的手術時間 + 一個銜接時間
-            groupDuration = order1Surgery.duration + timeSettings.cleaningTime;
-            // 重新計算結束時間（保留實際結束時間在 surgeries 中）
+          if (orderedSurgeries.length > 0) {
+            // 按照 orderInRoom 排序
+            orderedSurgeries.sort((a, b) => a.orderInRoom - b.orderInRoom);
+            
+            // 計算所有有序手術的總時間加上銜接時間
+            groupDuration = orderedSurgeries.reduce((total, surgery) => total + surgery.duration, 0) + 
+                            (orderedSurgeries.length * timeSettings.cleaningTime);
+            
+            // 重新計算結束時間
             groupEndTime = addMinutesToTime(firstItem.startTime, groupDuration);
-            console.log(`群組使用 orderInRoom=1 的手術時間 (${order1Surgery.duration}) + 銜接時間 (${timeSettings.cleaningTime})`);
-            // 確保群組的 orderInRoom 是 1，與計算時間的手術一致
-            groupOrderInRoom = 1;
+            console.log(`群組使用 ${orderedSurgeries.length} 個有序手術的總時間 + 銜接時間`);
+            
+            // 使用第一個有序手術的 orderInRoom 作為群組的 orderInRoom
+            groupOrderInRoom = orderedSurgeries[0].orderInRoom;
 
-            // 只保留 orderInRoom=1 的手術和它的銜接時間
-            // 在 allRelatedItems 中查找銜接時間項目
-            const order1CleaningItem = allRelatedItems.find(s => s.id === `cleaning-${order1Surgery.applicationId}`);
-            // 只保留需要顯示的手術和銜接時間
-            groupSurgeries = order1CleaningItem ? [order1Surgery, order1CleaningItem] : [order1Surgery];
+            // 保留所有有序手術及其銜接時間
+            groupSurgeries = [];
+            orderedSurgeries.forEach(surgery => {
+              groupSurgeries.push(surgery);
+              // 尋找對應的銜接時間項目
+              const cleaningItem = allRelatedItems.find(s => s.id === `cleaning-${surgery.applicationId}`);
+              if (cleaningItem) {
+                groupSurgeries.push(cleaningItem);
+              }
+            });
           } else {
-            // 如果沒有找到 orderInRoom=1 的手術，維持原來的總時間計算
+            // 如果沒有找到任何有 orderInRoom 值的手術，維持原來的總時間計算
             groupDuration = allRelatedItems.reduce((total, surgeryItem) => total + (surgeryItem.duration || 0), 0);
-            console.log(`找不到 orderInRoom=1 的手術，使用所有手術的總時間: ${groupDuration}`);
+            console.log(`找不到任何有 orderInRoom 值的手術，使用所有手術的總時間: ${groupDuration}`);
             // 所有手術都要保留 - 不需要額外操作
           }
 
@@ -359,43 +369,52 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
           if (item.isGroup && item.duration) {
             item.endTime = addMinutesToTime(currentTime, item.duration);
 
-            // 如果有 orderInRoom=1 的手術，只計算這個手術和一個銜接時間
+            // 處理所有有 orderInRoom 的手術
             let innerCurrentTime = currentTime;
 
-            // 尋找 orderInRoom=1 的手術
+            // 尋找所有有 orderInRoom 值的手術
             const surgeryItems = item.surgeries.filter(s => !s.isCleaningTime);
-            const order1SurgeryItem = surgeryItems.find(s => s.orderInRoom === 1);
-            const order1CleaningItem = order1SurgeryItem ?
-              item.surgeries.find(s => s.id === `cleaning-${order1SurgeryItem.applicationId}`) : null;
+            const orderedSurgeryItems = surgeryItems.filter(s => s.orderInRoom != null);
+            
+            // 按照 orderInRoom 排序
+            orderedSurgeryItems.sort((a, b) => a.orderInRoom - b.orderInRoom);
 
-            if (order1SurgeryItem) {
-              // 只更新 orderInRoom=1 的手術和它的銜接時間
-              console.log(`群組內部只計算 orderInRoom=1 的手術和銜接時間`);
+            if (orderedSurgeryItems.length > 0) {
+              console.log(`群組內部計算 ${orderedSurgeryItems.length} 個有序手術和銜接時間`);
 
-              // 設置 orderInRoom=1 的手術時間
-              order1SurgeryItem.startTime = innerCurrentTime;
-              order1SurgeryItem.endTime = addMinutesToTime(innerCurrentTime, order1SurgeryItem.duration);
-              innerCurrentTime = order1SurgeryItem.endTime;
+              // 用於存儲已處理的手術和銜接時間
+              const processedItems = new Set();
 
-              // 設置它的銜接時間
-              if (order1CleaningItem) {
-                order1CleaningItem.startTime = innerCurrentTime;
-                order1CleaningItem.duration = timeSettings.cleaningTime;
-                order1CleaningItem.endTime = addMinutesToTime(innerCurrentTime, timeSettings.cleaningTime);
+              // 設置每個有序手術的時間
+              for (const surgeryItem of orderedSurgeryItems) {
+                surgeryItem.startTime = innerCurrentTime;
+                surgeryItem.endTime = addMinutesToTime(innerCurrentTime, surgeryItem.duration);
+                innerCurrentTime = surgeryItem.endTime;
+                processedItems.add(surgeryItem);
+                
+                // 設置它的銜接時間
+                const cleaningItem = item.surgeries.find(s => s.id === `cleaning-${surgeryItem.applicationId}`);
+                if (cleaningItem) {
+                  cleaningItem.startTime = innerCurrentTime;
+                  cleaningItem.duration = timeSettings.cleaningTime;
+                  cleaningItem.endTime = addMinutesToTime(innerCurrentTime, timeSettings.cleaningTime);
+                  innerCurrentTime = cleaningItem.endTime;
+                  processedItems.add(cleaningItem);
+                }
               }
 
-              // 為其他手術設置時間，但不輔助渲染
+              // 為其他手術設置時間，但不顯示
               item.surgeries.forEach(surgery => {
-                if (surgery !== order1SurgeryItem && surgery !== order1CleaningItem) {
-                  // 設置有效的時間使用 displayRender=false 代替 hidden
-                  if (!surgery.startTime) surgery.startTime = order1SurgeryItem.startTime;
-                  if (!surgery.endTime) surgery.endTime = order1SurgeryItem.endTime;
+                if (!processedItems.has(surgery)) {
+                  // 設置有效的時間但標記為不渲染
+                  if (!surgery.startTime) surgery.startTime = orderedSurgeryItems[0].startTime;
+                  if (!surgery.endTime) surgery.endTime = orderedSurgeryItems[0].endTime;
                   surgery.displayRender = false; // 使用自定義屬性代替 hidden
                 }
               });
             } else {
-              // 如果沒有 orderInRoom=1 的手術，使用原來的都包含邏輯
-              console.log(`群組內沒有 orderInRoom=1 的手術，顯示所有手術`);
+              // 如果沒有任何有 orderInRoom 值的手術，顯示所有手術
+              console.log(`群組內沒有任何有 orderInRoom 值的手術，顯示所有手術`);
               item.surgeries.forEach(surgery => {
                 surgery.startTime = innerCurrentTime;
                 surgery.endTime = addMinutesToTime(innerCurrentTime, surgery.duration);

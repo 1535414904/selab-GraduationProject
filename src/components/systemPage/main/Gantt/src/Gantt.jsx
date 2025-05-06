@@ -254,7 +254,6 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       setTimeout(() => {
         setFilteredRows(updatedRows);
       }, 10);
-
     } else if (operation === 'ungroup') {
       // 使用新的解除群組函數
       const group = selectedSurgeries[0];
@@ -380,15 +379,12 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     }
 
     // 首先嘗試處理群組拖曳
-    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
+    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setRows, setFilteredRows);
 
     // 如果不是群組拖曳，則按一般手術拖曳處理
     if (!isGroupDrag) {
-      await handleDragEnd(result, filteredRows, setFilteredRows);
+      await handleDragEnd(result, filteredRows, setRows);
     }
-
-    // 觸發原始狀態更新
-    setRows([...filteredRows]);
 
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
@@ -618,10 +614,14 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
+<<<<<<< HEAD
           reservedRooms={reservedRooms}
           setReservedRooms={setReservedRooms}
           selectedClosedRooms={selectedClosedRooms}
           setSelectedClosedRooms={setSelectedClosedRooms}
+=======
+          rows={rows}
+>>>>>>> 6bb0a6a991fab19c71e7b5c7149147e2564288ad
           onTimeSettingsChange={(newSettings, isPreview) => {
             // 格式化數據時明確傳入 useTempSettings=true 參數
             const updatedRows = formatRoomData([...rows].map(r => ({

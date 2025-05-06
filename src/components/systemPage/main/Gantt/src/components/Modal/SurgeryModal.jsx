@@ -3,27 +3,27 @@ import "./SurgeryModal.css";
 
 function SurgeryModal({ surgery, onClose, error }) {
   if (!surgery) return null;
-  
+
   // 添加狀態來追蹤當前顯示的群組手術索引
   const [currentSurgeryIndex, setCurrentSurgeryIndex] = useState(0);
-  
+
   // 檢查是否為群組手術
   const isGroupSurgery = surgery.isGroup && surgery.surgeries && surgery.surgeries.length > 0;
   console.log('是否為群組手術:', isGroupSurgery, surgery);
-  
+
   // 獲取非清潔時間的手術
-  const nonCleaningSurgeries = isGroupSurgery 
-    ? surgery.surgeries.filter(s => !s.isCleaningTime) 
+  const nonCleaningSurgeries = isGroupSurgery
+    ? surgery.surgeries.filter(s => !s.isCleaningTime)
     : [];
-  
+
   console.log('群組中的實際手術數量:', nonCleaningSurgeries.length);
-  
+
   // 確定要顯示的手術資訊
   // 如果是群組手術，則顯示群組中的特定手術；否則直接顯示傳入的手術
   const displaySurgery = isGroupSurgery && nonCleaningSurgeries.length > 0
-    ? nonCleaningSurgeries[currentSurgeryIndex] || surgery 
+    ? nonCleaningSurgeries[currentSurgeryIndex] || surgery
     : surgery;
-  
+
   // 計算群組中的實際手術數量（排除銜接時間）
   const totalSurgeries = nonCleaningSurgeries.length;
 
@@ -38,9 +38,18 @@ function SurgeryModal({ surgery, onClose, error }) {
       }
     };
 
-    document.body.style.overflow = "hidden";
+    // document.body.style.overflow = "hidden";
+    // 儲存當前滾動位置
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflowY = "scroll"; // 保留 scrollbar 占位
+    document.body.style.width = "100%";
+
     window.addEventListener("keydown", handleEscKey);
-    
+
     // 在掛載時進行調試輸出
     if (isGroupSurgery) {
       console.log('群組手術資訊:', {
@@ -52,14 +61,24 @@ function SurgeryModal({ surgery, onClose, error }) {
     }
 
     return () => {
-      document.body.style.overflow = "auto";
+      // document.body.style.overflow = "auto";
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflowY = "";
+      document.body.style.width = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1); // 回到原本位置
+
+
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [onClose, isGroupSurgery, surgery, nonCleaningSurgeries, currentSurgeryIndex, isPinned]);
 
   const formatDate = (dateValue) => {
     if (!dateValue) return '未指定';
-    
+
     try {
       if (typeof dateValue === 'string') {
         return dateValue;
@@ -74,7 +93,7 @@ function SurgeryModal({ surgery, onClose, error }) {
 
   const formatTime = (time) => {
     if (!time) return '未指定';
-    
+
     try {
       const [hours, minutes] = time.split(":").map(Number);
       if (hours >= 24) {
@@ -91,7 +110,7 @@ function SurgeryModal({ surgery, onClose, error }) {
   const getOperatingRoomName = () => {
     return displaySurgery.operatingRoomName || surgery.operatingRoomName || '未指定';
   };
-  
+
   // 導航到上一個手術
   const goToPreviousSurgery = () => {
     if (isGroupSurgery && totalSurgeries > 0) {
@@ -102,7 +121,7 @@ function SurgeryModal({ surgery, onClose, error }) {
       });
     }
   };
-  
+
   // 導航到下一個手術
   const goToNextSurgery = () => {
     if (isGroupSurgery && totalSurgeries > 0) {
@@ -119,7 +138,7 @@ function SurgeryModal({ surgery, onClose, error }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>手術詳細資訊</h2>
-          
+
           {/* 顯示群組手術導航控制項 */}
           {isGroupSurgery && totalSurgeries > 1 && (
             <div className="group-navigation">
@@ -136,7 +155,7 @@ function SurgeryModal({ surgery, onClose, error }) {
               </button>
             </div>
           )}
-          
+
           <button className="close-button" onClick={onClose}>
             &times;
           </button>

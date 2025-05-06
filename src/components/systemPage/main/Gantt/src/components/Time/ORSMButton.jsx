@@ -1,8 +1,18 @@
 import axios from "axios";
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../../../config";
 
 const ORSMButton = ({ reservedRooms, selectedClosedRooms }) => {
+=======
+import { useState, useEffect } from "react";
+import { BASE_URL } from "../../../../../../../config";
+
+
+
+
+const ORSMButton = () => {
+>>>>>>> 6bb0a6a991fab19c71e7b5c7149147e2564288ad
     const [isLoading, setIsLoading] = useState(false);
     const [showResultButton, setShowResultButton] = useState(false);
 
@@ -37,7 +47,26 @@ const ORSMButton = ({ reservedRooms, selectedClosedRooms }) => {
         setShowResultButton(false);
         window.location.reload(); // 重新載入頁面
     }
-
+    useEffect(() => {
+        if (isLoading) {
+            const scrollY = window.scrollY;
+            document.body.style.position = "fixed";
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.left = "0";
+            document.body.style.right = "0";
+            document.body.style.overflowY = "scroll";
+            document.body.style.width = "100%";
+        } else {
+            const scrollY = document.body.style.top;
+            document.body.style.position = "";
+            document.body.style.top = "";
+            document.body.style.left = "";
+            document.body.style.right = "";
+            document.body.style.overflowY = "";
+            document.body.style.width = "";
+            window.scrollTo(0, parseInt(scrollY || "0") * -1);
+        }
+    }, [isLoading]);
     return (
         <>
             <button
@@ -71,17 +100,43 @@ const ORSMButton = ({ reservedRooms, selectedClosedRooms }) => {
                 </div>)}
 
             {showResultButton && !isLoading && (
+                // <div className="modal-overlay">
+                //     <div className="spin-wrapper">
+                //         <div className="checkmark">
+                //             <svg viewBox="0 0 52 52">
+                //                 <path d="M14 27 L22 35 L38 19" />
+                //             </svg>
+                //         </div>
+                //         <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+                //             onClick={handleCloseResultButton}>確認</button>
+                //     </div>
+                // </div>
                 <div className="modal-overlay">
-                    <div className="spin-wrapper">
-                        <div className="checkmark">
-                            <svg viewBox="0 0 52 52">
-                                <path d="M14 27 L22 35 L38 19" />
+                    <div className="spin-wrapper flex flex-col items-center space-y-4">
+                        <div className="text-xl font-semibold text-gray-700">排程完成！</div>
+
+                        <div className="checkmark w-16 h-16">
+                            <svg viewBox="0 0 52 52" className="w-full h-full">
+                                <path
+                                    d="M14 27 L22 35 L38 19"
+                                    fill="none"
+                                    stroke="green"
+                                    strokeWidth="5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
-                        <button className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
-                            onClick={handleCloseResultButton}>排程完成！</button>
+
+                        <button
+                            className="gantt-buttons flex items-center bg-purple-500 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-300"
+                            onClick={handleCloseResultButton}
+                        >
+                            確認
+                        </button>
                     </div>
                 </div>
+
             )}
         </>
 
