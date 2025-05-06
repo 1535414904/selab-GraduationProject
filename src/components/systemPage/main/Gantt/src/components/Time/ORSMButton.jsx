@@ -1,18 +1,8 @@
 import axios from "axios";
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../../../config";
 
 const ORSMButton = ({ reservedRooms, selectedClosedRooms }) => {
-=======
-import { useState, useEffect } from "react";
-import { BASE_URL } from "../../../../../../../config";
-
-
-
-
-const ORSMButton = () => {
->>>>>>> 6bb0a6a991fab19c71e7b5c7149147e2564288ad
     const [isLoading, setIsLoading] = useState(false);
     const [showResultButton, setShowResultButton] = useState(false);
 
