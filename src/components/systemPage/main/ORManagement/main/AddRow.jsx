@@ -8,14 +8,14 @@ import { faFloppyDisk, faTimes } from "@fortawesome/free-solid-svg-icons";
 function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError, setEmptyError }) {
     const handleChange = (uniqueId, event) => {
         const { name, value } = event.target;
-      
+
         const updated = addOperatingRooms.map((room) =>
-          room.uniqueId === uniqueId ? { ...room, [name]: value } : room
+            room.uniqueId === uniqueId ? { ...room, [name]: value } : room
         );
-      
+
         setAddOperatingRooms(updated);
-      };
-      
+    };
+
     const [departments, setDepartments] = useState([]);
 
     useEffect(() => {
@@ -68,6 +68,8 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                             name="operatingRoomName"
                             value={operatingRoom.operatingRoomName}
                             onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
+                            placeholder="請輸入手術房名稱"
+
                         />
                         {emptyError[`${operatingRoom.uniqueId}-name`] && <span className="error">{emptyError[`${operatingRoom.uniqueId}-name`]}</span>}
                     </td>
@@ -85,12 +87,20 @@ function AddRow({ addOperatingRooms, setAddOperatingRooms, handleAdd, emptyError
                         </select>
                     </td>
                     <td>
-                        <input
+                        {/* <input
                             type="text"
                             name="roomType"
                             value={operatingRoom.roomType}
                             onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
-                        />
+                        /> */}
+                        <select
+                            name="roomType"
+                            value={operatingRoom.roomType}
+                            onChange={(e) => handleChange(operatingRoom.uniqueId, e)}
+                        >
+                            <option value="普通房">普通房</option>
+                            <option value="鉛牆房">鉛牆房</option>
+                        </select>
                     </td>
                     <td>
                         <select

@@ -435,6 +435,8 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                   <div ref={ganttChartRef} className="gantt-chart-container">
                     <div className="gantt-chart">
                       {filteredRows.map((room, roomIndex) => {
+                        {/* {[...filteredRows].sort((a, b) => (a.room || '').localeCompare(b.room || '')).map((room, roomIndex) => { */ }
+
                         const originalData = room.data || [];
                         const surgeriesOnly = originalData.filter(item => (!item.isCleaningTime && item.orderInRoom != null) || item.isGroup);
                         const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);

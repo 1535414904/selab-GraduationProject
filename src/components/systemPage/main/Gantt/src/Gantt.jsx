@@ -532,6 +532,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                 <li>可橫向滾動查看時間</li>
                 <li>可拖曳修改手術時間與群組</li>
                 <li>點擊手術查看詳細資訊</li>
+                <li>點擊圖釘按鈕可進行釘選手術房，使該手術房不進入排程演算法</li>
+                <li>點擊群組按鈕可進行群組或取消，使被群組之手術進入演算法時不被分散</li>
               </ul>
             )}
           </div>
@@ -564,6 +566,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
                       <div ref={ganttChartRef} className="gantt-chart-container">
                         <div className="gantt-chart">
                           {filteredRows.map((room, roomIndex) => {
+                            // {[...filteredRows].sort((a, b) => (a.room || '').localeCompare(b.room || '')).map((room, roomIndex) => {
+
                             // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
                             const sortedData = room.data || [];
 

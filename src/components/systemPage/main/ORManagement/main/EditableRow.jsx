@@ -94,7 +94,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     <option value="普通房">普通房</option>
                     <option value="鉛牆房">鉛牆房</option>
                 </select>
-                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
+                {operatingRoom.hasSurgeries && <span className="error"></span>}
             </td>
             <td>
                 <select
@@ -106,7 +106,7 @@ function EditableRow({ key, operatingRoom, handleSave, setIsEditing }) {
                     <option value={0}>關閉</option>
                     <option value={1}>開啟</option>
                 </select>
-                {operatingRoom.hasSurgeries && <span className="error">*不可更改</span>}
+                {operatingRoom.hasSurgeries && <span className="error"></span>}
             </td>
             {/* <td>
                 <FontAwesomeIcon className="edit-button" icon={faFloppyDisk}

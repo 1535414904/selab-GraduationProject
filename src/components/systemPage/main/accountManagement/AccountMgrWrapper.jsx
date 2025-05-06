@@ -294,18 +294,18 @@ function AccountMgrWrapper({ reloadKey }) {
 
     const handleAdd = async (user) => {
         const trimmedUsername = user.username.trim();
-    
+
         if (!trimmedUsername) {
             alert("❗ 帳號編號不得為空");
             return;
         }
-    
+
         const isDuplicate = users.some(existingUser => existingUser.username === trimmedUsername);
         if (isDuplicate) {
             alert(`❗ 帳號 "${trimmedUsername}" 已存在，請使用其他帳號`);
             return;
         }
-    
+
         try {
             await axios.post(`${BASE_URL}/api/system/user/add`, user);
             const response = await axios.get(BASE_URL + "/api/system/users");
@@ -317,33 +317,33 @@ function AccountMgrWrapper({ reloadKey }) {
             alert("❌ 新增失敗，請稍後再試");
         }
     };
-    
+
 
     const handleAddAll = async (newUsers) => {
         const existingUsernames = new Set(users.map(u => u.username.trim()));
         const seenUsernames = new Set();
-    
+
         for (const user of newUsers) {
             const trimmedUsername = user.username?.trim();
-    
+
             if (!trimmedUsername) {
-                alert(`❗ 使用者 ID "${user.uniqueId}"：帳號欄位不得為空`);
+                alert(`❗ 使用者 ID ：帳號欄位不得為空`);
                 return;
             }
-    
+
             if (existingUsernames.has(trimmedUsername)) {
                 alert(`❗ 帳號 "${trimmedUsername}" 已存在，請使用其他帳號`);
                 return;
             }
-    
+
             if (seenUsernames.has(trimmedUsername)) {
                 alert(`❗ 帳號 "${trimmedUsername}" 在本次新增中重複`);
                 return;
             }
-    
+
             seenUsernames.add(trimmedUsername);
         }
-    
+
         try {
             await axios.post(`${BASE_URL}/api/system/users/add`, newUsers);
             const response = await axios.get(`${BASE_URL}/api/system/users`);
@@ -355,7 +355,7 @@ function AccountMgrWrapper({ reloadKey }) {
             alert("❌ 批次新增失敗，請稍後再試");
         }
     };
-    
+
 
     const cleanAddRow = (uniqueId) => {
         const updated = addUsers.filter((user) => user.uniqueId !== uniqueId);

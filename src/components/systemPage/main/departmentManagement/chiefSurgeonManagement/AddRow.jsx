@@ -29,7 +29,7 @@ function AddRow({
                             name="id"
                             value={chiefSurgeon.id}
                             onChange={(e) => handleChange(index, e)}
-                            placeholder="請輸入員工編號"
+                            placeholder="請輸入編號"
                         />
                         <div className="error">{emptyError}</div>
                     </td>
@@ -39,7 +39,7 @@ function AddRow({
                             name="name"
                             value={chiefSurgeon.name}
                             onChange={(e) => handleChange(index, e)}
-                            placeholder="請輸入醫師姓名"
+                            placeholder="請輸入姓名"
                         />
                     </td>
                     <td>

@@ -77,7 +77,7 @@ function ChiefSurgeonHeaderWrapper({ setChiefSurgeon,
                     <input
                         type="text"
                         name="id"
-                        placeholder="請輸入員工編號"
+                        placeholder="請輸入編號"
                         value={filterChiefSurgeon.id}
                         onChange={handleChange}
                     />
@@ -85,7 +85,7 @@ function ChiefSurgeonHeaderWrapper({ setChiefSurgeon,
                     <input
                         type="text"
                         name="name"
-                        placeholder="請輸入醫師名稱"
+                        placeholder="請輸入名稱"
                         value={filterChiefSurgeon.name}
                         onChange={handleChange}
                     />
