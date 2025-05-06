@@ -250,7 +250,6 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       setTimeout(() => {
         setFilteredRows(updatedRows);
       }, 10);
-
     } else if (operation === 'ungroup') {
       // 使用新的解除群組函數
       const group = selectedSurgeries[0];
@@ -376,15 +375,12 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
     }
 
     // 首先嘗試處理群組拖曳
-    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
+    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setRows, setFilteredRows);
 
     // 如果不是群組拖曳，則按一般手術拖曳處理
     if (!isGroupDrag) {
-      await handleDragEnd(result, filteredRows, setFilteredRows);
+      await handleDragEnd(result, filteredRows, setRows);
     }
-
-    // 觸發原始狀態更新
-    setRows([...filteredRows]);
 
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));

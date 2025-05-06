@@ -10,7 +10,7 @@ import {
 } from '../ROOM/GroupOperations';
 
 // 處理群組拖曳結束
-export const handleGroupDragEnd = (result, rows, setRows) => {
+export const handleGroupDragEnd = (result, rows, setRows, setFilteredRows) => {
   const { source, destination, draggableId } = result;
   
   if (!destination) return false;
@@ -37,7 +37,8 @@ export const handleGroupDragEnd = (result, rows, setRows) => {
       sourceRoomIndex,
       source.index,
       destination.index,
-      setRows
+      setRows,
+      setFilteredRows
     );
   } else {
     // 跨房間拖曳群組
@@ -48,7 +49,8 @@ export const handleGroupDragEnd = (result, rows, setRows) => {
       destRoomIndex,
       source.index,
       destination.index,
-      setRows
+      setRows,
+      setFilteredRows
     );
   }
 };
@@ -60,7 +62,8 @@ const handleSameRoomGroupDrag = (
   roomIndex,
   sourceIndex,
   destIndex,
-  setRows
+  setRows,
+  setFilteredRows
 ) => {
   // 如果位置沒有變化，不需要處理
   if (sourceIndex === destIndex) return false;
@@ -113,42 +116,20 @@ const handleSameRoomGroupDrag = (
   
   // 更新主手術的 orderInRoom
   // 使用拖曳專用API更新手術室ID
-  axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/${roomId}`)
-    .then(response => {
-      console.log(`✅ 已確認群組主手術 ${mainSurgeryId} 的手術室 ID`);
-      
-      // 然後再更新順序
-      axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/order-in-room`, {
-        orderInRoom: groupOrder
-      }).then(() => {
-        console.log(`✅ 已更新群組主手術 ${mainSurgeryId} 的 orderInRoom 為 ${groupOrder}`);
-      }).catch(err => {
-        console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的順序失敗`, err);
-      });
+  const apiPromises = [
+    axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/${roomId}`),
+    axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/order-in-room`, {
+      orderInRoom: groupOrder
     })
-    .catch(error => {
-      console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的手術室失敗:`, error);
-    });
+  ];
   
   // 更新附屬手術的 orderInRoom 為 null
   otherSurgeryIds.forEach(surgeryId => {
     // 確保房間ID是正確的
-    axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/${roomId}`)
-      .then(response => {
-        console.log(`✅ 已確認群組附屬手術 ${surgeryId} 的手術室 ID`);
-        
-        // 再更新手術順序
-        axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/order-in-room`, {
-          orderInRoom: null
-        }).then(() => {
-          console.log(`✅ 已更新群組附屬手術 ${surgeryId} 的 orderInRoom 為 null`);
-        }).catch(err => {
-          console.error(`❌ 更新群組附屬手術 ${surgeryId} 的順序失敗`, err);
-        });
-      })
-      .catch(error => {
-        console.error(`❌ 更新群組附屬手術 ${surgeryId} 的手術室確認失敗:`, error);
-      });
+    apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/${roomId}`));
+    apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/order-in-room`, {
+      orderInRoom: null
+    }));
   });
   
   // 更新非群組手術的 orderInRoom
@@ -165,26 +146,40 @@ const handleSameRoomGroupDrag = (
       const newOrder = index + 1;
       
       // 確保手術室ID是正確的
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${roomId}`)
-        .then(response => {
-          console.log(`✅ 已確認手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          // 再更新手術順序
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${roomId}`));
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
+        orderInRoom: newOrder
+      }));
     }
   });
   
-  setRows(newRows);
+  Promise.all(apiPromises).then(() => {
+    setRows([...newRows]);
+    setFilteredRows([...newRows]);
+    
+    // 觸發UI更新事件
+    window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+    
+    // 延遲後刷新頁面，確保狀態已保存
+    setTimeout(() => {
+      console.log("✅ 同一房間群組拖曳完成後自動刷新頁面");
+      window.location.reload();
+    }, 300);
+  }).catch(error => {
+    console.error("❌ 同一房間群組拖曳API請求失敗:", error);
+    
+    // 即使API失敗，也嘗試更新前端UI
+    setRows([...newRows]);
+    setFilteredRows([...newRows]);
+    window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+    
+    // 延遲後刷新頁面，確保狀態已保存
+    setTimeout(() => {
+      console.log("✅ API請求失敗後自動刷新頁面");
+      window.location.reload();
+    }, 300);
+  });
+  
   return true;
 };
 
@@ -196,7 +191,8 @@ const handleCrossRoomGroupDrag = (
   destRoomIndex,
   sourceIndex,
   destIndex,
-  setRows
+  setRows,
+  setFilteredRows
 ) => {
   // 源房間和目標房間的數據
   const sourceRoomData = [...rows[sourceRoomIndex].data];
@@ -263,6 +259,9 @@ const handleCrossRoomGroupDrag = (
     data: destRoomData
   };
   
+  // 收集所有API請求
+  const apiPromises = [];
+  
   // 更新源房間的非群組手術的 orderInRoom
   const sourceSurgeriesOnly = sourceRoomData.filter(item => !item.isCleaningTime);
   sourceSurgeriesOnly.forEach((surgery, index) => {
@@ -278,22 +277,10 @@ const handleCrossRoomGroupDrag = (
       const newOrder = index + 1;
       
       // 確保手術室ID是正確的
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${sourceRoomId}`)
-        .then(response => {
-          console.log(`✅ 已確認源房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          // 再更新手術順序
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新源房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${sourceRoomId}`));
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
+        orderInRoom: newOrder
+      }));
     }
   });
   
@@ -305,44 +292,18 @@ const handleCrossRoomGroupDrag = (
   const groupOrder = groupIndex !== -1 ? groupIndex + 1 : 1;
   
   // 更新主手術的房間和 orderInRoom
-  // 這裡改用兩個分開的 API 請求，確保手術室ID和順序都被正確更新
-  // 先使用拖曳專用API更新手術室ID
-  axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/${destRoomId}`)
-    .then(response => {
-      console.log(`✅ 已更新群組主手術 ${mainSurgeryId} 的手術室 ID 為 ${destRoomId}`);
-      
-      // 然後再更新順序
-      axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/order-in-room`, {
-        orderInRoom: groupOrder
-      }).then(() => {
-        console.log(`✅ 已更新群組主手術 ${mainSurgeryId} 的 orderInRoom 為 ${groupOrder}`);
-      }).catch(err => {
-        console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的順序失敗`, err);
-      });
-    })
-    .catch(error => {
-      console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的手術室失敗:`, error);
-    });
+  apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/${destRoomId}`));
+  apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/order-in-room`, {
+    orderInRoom: groupOrder
+  }));
   
   // 更新附屬手術的房間和將 orderInRoom 設為 null
   otherSurgeryIds.forEach(surgeryId => {
     // 確保房間ID是正確的
-    axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/${destRoomId}`)
-      .then(response => {
-        console.log(`✅ 已確認群組附屬手術 ${surgeryId} 的手術室 ID`);
-        
-        // 再更新手術順序
-        axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/order-in-room`, {
-          orderInRoom: null
-        }).then(() => {
-          console.log(`✅ 已更新群組附屬手術 ${surgeryId} 的 orderInRoom 為 null`);
-        }).catch(err => {
-          console.error(`❌ 更新群組附屬手術 ${surgeryId} 的順序失敗`, err);
-        });
-      })
-      .catch(error => {
-        console.error(`❌ 更新群組附屬手術 ${surgeryId} 的手術室確認失敗:`, error);
-      });
+    apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/${destRoomId}`));
+    apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/order-in-room`, {
+      orderInRoom: null
+    }));
   });
   
   // 更新目標房間的非群組手術的 orderInRoom
@@ -359,26 +320,46 @@ const handleCrossRoomGroupDrag = (
       const newOrder = index + 1;
       
       // 確保手術室ID是正確的
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${destRoomId}`)
-        .then(response => {
-          console.log(`✅ 已確認目標房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          // 再更新手術順序
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新目標房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${destRoomId}`));
+      apiPromises.push(axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
+        orderInRoom: newOrder
+      }));
     }
   });
   
-  setRows(newRows);
+  // 等待所有API請求完成後再更新UI
+  Promise.all(apiPromises)
+    .then(() => {
+      console.log("✅ 跨房間群組拖曳所有API請求完成");
+      
+      // 一次性更新狀態
+      setRows([...newRows]);
+      setFilteredRows([...newRows]);
+      
+      // 觸發UI更新事件
+      window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+      
+      // 延遲後刷新頁面，確保狀態已保存
+      setTimeout(() => {
+        console.log("✅ 自動刷新頁面以顯示更新後的群組");
+        window.location.reload();
+      }, 300);
+    })
+    .catch(error => {
+      console.error("❌ 跨房間群組拖曳API請求失敗:", error);
+      
+      // 即使API失敗，也嘗試更新前端UI
+      setRows([...newRows]);
+      setFilteredRows([...newRows]);
+      window.dispatchEvent(new CustomEvent('ganttDragEnd'));
+      
+      // 延遲後刷新頁面，確保狀態已保存
+      setTimeout(() => {
+        console.log("✅ API請求失敗後自動刷新頁面");
+        window.location.reload();
+      }, 300);
+    });
+  
   return true;
 };
 
