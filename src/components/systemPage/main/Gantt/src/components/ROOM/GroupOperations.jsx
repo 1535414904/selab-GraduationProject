@@ -394,7 +394,7 @@ export const ungroup = (groupItem, roomData, roomName) => {
   ensureTimeConsistency(newRoomData, groupIndex, roomName);
 
   // 呼叫後端 API 創建手術群組
-  axios.post(`${BASE_URL}/api/system/surgeries/group/clear`, String(groupItem.applicationId))
+  axios.post(`${BASE_URL}/api/system/surgeries/group/clear`, groupItem.applicationId)
   .then(response => {
     // 處理成功的情況
     console.log('群組解除成功', response.data);

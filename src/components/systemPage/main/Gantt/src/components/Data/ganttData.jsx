@@ -309,6 +309,12 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
             // 所有手術都要保留 - 不需要額外操作
           }
 
+          const mainSurgery = surgeries.reduce((prev, curr) => {
+            if (prev.orderInRoom == null) return curr;
+            if (curr.orderInRoom == null) return prev;
+            return prev.orderInRoom < curr.orderInRoom ? prev : curr;
+          }, surgeries[0]);
+
           const groupItem = {
             id: `group-${groupId}`,
             doctor: `${surgeries.length} 個手術`,
@@ -323,7 +329,7 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
             originalEndTime: lastItem.endTime, // 保存原始結束時間
             isCleaningTime: false,
             operatingRoomName: room.room,
-            applicationId: surgeries[0].applicationId,
+            applicationId: mainSurgery.applicationId,
             groupApplicationIds: surgeries[0].groupApplicationIds,
             orderInRoom: groupOrderInRoom
           };

@@ -62,8 +62,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   }, []);
 
   useEffect(() => {
-    console.log("手術室資料:", rows);
-    console.log("篩選後的手術室資料:", filteredRows);
+    //console.log("手術室資料:", rows);
+    //console.log("篩選後的手術室資料:", filteredRows);
   }, [rows, filteredRows]);
 
   // 當rows更新時，更新filteredRows
