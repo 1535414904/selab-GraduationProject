@@ -16,6 +16,8 @@ import { BASE_URL } from "../../../config";
 
 function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, nowUsername }) {
   const [rows, setRows] = useState([]);
+  // 已保留的手術房列表
+  const [reservedRooms, setReservedRooms] = useState([]);
   // 添加用於存儲MainGantt狀態更新函數的引用
   const mainGanttRef = useRef({
     setHasChanges: null,
@@ -172,7 +174,7 @@ function MainWrapper({ user, mainState, onUpdateUser, reloadKey, setReloadKey, n
             <Route path="/department-mgr" element={<DepartmentMgrWrapper reloadKey={reloadKey} />} />
             <Route path="/OR-mgr" element={<ORMgrWrapper reloadKey={reloadKey} />} />
             <Route path="/surgery-mgr" element={<SurgeryMgrWrapper user={user} reloadKey={reloadKey} setReloadKey={setReloadKey} nowUsername={nowUsername} />} />
-            <Route path="/shift-mgr" element={<Gantt rows={rows} setRows={setRows} initialTimeSettings={initialTimeSettings} setInitialTimeSettings={setInitialTimeSettings} />} />
+            <Route path="/shift-mgr" element={<Gantt reservedRooms={reservedRooms} setReservedRooms={setReservedRooms} rows={rows} setRows={setRows} initialTimeSettings={initialTimeSettings} setInitialTimeSettings={setInitialTimeSettings} />} />
           </Routes>
         </div>
       </div>

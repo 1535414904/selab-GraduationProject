@@ -23,7 +23,7 @@ import {
 } from "./components/ROOM/GroupOperations";
 
 // 排程管理專用的甘特圖組件
-function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
+function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -42,8 +42,6 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // 選中的關閉手術房 ID 列表
   const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
-  // 已保留的手術房列表
-  const [reservedRooms, setReservedRooms] = useState([]);
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
