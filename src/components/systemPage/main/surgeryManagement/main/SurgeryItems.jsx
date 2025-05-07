@@ -103,11 +103,11 @@ function SurgeryItems({ user, operatingRoom, operatingRooms, setReloadKey }) {
                     <div
                         key={surgery.applicationId}
                         className="surgery-item"
-                        onClick={isClickable ? () => setSelectedSurgery(surgery) : undefined}
+                        onClick={() => setSelectedSurgery(surgery)}
                         style={{
                             backgroundColor: isHighlightBlue ? '#76b5f0' : '',
                             cursor: isClickable ? 'pointer' : 'default',
-                            pointerEvents: isClickable ? 'auto' : 'none',
+                            //pointerEvents: isClickable ? 'auto' : 'none',
                             opacity: isClickable ? 1 : 0.8,
                         }}
                     >
@@ -118,6 +118,7 @@ function SurgeryItems({ user, operatingRoom, operatingRooms, setReloadKey }) {
             })}
             {selectedSurgery && (
                 <SurgeryDetail
+                    user={user}
                     onClose={() => setSelectedSurgery(null)}
                     surgery={selectedSurgery}
                     operatingRooms={operatingRooms}
