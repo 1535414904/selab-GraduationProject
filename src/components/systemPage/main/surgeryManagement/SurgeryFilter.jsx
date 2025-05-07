@@ -13,7 +13,7 @@ function SurgeryFilter({ isOpen, onClose, users, operatingRooms, filterOperating
 
   // 清除所有篩選條件
   const clearFilters = () => {
-    setFilterOperatingRoom({ id: "", name: "", department: "", roomType: "" });
+    setFilterOperatingRoom({ id: "", operatingRoomName: "", department: "", roomType: "" });
   };
 
   // 從現有資料中取得唯一的所屬科別選項
@@ -177,10 +177,10 @@ function SurgeryFilter({ isOpen, onClose, users, operatingRooms, filterOperating
         />
         <input
           type="text"
-          name="name"
+          name="operatingRoomName"
           className="filter-input"
           placeholder="請輸入手術房名稱..."
-          value={filterOperatingRoom.name}
+          value={filterOperatingRoom.operatingRoomName}
           onChange={handleChange}
         />
       <Select
