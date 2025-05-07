@@ -5,7 +5,7 @@ import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 import "../../styles.css"
 
-const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRooms, setSelectedClosedRooms, onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings }) => {
+const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRooms, setSelectedClosedRooms, onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings,rows }) => {
   // 使用 initialTimeSettings 作為初始值
   const [timeSettings, setTimeSettings] = useState(initialTimeSettings);
   // 關閉的手術房列表
