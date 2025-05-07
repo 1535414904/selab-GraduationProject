@@ -616,6 +616,7 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
           setReservedRooms={setReservedRooms}
           selectedClosedRooms={selectedClosedRooms}
           setSelectedClosedRooms={setSelectedClosedRooms}
+          rows={rows}
           onTimeSettingsChange={(newSettings, isPreview) => {
             // 格式化數據時明確傳入 useTempSettings=true 參數
             const updatedRows = formatRoomData([...rows].map(r => ({
