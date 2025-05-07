@@ -248,10 +248,10 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
 
         <input
           type="text"
-          name="name"
+          name="operatingRoomName"
           className="filter-input"
           placeholder="請輸入房間名稱..."
-          value={filterOperatingRoom.name}
+          value={filterOperatingRoom.operatingRoomName}
           onChange={handleChange}
         />
         <Select
