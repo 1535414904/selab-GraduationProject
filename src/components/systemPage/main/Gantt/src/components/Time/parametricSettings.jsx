@@ -5,7 +5,7 @@ import axios from "axios";
 import { BASE_URL } from "../../../../../../../config";
 import "../../styles.css"
 
-const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRooms, setSelectedClosedRooms, onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings,rows }) => {
+const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRooms, setSelectedClosedRooms, onTimeSettingsChange, initialTimeSettings, setInitialTimeSettings, rows }) => {
   // 使用 initialTimeSettings 作為初始值
   const [timeSettings, setTimeSettings] = useState(initialTimeSettings);
   // 關閉的手術房列表
@@ -31,6 +31,18 @@ const ParametricSettings = ({ reservedRooms, setReservedRooms, selectedClosedRoo
     const savedTipsState = localStorage.getItem('parameterTipsCollapsed');
     if (savedTipsState) {
       setTipsCollapsed(savedTipsState === 'true');
+    }
+
+    const savedReservedRooms = localStorage.getItem("reservedClosedRooms");
+    if (savedReservedRooms) {
+      try {
+        const parsed = JSON.parse(savedReservedRooms);
+        if (Array.isArray(parsed)) {
+          setReservedRooms(parsed);
+        }
+      } catch (e) {
+        console.error("讀取 reservedClosedRooms 發生錯誤", e);
+      }
     }
   }, []);
 
