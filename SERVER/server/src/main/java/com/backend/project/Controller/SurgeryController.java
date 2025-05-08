@@ -217,24 +217,36 @@ public class SurgeryController {
         surgeryService.clearSurgeryGroups(id);
     }
 
-    @PostMapping("/system/surgeries/upload-time-table")
-public ResponseEntity<?> uploadTimeTable(@RequestParam("file") MultipartFile file, @RequestParam("username") String username) {
-    if (file.isEmpty() || !file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
-        return ResponseEntity.badRequest().body("請上傳CSV檔案！");
-    }
-    try {
-        List<String> failedList = surgeryService.uploadTimeTable(file, username);
-        if (failedList.isEmpty()) {
-            return ResponseEntity.ok("✅ 全部手術新增成功！");
-        } else {
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "⚠️ 有部分手術無法新增");
-            response.put("failedApplications", failedList);
-            return ResponseEntity.badRequest().body(response);
+    @GetMapping("/system/surgeries/group/clear/{id}")
+    public void testClearSurgeryGroup(@PathVariable String id) {
+        if (id.endsWith("=")) {
+            id = id.substring(0, id.length() - 1); // 去掉結尾的等號
         }
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body("檢查失敗：" + e.getMessage());
+        System.out.println("收到的手術 ID: " + id);
+        System.out.println("清空手術群組的 estimatedSurgeryTime");
+        surgeryService.restoreSurgeryGroupEstimatedTime(id);
+        surgeryService.clearSurgeryGroups(id);
     }
-}
+
+    @PostMapping("/system/surgeries/upload-time-table")
+    public ResponseEntity<?> uploadTimeTable(@RequestParam("file") MultipartFile file,
+            @RequestParam("username") String username) {
+        if (file.isEmpty() || !file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+            return ResponseEntity.badRequest().body("請上傳CSV檔案！");
+        }
+        try {
+            List<String> failedList = surgeryService.uploadTimeTable(file, username);
+            if (failedList.isEmpty()) {
+                return ResponseEntity.ok("✅ 全部手術新增成功！");
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "⚠️ 有部分手術無法新增");
+                response.put("failedApplications", failedList);
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("檢查失敗：" + e.getMessage());
+        }
+    }
 
 }

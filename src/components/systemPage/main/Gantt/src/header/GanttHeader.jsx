@@ -2,7 +2,7 @@ import React from "react";
 import ConfirmScheduleButton from "../components/Time/ConfirmScheduleButton";
 import ORSMButton from "../components/Time/ORSMButton";
 
-const GanttHeader = ({ currentDate, filteredRows, setRows }) => {
+const GanttHeader = ({ reservedRooms, selectedClosedRooms, currentDate, filteredRows, setRows }) => {
     return (
         <div className="gantt-header">
             <div className="gantt-title">
@@ -34,7 +34,10 @@ const GanttHeader = ({ currentDate, filteredRows, setRows }) => {
                 </div>
 
                 <ConfirmScheduleButton rows={filteredRows} setRows={setRows} />
-                <ORSMButton />
+                <ORSMButton
+                    reservedRooms={reservedRooms}
+                    selectedClosedRooms={selectedClosedRooms}
+                />
             </div>
         </div>
     );

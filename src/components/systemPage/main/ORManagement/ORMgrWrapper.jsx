@@ -8,7 +8,7 @@ import ORFilter from "./ORFilter";
 
 function ORMgrWrapper({ reloadKey }) {
     const [operatingRooms, setOperatingRooms] = useState([]);
-    const [filterOperatingRoom, setFilterOperatingRoom] = useState({ id: "", name: "", department: "", roomType: "", status: "" });
+    const [filterOperatingRoom, setFilterOperatingRoom] = useState({ id: "", operatingRoomName: "", department: "", roomType: "", status: "" });
     const [selectedOperatingRooms, setSelectedOperatingRooms] = useState([]);
     const [addOperatingRooms, setAddOperatingRooms] = useState([]);
     const [emptyError, setEmptyError] = useState({});

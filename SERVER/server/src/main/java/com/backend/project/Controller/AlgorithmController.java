@@ -26,10 +26,15 @@ public class AlgorithmController {
         this.algorithmService = algorithmService;
     }
 
-    @GetMapping("/system/algorithm/run")
-    public ResponseEntity<String> runAlgorithm() {
+    @PostMapping("/system/algorithm/run")
+    public ResponseEntity<String> runAlgorithm(@RequestBody Map<String, List<String>> payload) {
+        List<String> closedRoomIds = payload.get("closedRoomIds");
+
+        // 可選：debug 輸出
+        System.out.println("接收到的關閉房間 ID：" + closedRoomIds);
+
         try {
-            algorithmService.runBatchFile();
+            algorithmService.runBatchFile(closedRoomIds); // 如果你想傳進去處理就改方法參數
             return ResponseEntity.ok().body("執行完成！");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -66,6 +71,6 @@ public class AlgorithmController {
         String roomId = (String) payload.get("roomId");
         boolean pinned = (Boolean) payload.get("pinned");
         algorithmService.setPinned(roomId, pinned);
-        return ResponseEntity.ok("已更新釘選狀態"); 
+        return ResponseEntity.ok("已更新釘選狀態");
     }
 }

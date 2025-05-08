@@ -9,51 +9,44 @@ import {
   ensureTimeConsistency
 } from '../ROOM/GroupOperations';
 
-// 處理群組拖曳結束
-export const handleGroupDragEnd = (result, rows, setRows, setFilteredRows) => {
-  const { source, destination, draggableId } = result;
-  
-  if (!destination) return false;
-  
-  // 獲取源房間和目標房間
-  const sourceRoomIndex = parseInt(source.droppableId.split('-')[1]);
-  const destRoomIndex = parseInt(destination.droppableId.split('-')[1]);
-  
-  // 複製行數據以避免直接修改狀態
-  const newRows = [...rows];
-  
-  // 找到被拖曳的群組
-  const sourceRoom = newRows[sourceRoomIndex];
-  const draggedItem = sourceRoom.data.find(item => item.id === draggableId);
-  
-  // 如果不是群組，則不處理
+// 修改 handleGroupDragEnd，讓拖曳群組後保留群組內所有手術
+export const handleGroupDragEnd = async (result, rows, setRows, setFilteredRows) => {
+  const { draggableId, destination, source } = result;
+  const sourceIndex = source.droppableId.split('-')[1];
+  const destIndex = destination.droppableId.split('-')[1];
+
+  const sourceRoom = rows[parseInt(sourceIndex)];
+  const destRoom = rows[parseInt(destIndex)];
+
+  const draggedItem = sourceRoom.data.find(item => `surgery-${sourceIndex}-${item.id}` === draggableId);
+
   if (!draggedItem || !draggedItem.isGroup) return false;
-  
-  // 如果是在同一房間內移動
-  if (sourceRoomIndex === destRoomIndex) {
-    return handleSameRoomGroupDrag(
-      draggedItem,
-      newRows,
-      sourceRoomIndex,
-      source.index,
-      destination.index,
-      setRows,
-      setFilteredRows
-    );
-  } else {
-    // 跨房間拖曳群組
-    return handleCrossRoomGroupDrag(
-      draggedItem,
-      newRows,
-      sourceRoomIndex,
-      destRoomIndex,
-      source.index,
-      destination.index,
-      setRows,
-      setFilteredRows
-    );
-  }
+
+  const updatedSourceRoom = { ...sourceRoom };
+  updatedSourceRoom.data = updatedSourceRoom.data.filter(item => item.id !== draggedItem.id);
+
+  // 根據新位置與時間，更新 groupItem 的時間與內部手術時間
+  const prevItem = destRoom.data[destination.index - 1] || null;
+  const nextItem = destRoom.data[destination.index] || null;
+  const updatedGroup = updateGroupTimes(draggedItem, prevItem, nextItem, destRoom.room || destRoom.roomName);
+
+  // 插入更新後的群組到新房間
+  const updatedDestRoom = { ...destRoom };
+  const newData = [...updatedDestRoom.data];
+  newData.splice(destination.index, 0, updatedGroup);
+  updatedDestRoom.data = newData;
+
+  // 更新 rows
+  const newRows = [...rows];
+  newRows[parseInt(sourceIndex)] = updatedSourceRoom;
+  newRows[parseInt(destIndex)] = updatedDestRoom;
+
+  setRows(newRows);
+  setFilteredRows(newRows);
+
+  return true;
 };
+
 
 // 處理同一房間內的群組拖曳
 const handleSameRoomGroupDrag = (

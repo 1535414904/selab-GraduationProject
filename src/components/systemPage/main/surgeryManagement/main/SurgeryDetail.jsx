@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import EditableDetail from "./EditableDetail";
 
-function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDelete }) {
+function SurgeryDetail({ user, onClose, surgery, operatingRooms, handleSave, handleDelete }) {
     const [editingSurgery, setEditingSurgery] = useState(null);
 
     const handleEdit = (surgery) => {
@@ -18,10 +18,7 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDel
     document.body.style.overflowY = "scroll"; // 保留 scrollbar 占位
     document.body.style.width = "100%";
 
-
-
     return (
-
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
@@ -35,20 +32,22 @@ function SurgeryDetail({ onClose, surgery, operatingRooms, handleSave, handleDel
                     {/* <div className="info-group" style={{ textAlign: "left", alignItems: "flex-start", display: "flex", flexDirection: "column" }}> */}
                     {editingSurgery ? (<EditableDetail surgery={surgery} setEditingSurgery={setEditingSurgery} operatingRooms={operatingRooms} handleSave={handleSave} />) : (
                         <>
-                            <div className="info-group action-group">
-                                <div className="action-container">
-                                    <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
-                                        <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
-                                    </button>
-                                    <span className="action-label">修改</span>
+                            {(user.role === "3") || (user.username === surgery.user.username) &&
+                                <div className="info-group action-group">
+                                    <div className="action-container">
+                                        <button onClick={() => handleEdit(surgery)} className="action-button edit-button">
+                                            <FontAwesomeIcon icon={faPenSquare} className="action-icon" />
+                                        </button>
+                                        <span className="action-label">修改</span>
+                                    </div>
+                                    <div className="action-container">
+                                        <button onClick={() => handleDelete(surgery.surgeryName, surgery.applicationId)} className="action-button delete-button">
+                                            <FontAwesomeIcon icon={faTrash} className="action-icon" />
+                                        </button>
+                                        <span className="action-label">刪除</span>
+                                    </div>
                                 </div>
-                                <div className="action-container">
-                                    <button onClick={() => handleDelete(surgery.surgeryName, surgery.applicationId)} className="action-button delete-button">
-                                        <FontAwesomeIcon icon={faTrash} className="action-icon" />
-                                    </button>
-                                    <span className="action-label">刪除</span>
-                                </div>
-                            </div>
+                            }
 
                             <div className="info-group blue flex flex-col items-start text-left">
                                 <h3>基本資訊</h3>

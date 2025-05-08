@@ -23,7 +23,7 @@ import {
 } from "./components/ROOM/GroupOperations";
 
 // 排程管理專用的甘特圖組件
-function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
+function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const ganttChartRef = useRef(null);
   const timeScaleRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -40,6 +40,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // 選中的關閉手術房 ID 列表
+  const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
@@ -58,8 +60,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   }, []);
 
   useEffect(() => {
-    console.log("手術室資料:", rows);
-    console.log("篩選後的手術室資料:", filteredRows);
+    //console.log("手術室資料:", rows);
+    //console.log("篩選後的手術室資料:", filteredRows);
   }, [rows, filteredRows]);
 
   // 當rows更新時，更新filteredRows
@@ -484,6 +486,8 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
   return (
     <div className="gantt-main-container">
       <GanttHeader
+        reservedRooms={reservedRooms}
+        selectedClosedRooms={selectedClosedRooms}
         currentDate={currentDate}
         filteredRows={filteredRows}
         setRows={setRows}
@@ -608,6 +612,10 @@ function Gantt({ rows, setRows, initialTimeSettings, setInitialTimeSettings }) {
       {/* ✅ 參數設定頁籤內容 */}
       <div className={`gantt-tab-panel ${activeTab !== 'timeSettings' ? 'gantt-tab-panel-hidden' : ''}`}>
         <ParametricSettings
+          reservedRooms={reservedRooms}
+          setReservedRooms={setReservedRooms}
+          selectedClosedRooms={selectedClosedRooms}
+          setSelectedClosedRooms={setSelectedClosedRooms}
           rows={rows}
           onTimeSettingsChange={(newSettings, isPreview) => {
             // 格式化數據時明確傳入 useTempSettings=true 參數

@@ -1,13 +1,14 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BASE_URL } from "../../../../../../../config";
 
-
-
-
-const ORSMButton = () => {
+const ORSMButton = ({ reservedRooms, selectedClosedRooms }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showResultButton, setShowResultButton] = useState(false);
+
+    useEffect(() => {
+        console.log("selectedClosedRooms:", selectedClosedRooms);
+    }, [selectedClosedRooms]);
 
     const handleRunAlgorithm = async (event) => {
         event.preventDefault();  // 防止表單提交時刷新頁面
@@ -15,7 +16,9 @@ const ORSMButton = () => {
         setShowResultButton(false)
 
         try {
-            const response = await axios.get(`${BASE_URL}/api/system/algorithm/run`);
+            const response = await axios.post(`${BASE_URL}/api/system/algorithm/run`, {
+                closedRoomIds: reservedRooms.map(room => room.id),
+            });
             const result = response.data;
             if (typeof result === "string" && result.includes("<html")) {
                 alert("⚠️ 錯誤：後端可能回傳了錯誤頁，請檢查是否 .bat 檔執行失敗");

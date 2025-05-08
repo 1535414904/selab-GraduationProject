@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import RoomItem from './RoomItem';
+import { use } from 'react';
 
 // 群組手術組件
 function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, readOnly = false, onSurgeryClick, isUngroupMode = false }) {
@@ -25,7 +26,7 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
   // 創建群組的展示資料
   const groupItem = {
     id: group.id,
-    doctor: `${actualSurgeries.length} 個手術`,
+    doctor: `${group.surgeries.length} 個手術`,
     surgery: '群組手術',
     startTime: startTime,
     endTime: endTime,

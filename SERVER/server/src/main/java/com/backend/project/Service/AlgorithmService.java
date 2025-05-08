@@ -66,10 +66,10 @@ public class AlgorithmService {
 
     private final Map<String, Boolean> pinnedRooms = new ConcurrentHashMap<>(); // 儲存釘選的手術房
 
-    public void runBatchFile() throws Exception {
+    public void runBatchFile(List<String> closedRoomIds) throws Exception {
         System.out.println("路徑為：" + TIME_TABLE_FILE_PATH);
-        exportSurgeriesToCsv();
-        exportOperatingRoomToCsv();
+        exportSurgeriesToCsv(closedRoomIds);
+        exportOperatingRoomToCsv(closedRoomIds);
         // exportArgumentsToCsv(startTime, normalTime, maxTime, bridgeTime);
 
         try {
@@ -116,7 +116,7 @@ public class AlgorithmService {
         }
     }
 
-    public void exportSurgeriesToCsv() {
+    public void exportSurgeriesToCsv(List<String> closedRoomIds) {
         List<Surgery> surgeries = surgeryRepository.findAll();
         List<OperatingRoom> operatingRooms = operatingRoomRepository.findAllWithoutSurgeries();
         String filePath = TIME_TABLE_FILE_PATH + "/TimeTable.csv";
@@ -194,16 +194,32 @@ public class AlgorithmService {
                                 "99999", };
                         csvWriter.writeNext(data);
                     }
-
                 }
+            }
 
+            if(closedRoomIds != null && !closedRoomIds.isEmpty()) {
+                for (String roomId : closedRoomIds) {
+                    OperatingRoom room = operatingRoomRepository.findById(roomId).orElseThrow();
+                    String[] data = {
+                            tomorrowDate + " 0830",
+                            "000000",
+                            "000000",
+                            room.getDepartment().getName(),
+                            "空醫師",
+                            room.getOperatingRoomName(),
+                            "GA",
+                            "0",
+                            "N",
+                            "99999", };
+                    csvWriter.writeNext(data);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void exportOperatingRoomToCsv() {
+    public void exportOperatingRoomToCsv(List<String> closedRoomIds) {
         List<OperatingRoom> operatingRooms = operatingRoomRepository.findAll();
         String filePath = ORSM_FILE_PATH + "/room.csv";
     
@@ -228,13 +244,26 @@ public class AlgorithmService {
                 roomNames4Orth.add(name);
             }
         }
+
+        for (String roomId : closedRoomIds) {
+            OperatingRoom room = operatingRoomRepository.findById(roomId).orElseThrow();
+            String name = room.getOperatingRoomName();
+            if (!roomNamesOfAll.contains(name)) {
+                roomNamesOfAll.add(name);
+            }
+            System.out.println("房號: " + room.getOperatingRoomName() + " 類型: [" + room.getRoomType() + "]");
+
+            if ("鉛牆房".equals(room.getRoomType()) && !roomNames4Orth.contains(name)) {
+                roomNames4Orth.add(name);
+            }
+        }
     
         System.out.println("roomNamesOfAll: " + roomNamesOfAll);
         System.out.println("roomNames4Orth: " + roomNames4Orth);
     
         System.out.println("=== 開始匯出 CSV 檔案 ===");
     
-        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), Charset.forName("Big5"));
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), Charset.forName("UTF-8"));
              BufferedWriter writer = new BufferedWriter(osw);
              CSVWriter csvWriter = new CSVWriter(writer,
                      CSVWriter.DEFAULT_SEPARATOR,
