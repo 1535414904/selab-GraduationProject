@@ -248,10 +248,10 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
 
         <input
           type="text"
-          name="name"
+          name="operatingRoomName"
           className="filter-input"
           placeholder="請輸入房間名稱..."
-          value={filterOperatingRoom.name}
+          value={filterOperatingRoom.operatingRoomName}
           onChange={handleChange}
         />
         <Select
@@ -266,7 +266,7 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
             })
           }
           placeholder="選擇科別..."
-          
+
           value={
             filterOperatingRoom.department
               ? { value: filterOperatingRoom.department, label: filterOperatingRoom.department }
@@ -291,7 +291,7 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
             filterOperatingRoom.roomType
               ? { value: filterOperatingRoom.roomType, label: filterOperatingRoom.roomType }
               : null
-          }          
+          }
           isClearable
         />
 
@@ -311,11 +311,11 @@ function ORFilter({ isOpen, onClose, operatingRooms, filterOperatingRoom, setFil
           value={
             filterOperatingRoom.status
               ? {
-                  value: filterOperatingRoom.status,
-                  label: filterOperatingRoom.status === "1" ? "開啟" : "關閉",
-                }
+                value: filterOperatingRoom.status,
+                label: filterOperatingRoom.status === "1" ? "開啟" : "關閉",
+              }
               : null
-          }          
+          }
           isClearable
         />
 
