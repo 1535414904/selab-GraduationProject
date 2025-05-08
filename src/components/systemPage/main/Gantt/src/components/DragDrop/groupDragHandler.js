@@ -22,27 +22,31 @@ export const handleGroupDragEnd = async (result, rows, setRows, setFilteredRows)
 
   if (!draggedItem || !draggedItem.isGroup) return false;
 
-  const updatedSourceRoom = { ...sourceRoom };
-  updatedSourceRoom.data = updatedSourceRoom.data.filter(item => item.id !== draggedItem.id);
-
-  // 根據新位置與時間，更新 groupItem 的時間與內部手術時間
-  const prevItem = destRoom.data[destination.index - 1] || null;
-  const nextItem = destRoom.data[destination.index] || null;
-  const updatedGroup = updateGroupTimes(draggedItem, prevItem, nextItem, destRoom.room || destRoom.roomName);
-
-  // 插入更新後的群組到新房間
-  const updatedDestRoom = { ...destRoom };
-  const newData = [...updatedDestRoom.data];
-  newData.splice(destination.index, 0, updatedGroup);
-  updatedDestRoom.data = newData;
-
-  // 更新 rows
-  const newRows = [...rows];
-  newRows[parseInt(sourceIndex)] = updatedSourceRoom;
-  newRows[parseInt(destIndex)] = updatedDestRoom;
-
-  setRows(newRows);
-  setFilteredRows(newRows);
+  // 判斷是否在同一房間內拖曳
+  if (sourceIndex === destIndex) {
+    // 同一房間內拖曳
+    return handleSameRoomGroupDrag(
+      draggedItem,
+      rows,
+      parseInt(sourceIndex),
+      source.index,
+      destination.index,
+      setRows,
+      setFilteredRows
+    );
+  } else {
+    // 跨房間拖曳
+    return handleCrossRoomGroupDrag(
+      draggedItem,
+      rows,
+      parseInt(sourceIndex),
+      parseInt(destIndex),
+      source.index,
+      destination.index,
+      setRows,
+      setFilteredRows
+    );
+  }
 
   return true;
 };
