@@ -278,6 +278,16 @@ nonCleaningItems.forEach((item, index) => {
 
   // 確保時間連續性
   ensureTimeConsistency(newRoomData, 0, roomName);
+  
+  // 更新群組後所有項目的時間連續性
+  for (let i = 0; i < newRoomData.length; i++) {
+    // 找到剛建立的群組
+    if (newRoomData[i].id === groupItem.id) {
+      // 從群組後開始更新所有後續時間
+      updateFollowingItemsTime(newRoomData, i + 1, roomName);
+      break;
+    }
+  }
 
   // 呼叫後端 API 創建手術群組
   axios.post(`${BASE_URL}/api/system/surgeries/group`, ids)
@@ -397,6 +407,9 @@ export const ungroup = (groupItem, roomData, roomName) => {
 
   // 檢查群組前後項目的時間銜接
   ensureTimeConsistency(newRoomData, groupIndex, roomName);
+  
+  // 更新群組解除後的所有項目時間
+  updateFollowingItemsTime(newRoomData, groupIndex, roomName);
 
   // 呼叫後端 API 創建手術群組
   axios.post(`${BASE_URL}/api/system/surgeries/group/clear`, groupItem.applicationId)
@@ -418,7 +431,8 @@ export const ungroup = (groupItem, roomData, roomName) => {
 
   return {
     success: true,
-    newRoomData
+    newRoomData,
+    groupItem
   };
 };
 
@@ -612,4 +626,125 @@ export const updateGroupTimes = (groupItem, prevItem, nextItem, roomName) => {
   }
 
   return updatedGroup;
+};
+
+// 更新群組後的所有手術時間
+export const updateFollowingItemsTime = (roomData, startIndex, roomName) => {
+  if (!roomData || roomData.length <= startIndex) return;
+  
+  // 獲取清潔時間設置
+  const cleaningDuration = getCleaningDuration(true);
+  let currentTime = null;
+  
+  // 獲取前一個項目的結束時間作為起點
+  if (startIndex > 0) {
+    currentTime = roomData[startIndex - 1].endTime;
+  } else {
+    // 如果沒有前一個項目，使用默認起始時間
+    const timeSettings = getTimeSettings(true);
+    const startHour = Math.floor(timeSettings.surgeryStartTime / 60);
+    const startMinute = timeSettings.surgeryStartTime % 60;
+    currentTime = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+  }
+  
+  // 收集需要更新時間的手術ID和時間信息
+  const surgeriesNeedUpdate = [];
+  
+  // 依序更新每個項目的時間
+  for (let i = startIndex; i < roomData.length; i++) {
+    const item = roomData[i];
+    
+    // 更新項目的開始時間
+    item.startTime = currentTime;
+    
+    // 計算或維持項目的持續時間
+    let duration;
+    if (item.duration) {
+      duration = item.duration;
+    } else if (item.isCleaningTime) {
+      duration = cleaningDuration;
+    } else {
+      // 維持原有手術的時間長度
+      duration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
+    }
+    
+    // 更新結束時間
+    item.endTime = minutesToTime(timeToMinutes(currentTime) + duration);
+    
+    // 如果是正常手術項目（非銜接時間且非群組），添加到需要更新的列表
+    if (!item.isCleaningTime && !item.isGroup && item.applicationId) {
+      surgeriesNeedUpdate.push({
+        id: item.applicationId,
+        startTime: item.startTime,
+        endTime: item.endTime
+      });
+    }
+    
+    // 更新下一個項目的開始時間基準
+    currentTime = item.endTime;
+    
+    // 如果是群組，確保群組內部時間也更新
+    if (item.isGroup && item.surgeries && item.surgeries.length > 0) {
+      let groupCurrentTime = item.startTime;
+      for (let j = 0; j < item.surgeries.length; j++) {
+        const surgery = item.surgeries[j];
+        surgery.startTime = groupCurrentTime;
+        
+        // 計算持續時間
+        let surgeryDuration;
+        if (surgery.duration) {
+          surgeryDuration = surgery.duration;
+        } else if (surgery.isCleaningTime) {
+          surgeryDuration = cleaningDuration;
+        } else {
+          surgeryDuration = timeToMinutes(surgery.endTime) - timeToMinutes(surgery.startTime);
+        }
+        
+        // 更新結束時間
+        surgery.endTime = minutesToTime(timeToMinutes(groupCurrentTime) + surgeryDuration);
+        groupCurrentTime = surgery.endTime;
+        
+        // 如果是非銜接時間項目且有applicationId，添加到需要更新的列表
+        if (!surgery.isCleaningTime && surgery.applicationId) {
+          surgeriesNeedUpdate.push({
+            id: surgery.applicationId,
+            startTime: surgery.startTime,
+            endTime: surgery.endTime
+          });
+        }
+      }
+    }
+  }
+  
+  // 更新後方的手術時間到後端資料庫
+  if (surgeriesNeedUpdate.length > 0) {
+    console.log("🔄 更新後方手術時間到資料庫:", surgeriesNeedUpdate);
+    
+    // 批量更新手術時間，使用Promise.all處理並行請求
+    Promise.all(surgeriesNeedUpdate.map(surgery => 
+      axios.put(`${BASE_URL}/api/system/surgery/${surgery.id}/time`, {
+        startTime: surgery.startTime,
+        endTime: surgery.endTime
+      })
+      .then(response => {
+        console.log(`✅ 成功更新手術 ${surgery.id} 時間`, response.data);
+        return { success: true, id: surgery.id };
+      })
+      .catch(error => {
+        console.error(`❌ 更新手術 ${surgery.id} 時間失敗:`, error);
+        return { success: false, id: surgery.id, error: error.message };
+      })
+    ))
+    .then(results => {
+      const successful = results.filter(r => r.success).length;
+      console.log(`🏁 完成時間更新: ${successful} 成功, ${results.length - successful} 失敗`);
+      
+      // 如果有更新失敗的，可以在這裡添加重試邏輯或通知用戶
+      if (successful < results.length) {
+        console.warn("⚠️ 有些手術時間更新失敗，頁面切換後可能顯示不正確");
+      }
+    });
+  }
+  
+  return roomData;
 }; 

@@ -9,51 +9,48 @@ import {
   ensureTimeConsistency
 } from '../ROOM/GroupOperations';
 
-// 處理群組拖曳結束
-export const handleGroupDragEnd = (result, rows, setRows, setFilteredRows) => {
-  const { source, destination, draggableId } = result;
-  
-  if (!destination) return false;
-  
-  // 獲取源房間和目標房間
-  const sourceRoomIndex = parseInt(source.droppableId.split('-')[1]);
-  const destRoomIndex = parseInt(destination.droppableId.split('-')[1]);
-  
-  // 複製行數據以避免直接修改狀態
-  const newRows = [...rows];
-  
-  // 找到被拖曳的群組
-  const sourceRoom = newRows[sourceRoomIndex];
-  const draggedItem = sourceRoom.data.find(item => item.id === draggableId);
-  
-  // 如果不是群組，則不處理
+// 修改 handleGroupDragEnd，讓拖曳群組後保留群組內所有手術
+export const handleGroupDragEnd = async (result, rows, setRows, setFilteredRows) => {
+  const { draggableId, destination, source } = result;
+  const sourceIndex = source.droppableId.split('-')[1];
+  const destIndex = destination.droppableId.split('-')[1];
+
+  const sourceRoom = rows[parseInt(sourceIndex)];
+  const destRoom = rows[parseInt(destIndex)];
+
+  const draggedItem = sourceRoom.data.find(item => `surgery-${sourceIndex}-${item.id}` === draggableId);
+
   if (!draggedItem || !draggedItem.isGroup) return false;
-  
-  // 如果是在同一房間內移動
-  if (sourceRoomIndex === destRoomIndex) {
+
+  // 判斷是否在同一房間內拖曳
+  if (sourceIndex === destIndex) {
+    // 同一房間內拖曳
     return handleSameRoomGroupDrag(
       draggedItem,
-      newRows,
-      sourceRoomIndex,
+      rows,
+      parseInt(sourceIndex),
       source.index,
       destination.index,
       setRows,
       setFilteredRows
     );
   } else {
-    // 跨房間拖曳群組
+    // 跨房間拖曳
     return handleCrossRoomGroupDrag(
       draggedItem,
-      newRows,
-      sourceRoomIndex,
-      destRoomIndex,
+      rows,
+      parseInt(sourceIndex),
+      parseInt(destIndex),
       source.index,
       destination.index,
       setRows,
       setFilteredRows
     );
   }
+
+  return true;
 };
+
 
 // 處理同一房間內的群組拖曳
 const handleSameRoomGroupDrag = (

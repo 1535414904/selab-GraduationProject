@@ -108,7 +108,7 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
       return;
     }
 
-    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
+    const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setRows, setFilteredRows);
 
     if (!isGroupDrag) {
       await handleDragEnd(setLoading, setError, result, filteredRows, setFilteredRows);
