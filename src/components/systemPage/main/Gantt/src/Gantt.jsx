@@ -157,18 +157,6 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
         }));
       }
     };
-
-    // window.addEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
-    // window.addEventListener('ganttContentScroll', handleGanttContentScroll);
-
-    // // 使用捕獲階段監聽所有相關容器的滾動事件
-    // document.addEventListener('scroll', handleContentScroll, true);
-
-    // return () => {
-    //   window.removeEventListener('ganttTimeScaleScroll', handleGanttTimeScaleScroll);
-    //   window.removeEventListener('ganttContentScroll', handleGanttContentScroll);
-    //   document.removeEventListener('scroll', handleContentScroll, true);
-    // };
   }, []);
 
 
@@ -308,17 +296,68 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
 
   // 處理手術點擊事件，顯示詳細資訊
   const handleSurgeryClick = async (surgery) => {
-    if (surgery.isCleaningTime) return;
-
     setModalError(null);
 
     console.log('點擊的手術:', surgery);
     console.log('釘選狀態:', surgery.isPinned);
 
-    // 如果是群組手術，直接顯示
-    if (surgery.isGroup && surgery.surgeries) {
-      console.log('這是一個群組手術', surgery);
-      setSelectedSurgery(surgery);
+    // 確保保留群組資訊
+    if (surgery.isGroup) {
+      console.log('這是一個群組手術，開始獲取群組中所有手術的詳細資訊');
+      
+      try {
+        // 如果是群組手術且有groupApplicationIds
+        if (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0) {
+          console.log('群組手術IDs:', surgery.groupApplicationIds);
+          
+          // 獲取群組中所有手術的詳細資訊
+          const surgeryPromises = surgery.groupApplicationIds.map(async (id) => {
+            try {
+              const response = await axios.get(`${BASE_URL}/api/surgeries/${id}`);
+              
+              // 合併後端數據和甘特圖時間信息
+              const groupMember = surgery.surgeries?.find(s => s.applicationId === id) || {};
+              return {
+                ...response.data,
+                startTime: groupMember.startTime || surgery.startTime,
+                endTime: groupMember.endTime || surgery.endTime,
+                doctor: response.data.chiefSurgeonName || groupMember.doctor,
+                color: groupMember.color || surgery.color,
+                operatingRoomName: surgery.operatingRoomName,
+                applicationId: id
+              };
+            } catch (error) {
+              console.error(`獲取手術 ${id} 詳細資料失敗:`, error);
+              return null;
+            }
+          });
+          
+          // 等待所有請求完成
+          const surgeryDetails = await Promise.all(surgeryPromises);
+          const validSurgeryDetails = surgeryDetails.filter(s => s !== null);
+          
+          if (validSurgeryDetails.length > 0) {
+            // 將獲取的詳細資訊設置為群組手術的surgeries屬性
+            const updatedGroupSurgery = {
+              ...surgery,
+              surgeries: validSurgeryDetails
+            };
+            
+            console.log('更新後的群組手術資訊:', updatedGroupSurgery);
+            setSelectedSurgery(updatedGroupSurgery);
+          } else {
+            console.log('未能獲取任何有效的群組手術詳細資訊，顯示原始群組資訊');
+            setSelectedSurgery(surgery);
+          }
+        } else {
+          console.log('群組手術但無有效的群組ID，顯示原始資訊');
+          setSelectedSurgery(surgery);
+        }
+      } catch (error) {
+        console.error('處理群組手術資訊時發生錯誤:', error);
+        setModalError(`獲取群組手術詳細資料失敗: ${error.message}`);
+        setSelectedSurgery(surgery);
+      }
       return;
     }
 
@@ -343,13 +382,12 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
           color: surgery.color,
           // 使用從父組件傳入的手術室名稱
           operatingRoomName: surgery.operatingRoomName,
-          // 保留群組資訊
-          isGroup: surgery.isGroup,
-          surgeries: surgery.surgeries,
           // 保留釘選狀態
-          isPinned: surgery.isPinned
+          isPinned: surgery.isPinned,
+          // 保留群組信息
+          groupApplicationIds: surgery.groupApplicationIds
         };
-        console.log('設置手術詳情，包含釘選狀態:', mergedData.isPinned);
+        console.log('設置單個手術詳情:', mergedData);
         setSelectedSurgery(mergedData);
       } else {
         setSelectedSurgery(surgery);

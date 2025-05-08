@@ -1,31 +1,99 @@
 import React, { useEffect, useState } from "react";
 import "./SurgeryModal.css";
+import axios from "axios";
+import { BASE_URL } from "/src/config";
 
-function SurgeryModal({ surgery, onClose, error }) {
+function SurgeryModal({ surgery, onClose, error: initialError }) {
   if (!surgery) return null;
 
   // 添加狀態來追蹤當前顯示的群組手術索引
   const [currentSurgeryIndex, setCurrentSurgeryIndex] = useState(0);
+  // 添加狀態用於存儲獲取的群組手術詳情
+  const [groupSurgeries, setGroupSurgeries] = useState([]);
+  // 添加狀態用於顯示加載錯誤
+  const [error, setError] = useState(initialError);
+  // 添加狀態標記是否正在加載群組手術資料
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 檢查是否為群組手術
-  const isGroupSurgery = surgery.isGroup && surgery.surgeries && surgery.surgeries.length > 0;
-  console.log('是否為群組手術:', isGroupSurgery, surgery);
+  // 添加調試輸出，檢查傳入的手術對象
+  console.log('SurgeryModal接收到的手術數據:', surgery);
+
+  // 檢查是否為群組手術 - 更新判斷條件，確保能識別從API獲取的群組手術
+  const isGroupSurgery = 
+    (surgery.isGroup && surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0) || 
+    (Array.isArray(surgery.groupApplicationIds) && surgery.groupApplicationIds.length > 0);
+  
+  console.log('是否為群組手術:', isGroupSurgery);
+  console.log('群組手術IDs:', surgery.groupApplicationIds);
+
+  // 在組件掛載或surgery變更時獲取群組手術詳情
+  useEffect(() => {
+    // 如果是群組手術，且有groupApplicationIds，則獲取所有群組成員的詳細資訊
+    if (isGroupSurgery && Array.isArray(surgery.groupApplicationIds) && surgery.groupApplicationIds.length > 0) {
+      setIsLoading(true);
+      setError(null);
+      
+      const fetchGroupSurgeries = async () => {
+        try {
+          console.log('開始獲取群組手術成員詳情:', surgery.groupApplicationIds);
+          
+          // 對每個群組成員ID發起請求
+          const surgeryPromises = surgery.groupApplicationIds.map(async (id) => {
+            try {
+              const response = await axios.get(`${BASE_URL}/api/surgeries/${id}`);
+              
+              // 合併API返回的數據和其他必要資訊
+              return {
+                ...response.data,
+                applicationId: id,
+                operatingRoomName: surgery.operatingRoomName,
+                isCleaningTime: false,
+                // 如果手術是從甘特圖中點擊的，保留時間資訊
+                startTime: surgery.startTime,
+                endTime: surgery.endTime
+              };
+            } catch (fetchError) {
+              console.error(`獲取手術 ${id} 詳細資料失敗:`, fetchError);
+              return null;
+            }
+          });
+          
+          // 等待所有請求完成
+          const results = await Promise.all(surgeryPromises);
+          const validResults = results.filter(result => result !== null);
+          
+          if (validResults.length > 0) {
+            console.log('成功獲取群組手術成員，數量:', validResults.length);
+            setGroupSurgeries(validResults);
+            // 確保索引在有效範圍內
+            setCurrentSurgeryIndex(prev => Math.min(prev, validResults.length - 1));
+          } else {
+            console.error('未能獲取任何有效的群組手術詳細資訊');
+            setError('未能獲取群組手術資訊，請稍後再試');
+          }
+        } catch (error) {
+          console.error('獲取群組手術詳細資訊失敗:', error);
+          setError(`獲取群組手術資訊失敗: ${error.message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchGroupSurgeries();
+    }
+  }, [surgery, isGroupSurgery]);
 
   // 獲取非清潔時間的手術
-  const nonCleaningSurgeries = isGroupSurgery
-    ? surgery.surgeries.filter(s => !s.isCleaningTime)
-    : [];
-
-  console.log('群組中的實際手術數量:', nonCleaningSurgeries.length);
+  const totalSurgeries = groupSurgeries.length || 0;
+  console.log('群組中的實際手術數量:', totalSurgeries);
 
   // 確定要顯示的手術資訊
-  // 如果是群組手術，則顯示群組中的特定手術；否則直接顯示傳入的手術
-  const displaySurgery = isGroupSurgery && nonCleaningSurgeries.length > 0
-    ? nonCleaningSurgeries[currentSurgeryIndex] || surgery
+  // 如果是群組手術且已經獲取到有效的群組成員，則顯示特定成員；否則直接顯示傳入的手術
+  const displaySurgery = isGroupSurgery && totalSurgeries > 0
+    ? groupSurgeries[currentSurgeryIndex] || surgery
     : surgery;
 
-  // 計算群組中的實際手術數量（排除銜接時間）
-  const totalSurgeries = nonCleaningSurgeries.length;
+  console.log('當前顯示的手術詳情:', displaySurgery);
 
   // 確定是否顯示釘選狀態
   // 從顯示的手術或父群組獲取釘選狀態
@@ -38,7 +106,6 @@ function SurgeryModal({ surgery, onClose, error }) {
       }
     };
 
-    // document.body.style.overflow = "hidden";
     // 儲存當前滾動位置
     const scrollY = window.scrollY;
     document.body.style.position = "fixed";
@@ -50,18 +117,7 @@ function SurgeryModal({ surgery, onClose, error }) {
 
     window.addEventListener("keydown", handleEscKey);
 
-    // 在掛載時進行調試輸出
-    if (isGroupSurgery) {
-      console.log('群組手術資訊:', {
-        總數: surgery.surgeries.length,
-        非清潔時間手術數: nonCleaningSurgeries.length,
-        當前索引: currentSurgeryIndex,
-        釘選狀態: isPinned
-      });
-    }
-
     return () => {
-      // document.body.style.overflow = "auto";
       const scrollY = document.body.style.top;
       document.body.style.position = "";
       document.body.style.top = "";
@@ -71,10 +127,9 @@ function SurgeryModal({ surgery, onClose, error }) {
       document.body.style.width = "";
       window.scrollTo(0, parseInt(scrollY || "0") * -1); // 回到原本位置
 
-
       window.removeEventListener("keydown", handleEscKey);
     };
-  }, [onClose, isGroupSurgery, surgery, nonCleaningSurgeries, currentSurgeryIndex, isPinned]);
+  }, [onClose]);
 
   const formatDate = (dateValue) => {
     if (!dateValue) return '未指定';
@@ -168,6 +223,18 @@ function SurgeryModal({ surgery, onClose, error }) {
           </div>
         )}
 
+        {isLoading && isGroupSurgery && (
+          <div className="info-banner bg-yellow-50 border-l-4 border-yellow-500 p-3 mx-4 mt-4">
+            <div className="flex items-center">
+              <svg className="animate-spin h-5 w-5 mr-2 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-sm text-yellow-700">正在獲取群組手術資訊...</p>
+            </div>
+          </div>
+        )}
+
         {isGroupSurgery && (
           <div className="info-banner bg-blue-50 border-l-4 border-blue-500 p-3 mx-4 mt-4">
             <div className="flex items-center">
@@ -250,6 +317,20 @@ function SurgeryModal({ surgery, onClose, error }) {
             <p>
               <strong>申請人：</strong> {displaySurgery.user?.name || "未指定"}
             </p>
+            
+            {/* 顯示群組信息 */}
+            {isGroupSurgery && (
+              <div className="group-info mt-3 pt-3 border-t border-pink-200">
+                <p>
+                  <strong>群組手術：</strong> 第 {currentSurgeryIndex + 1} 台，共 {totalSurgeries} 台
+                </p>
+                {Array.isArray(surgery.groupApplicationIds) && (
+                  <p>
+                    <strong>群組ID列表：</strong> {surgery.groupApplicationIds.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
