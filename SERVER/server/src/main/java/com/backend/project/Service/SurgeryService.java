@@ -158,33 +158,111 @@ public class SurgeryService {
                 .map(Surgery::getApplicationId)
                 .collect(Collectors.toList());
 
+        // 找出所有已經存在的群組
+        Map<String, List<String>> existingGroups = new HashMap<>();
+        for (Surgery surgery : allSurgeriesInRoom) {
+            if (surgery.getGroupApplicationIds() != null && !surgery.getGroupApplicationIds().isEmpty()) {
+                String groupKey = String.join("-", surgery.getGroupApplicationIds());
+                if (!existingGroups.containsKey(groupKey)) {
+                    existingGroups.put(groupKey, surgery.getGroupApplicationIds());
+                }
+            }
+        }
+
+        // 檢查新群組是否與現有群組有交集
+        boolean hasIntersection = false;
+        for (List<String> existingGroup : existingGroups.values()) {
+            Set<String> existingSet = new HashSet<>(existingGroup);
+            existingSet.retainAll(groupSet);
+            if (!existingSet.isEmpty()) {
+                hasIntersection = true;
+                break;
+            }
+        }
+
+        // 如果新群組與現有群組有交集，則先清除相關群組
+        if (hasIntersection) {
+            for (Surgery surgery : allSurgeriesInRoom) {
+                if (surgery.getGroupApplicationIds() != null) {
+                    Set<String> surgeryGroupIds = new HashSet<>(surgery.getGroupApplicationIds());
+                    surgeryGroupIds.retainAll(groupSet);
+                    if (!surgeryGroupIds.isEmpty()) {
+                        // 如果手術屬於與新群組有交集的群組，清除其群組標記
+                        surgery.setGroupApplicationIds(null);
+                    }
+                }
+            }
+        }
+
+        // 更新屬於新群組的手術
         for (Surgery surgery : allSurgeriesInRoom) {
             if (groupSet.contains(surgery.getApplicationId())) {
                 surgery.setGroupApplicationIds(sortedGroupIds);
-            } else {
-                surgery.setGroupApplicationIds(null);
             }
+            // 不再清除其他手術的群組標記
         }
 
-        // 設定新的 orderInRoom：群組只佔一個位置，其餘依序編號
-        int currentOrder = 1;
-        Set<String> alreadyGrouped = new HashSet<>();
-
+        // 重新編排 orderInRoom，保持手術的原始順序
+        // 收集所有群組信息
+        Map<String, List<Surgery>> groupsMap = new HashMap<>();
+        
+        // 先將所有手術按群組分類
         for (Surgery surgery : allSurgeriesInRoom) {
-            if (groupSet.contains(surgery.getApplicationId())) {
-                if (alreadyGrouped.isEmpty()) {
-                    surgery.setOrderInRoom(currentOrder++);
-                } else {
-                    surgery.setOrderInRoom(null); // 群組中後續項設為 null
+            if (surgery.getGroupApplicationIds() != null && !surgery.getGroupApplicationIds().isEmpty()) {
+                String groupKey = String.join("-", surgery.getGroupApplicationIds());
+                if (!groupsMap.containsKey(groupKey)) {
+                    groupsMap.put(groupKey, new ArrayList<>());
                 }
-                alreadyGrouped.add(surgery.getApplicationId());
-            } else {
-                surgery.setOrderInRoom(currentOrder++);
+                groupsMap.get(groupKey).add(surgery);
             }
-
-            // 儲存更新
-            surgeryRepository.save(surgery);
         }
+        
+        // 使用一個新列表來保存處理後的手術
+        List<Surgery> orderedSurgeries = new ArrayList<>();
+        
+        // 遍歷原始手術列表，保持順序
+        int currentOrder = 1;
+        Set<String> processedIds = new HashSet<>();
+        
+        for (Surgery surgery : allSurgeriesInRoom) {
+            String applicationId = surgery.getApplicationId();
+            
+            // 如果已經處理過，跳過
+            if (processedIds.contains(applicationId)) {
+                continue;
+            }
+            
+            // 檢查是否屬於群組
+            if (surgery.getGroupApplicationIds() != null && !surgery.getGroupApplicationIds().isEmpty()) {
+                String groupKey = String.join("-", surgery.getGroupApplicationIds());
+                List<Surgery> groupSurgeries = groupsMap.get(groupKey);
+                
+                // 對群組內手術按原有順序排序
+                groupSurgeries.sort(Comparator.comparing(Surgery::getOrderInRoom, Comparator.nullsLast(Integer::compareTo)));
+                
+                // 找出群組中的第一個手術（通常是最小的 orderInRoom）
+                Surgery firstGroupSurgery = groupSurgeries.get(0);
+                firstGroupSurgery.setOrderInRoom(currentOrder++);
+                orderedSurgeries.add(firstGroupSurgery);
+                processedIds.add(firstGroupSurgery.getApplicationId());
+                
+                // 其餘群組手術設為 null
+                for (int i = 1; i < groupSurgeries.size(); i++) {
+                    Surgery groupSurgery = groupSurgeries.get(i);
+                    groupSurgery.setOrderInRoom(null);
+                    orderedSurgeries.add(groupSurgery);
+                    processedIds.add(groupSurgery.getApplicationId());
+                }
+            } else {
+                // 非群組手術
+                surgery.setOrderInRoom(currentOrder++);
+                orderedSurgeries.add(surgery);
+                processedIds.add(applicationId);
+            }
+        }
+
+        // 儲存所有手術
+        surgeryRepository.saveAll(orderedSurgeries);
     }
 
     // 清空手術的 groupApplicationIds
