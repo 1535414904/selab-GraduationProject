@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { calculateWidth } from "./calculateWidth";
 import SurgeryModal from "../Modal/SurgeryModal";
 import axios from 'axios';
 import { BASE_URL } from "/src/config";
+import { use } from "react";
 
 function RoomItem({
   item,
@@ -172,6 +173,10 @@ function RoomItem({
     return {};
   };
 
+  useEffect(() => {
+    console.log("DEBUG - RoomItem mounted:", item);
+  }, [item]);
+
   return (
     <>
       <div
@@ -217,8 +222,18 @@ function RoomItem({
           </div>
         )}
 
-        <div>{item.doctor}</div>
-        <div>{item.surgery}</div>
+        {Array.isArray(item.groupApplicationIds) && item.groupApplicationIds.length > 0 ? (
+          <>
+            <div>{item.groupApplicationIds.length} 個手術</div>
+            <div>群組手術</div>
+          </>
+        ) : (
+          <>
+            <div>{item.doctor}</div>
+            <div>{item.surgery}</div>
+          </>
+        )}
+
         <div>
           {formatDisplayTime(item.startTime)} - {formatDisplayTime(item.endTime)}
         </div>

@@ -111,8 +111,10 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
     const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setFilteredRows);
 
     if (!isGroupDrag) {
-      await handleDragEnd(result, filteredRows, setFilteredRows);
+      await handleDragEnd(setLoading, setError, result, filteredRows, setFilteredRows);
     }
+
+    fetchSurgeryData(setRows, setLoading, setError, false);
 
     setRows([...filteredRows]);
 
@@ -255,10 +257,10 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
     } else if (operation === 'ungroup') {
       // 使用新的解除群組函數
       const group = selectedSurgeries[0];
-      if (!group.isGroup) {
-        alert('選擇的項目不是群組');
-        return;
-      }
+      // if (!group.isGroup) {
+      //   alert('選擇的項目不是群組');
+      //   return;
+      // }
 
       const result = ungroup(group, roomData, roomName);
 

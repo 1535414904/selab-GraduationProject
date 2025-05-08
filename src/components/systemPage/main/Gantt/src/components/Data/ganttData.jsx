@@ -7,180 +7,101 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
   setLoading(true);
   setError(null);
   try {
-    console.log('開始獲取手術房數據...', isMainPage ? '(主頁模式)' : '(排程管理模式)');
-
-    // 1. 先獲取所有手術房
     const operatingRoomsResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
 
-    if (!operatingRoomsResponse.data || operatingRoomsResponse.data.length === 0) {
-      throw new Error('未收到手術房數據');
-    }
+    const allRoomsWithSurgeries = [];
 
-    console.log('收到的手術房數據:', operatingRoomsResponse.data);
-
-    // 過濾掉status為0(關閉)的手術房
+    const openRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
     const closedRooms = operatingRoomsResponse.data.filter(room => room.status === 0);
-    if (closedRooms.length > 0) {
-      console.log('以下手術房因狀態為關閉而被過濾:');
-      closedRooms.forEach(room => {
-        console.log(`- ID: ${room.id}, 名稱: ${room.name}, 科別: ${room.department.name}`);
-      });
-    } else {
-      console.log('沒有處於關閉狀態的手術房');
-    }
-
-    // 從localStorage獲取用戶選中的關閉手術房 - 只在排程管理頁面使用，主頁不使用
+    
     let reservedClosedRooms = [];
     if (!isMainPage) {
       try {
         const reservedRoomsStr = localStorage.getItem('reservedClosedRooms');
         if (reservedRoomsStr) {
           reservedClosedRooms = JSON.parse(reservedRoomsStr);
-          console.log('從localStorage獲取的保留關閉手術房:', reservedClosedRooms);
         }
       } catch (error) {
-        console.error('解析保留手術房數據時出錯:', error);
+        console.error('解析保留手術房出錯:', error);
       }
-    } else {
-      console.log('主頁模式下不使用保留手術房');
     }
 
-    // 過濾出開啟的手術房
-    const openRooms = operatingRoomsResponse.data.filter(room => room.status !== 0);
-
-    // 合併開啟的手術房和選定的關閉手術房（如果不是主頁模式）
     const filteredOperatingRooms = isMainPage ? openRooms : [...openRooms, ...reservedClosedRooms];
 
-    console.log('過濾後的手術房數據' + (isMainPage ? ' (僅開啟狀態)' : ' (包含保留的關閉手術房)') + ':', filteredOperatingRooms);
-
-    // 2. 準備存儲所有手術房及其手術的數據
-    const allRoomsWithSurgeries = [];
-
-    // 用於存儲群組手術識別資訊
-    const groupMap = new Map();
-
-    // 3. 對每個手術房獲取相關手術
     for (const room of filteredOperatingRooms) {
       try {
-        console.log(`獲取手術房 ${room.id} 的手術數據...`);
-
         const surgeriesResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms/${room.id}/surgery`, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          headers: { 'Content-Type': 'application/json' }
         });
 
-        // 創建手術房對象，包含其手術
         const roomWithSurgeries = {
           roomId: room.id,
           room: room.operatingRoomName,
           data: []
         };
 
-        // 處理該手術房的手術
-        if (surgeriesResponse.data && surgeriesResponse.data.length > 0) {
-          // 根據 prioritySequence 對手術排序
-          const sortedSurgeries = [...surgeriesResponse.data].sort((a, b) => {
-            // 如果優先順序存在，按優先順序排序
-            if (a.prioritySequence && b.prioritySequence) {
-              return a.prioritySequence - b.prioritySequence;
-            }
-            // 如果 a 有優先順序而 b 沒有，a 排在前面
-            if (a.prioritySequence) return -1;
-            // 如果 b 有優先順序而 a 沒有，b 排在前面
-            if (b.prioritySequence) return 1;
-            // 如果都沒有優先順序，維持原來的順序
-            return 0;
-          });
+        const sortedSurgeries = [...surgeriesResponse.data].sort((a, b) => {
+          if (a.prioritySequence && b.prioritySequence) return a.prioritySequence - b.prioritySequence;
+          if (a.prioritySequence) return -1;
+          if (b.prioritySequence) return 1;
+          return 0;
+        });
 
-          console.log('排序後的手術數據:', sortedSurgeries);
+        sortedSurgeries.forEach(surgery => {
+          // ✅ 如果是群組副手術，就跳過
+          if (
+            surgery.groupApplicationIds &&
+            surgery.groupApplicationIds.length > 0 &&
+            surgery.applicationId !== surgery.groupApplicationIds[0]
+          ) {
+            return;
+          }
 
-          // 首先檢查哪些手術是群組的一部分
-          sortedSurgeries.forEach(surgery => {
-            if (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0 && !isMainPage) {
-              // 根據群組ID添加到群組映射中
-              const groupId = surgery.groupApplicationIds.join('-');
-              if (!groupMap.has(groupId)) {
-                groupMap.set(groupId, {
-                  surgeries: [],
-                  roomId: room.id,
-                  roomName: room.name
-                });
-              }
+          const surgeryItem = {
+            id: surgery.applicationId,
+            doctor: surgery.chiefSurgeonName || '未指定醫師',
+            surgery: `${surgery.surgeryName || '未命名手術'} (${surgery.patientName || '未知病患'})`,
+            startTime: "08:30",
+            duration: surgery.estimatedSurgeryTime || 60,
+            isCleaningTime: false,
+            applicationId: surgery.applicationId,
+            medicalRecordNumber: surgery.medicalRecordNumber,
+            patientName: surgery.patientName,
+            date: surgery.date,
+            surgeryName: surgery.surgeryName,
+            chiefSurgeonName: surgery.chiefSurgeonName,
+            operatingRoomName: room.operatingRoomName || room.name,
+            estimatedSurgeryTime: surgery.estimatedSurgeryTime,
+            anesthesiaMethod: surgery.anesthesiaMethod,
+            surgeryReason: surgery.surgeryReason,
+            specialOrRequirements: surgery.specialOrRequirements,
+            user: surgery.user,
+            departmentName: surgery.departmentName || (room.department ? room.department.name : "未指定科別"),
+            prioritySequence: surgery.prioritySequence || 99999,
+            orderInRoom: surgery.orderInRoom ?? null,
+            groupApplicationIds: surgery.groupApplicationIds || [],
+            isInGroup: surgery.groupApplicationIds?.length > 0,
+            isMainPageGroupMember: isMainPage && surgery.groupApplicationIds?.length > 0
+          };
 
-              // 將此手術添加到對應的群組中
-              groupMap.get(groupId).surgeries.push(surgery);
-            }
-          });
-          
-          groupMap.forEach((group, groupId) => {
-            console.log(`群組ID: ${groupId} 包含 ${group.surgeries.length} 個手術`);
-          });
+          const cleaningItem = {
+            id: `cleaning-${surgery.applicationId}`,
+            doctor: '銜接時間',
+            surgery: '整理中',
+            duration: getTimeSettings(true).cleaningTime,
+            isCleaningTime: true,
+            operatingRoomName: room.name
+          };
 
-          sortedSurgeries.forEach(surgery => {
-            // 手術項目，加入科別 specialty
-            const surgeryItem = {
-              id: surgery.applicationId,
-              doctor: surgery.chiefSurgeonName || '未指定醫師',
-              surgery: `${surgery.surgeryName || '未命名手術'} (${surgery.patientName || '未知病患'})`,
-              startTime: "08:30",
-              duration: surgery.estimatedSurgeryTime || 60,
-              isCleaningTime: false,
-              // 保存原始手術資料的所有欄位，用於詳細資訊顯示
-              applicationId: surgery.applicationId,
-              medicalRecordNumber: surgery.medicalRecordNumber,
-              patientName: surgery.patientName,
-              date: surgery.date,
-              surgeryName: surgery.surgeryName,
-              chiefSurgeonName: surgery.chiefSurgeonName,
-              operatingRoomName: room.operatingRoomName || room.name,
-              estimatedSurgeryTime: surgery.estimatedSurgeryTime,
-              anesthesiaMethod: surgery.anesthesiaMethod,
-              surgeryReason: surgery.surgeryReason,
-              specialOrRequirements: surgery.specialOrRequirements,
-              user: surgery.user,
-              departmentName: surgery.departmentName || (room.department ? room.department.name : "未指定科別"), // 加強科別獲取邏輯
-              prioritySequence: surgery.prioritySequence || 99999, // 保存優先順序
-              orderInRoom: surgery.orderInRoom ?? null, // 保證排序用得到
-              // 保存群組資訊
-              groupApplicationIds: surgery.groupApplicationIds || [],
-              // 若有群組ID，不論是否為主頁模式，都標記為群組的一部分
-              isInGroup: (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0),
-              // 標記是否在主頁顯示群組成員
-              isMainPageGroupMember: isMainPage && (surgery.groupApplicationIds && surgery.groupApplicationIds.length > 0)
-            };
+          roomWithSurgeries.data.push(surgeryItem, cleaningItem);
+        });
 
-            // 調試日誌：檢查科別資料
-            console.log(`手術 ${surgery.applicationId} 的科別資料:`, {
-              從surgery直接獲取: surgery.departmentName,
-              從手術房獲取: room.department ? room.department.name : "無科別資料",
-              最終使用: surgeryItem.departmentName
-            });
-
-            // 銜接時間項目
-            const cleaningItem = {
-              id: `cleaning-${surgery.applicationId}`,
-              doctor: '銜接時間',
-              surgery: '整理中',
-              duration: getTimeSettings(true).cleaningTime,
-              isCleaningTime: true,
-              operatingRoomName: room.name
-            };
-
-            roomWithSurgeries.data.push(surgeryItem, cleaningItem);
-          });
-        }
-
-        // 即使沒有手術，也添加手術房（顯示空手術房）
         allRoomsWithSurgeries.push(roomWithSurgeries);
 
       } catch (roomError) {
-        console.error(`獲取手術房 ${room.id} 的手術數據時發生錯誤:`, roomError);
-        // 繼續處理下一個手術房，不中斷整個流程
+        console.error(`處理手術房 ${room.id} 出錯:`, roomError);
         allRoomsWithSurgeries.push({
           roomId: room.id,
           room: room.name,
@@ -189,21 +110,20 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
       }
     }
 
-    // 4. 計算每個手術房中手術的時間和顏色
-    // 使用臨時設定處理時間
-    const formattedData = formatRoomData(allRoomsWithSurgeries, true, isMainPage, groupMap);
-    console.log('格式化後的數據:', formattedData);
-
+    // ❌ 不傳 groupMap → 不觸發群組邏輯
+    const formattedData = formatRoomData(allRoomsWithSurgeries, true, isMainPage, null);
     setRows(formattedData);
     setLoading(false);
-    return formattedData; // 返回格式化後的數據，以便在Promise中使用
+    return formattedData;
+
   } catch (error) {
-    console.error('獲取數據時發生錯誤:', error);
-    setError(`獲取數據失敗: ${error.message}`);
+    console.error('獲取資料錯誤:', error);
+    setError(`獲取資料失敗: ${error.message}`);
     setLoading(false);
-    throw error; // 拋出錯誤以便調用者處理
+    throw error;
   }
 };
+
 
 // 格式化手術房數據，計算時間和顏色
 export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMainPage = false, groupMap = null) => {
@@ -448,7 +368,9 @@ export const formatRoomData = (roomsWithSurgeries, useTempSettings = false, isMa
             item.color = "group";
             // 加入標記讓其可以在前端顯示群組標記
             item.isGroupMember = true;
-          } else {
+          } else if (item.groupApplicationIds.length > 0) {
+            item.color = "group";
+          }else {
             // 一般手術根據結束時間計算顏色
             item.color = getColorByEndTime(item.endTime, false, useTempSettings);
           }

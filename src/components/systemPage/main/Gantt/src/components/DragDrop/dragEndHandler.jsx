@@ -8,6 +8,7 @@ import {
   updateGroupTimes,
   createCleaningTimeItem
 } from '../ROOM/GroupOperations';
+import { use, useEffect } from 'react';
 
 // 修改：處理拖曳結束，增加對群組的處理
 export const handleDragEnd = async (result, rows, setRows) => {
@@ -641,7 +642,6 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
   }
 };
 
-
 const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
   if (!roomData || roomData.length === 0) return;
 
@@ -680,7 +680,7 @@ const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
             // 手術時間按比例縮放
             const surgeryDuration = calculateDuration(surgery.startTime, surgery.endTime);
             surgery.endTime = addMinutesToTime(groupItemTime, surgeryDuration);
-            surgery.color = getColorByEndTime(surgery.endTime, false);
+            surgery.color = getColorByEndTime(surgery.endTime, false, false, surgery.isGroup);
 
             // 如果是最後一個手術且不是銜接時間，需要添加銜接時間
             if (j === item.surgeries.length - 1 && !surgery.isCleaningTime) {
@@ -716,7 +716,7 @@ const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
       surgery.startTime = currentTime;
       const surgeryDuration = surgery.duration || calculateDuration(surgery.startTime, surgery.endTime);
       surgery.endTime = addMinutesToTime(currentTime, surgeryDuration);
-      surgery.color = getColorByEndTime(surgery.endTime, false);
+      surgery.color = getColorByEndTime(surgery.endTime, false, false, surgery.groupApplicationIds.length > 0);
 
       cleaning.startTime = surgery.endTime;
       cleaning.endTime = addMinutesToTime(surgery.endTime, timeSettings.cleaningTime);
@@ -736,7 +736,7 @@ const updateRoomTimes = (roomData, skipAddLastCleaningTime = false) => {
       item.startTime = currentTime;
       const surgeryDuration = item.duration || calculateDuration(item.startTime, item.endTime);
       item.endTime = addMinutesToTime(currentTime, surgeryDuration);
-      item.color = getColorByEndTime(item.endTime, false);
+      item.color = getColorByEndTime(surgery.endTime, false, false, surgery.isGroup);
 
       // 如果是最後一個項目且不是銜接時間，添加銜接時間
       if (!skipAddLastCleaningTime && i === roomData.length - 1 && !item.isCleaningTime) {

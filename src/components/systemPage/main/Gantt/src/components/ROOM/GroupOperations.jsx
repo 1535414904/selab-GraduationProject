@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getTimeSettings } from '../Time/timeUtils';
 import { getColorByEndTime, COLORS, getCleaningColor } from './colorUtils';
 import { BASE_URL } from '../../../../../../../config';
+import { useEffect } from 'react';
 
 // 輔助函數：將時間轉換為分鐘數
 export const timeToMinutes = (timeString) => {
@@ -305,8 +306,12 @@ nonCleaningItems.forEach((item, index) => {
 
 // 解除群組
 export const ungroup = (groupItem, roomData, roomName) => {
-  console.log('正在解除群組，手術 ID:', groupItem.applicationId);
-  if (!groupItem || !groupItem.isGroup) {
+  console.log('正在解除群組，手術 ID:', groupItem);
+  // if (!groupItem || !groupItem.isGroup) {
+  //   return { success: false, message: '選擇的項目不是群組' };
+  // }
+
+  if (groupItem.groupApplicationIds.length === 0) {
     return { success: false, message: '選擇的項目不是群組' };
   }
 

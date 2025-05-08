@@ -11,7 +11,7 @@ export const COLORS = {
 import { getTimeSettings } from '../Time/timeUtils';
 
 // 根據手術結束時間判斷顏色
-export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = false) => {
+export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = false, isGroup = false) => {
   if (isCleaningTime) {
     return "blue";
   }
@@ -37,7 +37,9 @@ export const getColorByEndTime = (endTime, isCleaningTime, useTempSettings = fal
   // console.log(`DEBUG - 手術時間: 結束時間=${totalMinutes}分鐘`);
 
   // 比較總分鐘數，確定顏色
-  if (totalMinutes <= regularEndTimeMinutes) {
+  if (isGroup) {
+    return "group"; // 群組顏色
+  } else if (totalMinutes <= regularEndTimeMinutes) {
     return "green";
   } else if (totalMinutes <= overtimeEndTimeMinutes) {
     return "yellow";

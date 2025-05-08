@@ -104,11 +104,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
   const handleUngroupItem = (surgery) => {
     if (!isUngroupMode) return;
 
-    if (!surgery.isGroup) {
-      alert('請選擇一個群組進行解除');
-      return;
-    }
-
     // 調用父組件的群組操作函數
     if (onGroupOperation) {
       onGroupOperation(roomIndex, [surgery], 'ungroup');

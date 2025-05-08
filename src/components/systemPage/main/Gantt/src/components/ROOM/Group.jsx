@@ -22,11 +22,12 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
   
   // 計算群組包含的手術（不含銜接時間）
   const actualSurgeries = group.surgeries.filter(s => !s.isCleaningTime);
+  console.log('actualSurgeries', actualSurgeries);
   
   // 創建群組的展示資料
   const groupItem = {
     id: group.id,
-    doctor: `${group.surgeries.length} 個手術`,
+    doctor: `${actualSurgeries.length} 個手術`,
     surgery: '群組手術',
     startTime: startTime,
     endTime: endTime,
