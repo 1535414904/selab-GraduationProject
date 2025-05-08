@@ -116,6 +116,10 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
               groupMap.get(groupId).surgeries.push(surgery);
             }
           });
+          
+          groupMap.forEach((group, groupId) => {
+            console.log(`群組ID: ${groupId} 包含 ${group.surgeries.length} 個手術`);
+          });
 
           sortedSurgeries.forEach(surgery => {
             // 手術項目，加入科別 specialty
