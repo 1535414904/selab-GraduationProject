@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import RoomItem from './RoomItem';
-import { use } from 'react';
 
-// 群組手術組件
+// 群組手術組件 - 簡化為單一手術生成模式
 function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, readOnly = false, onSurgeryClick, isUngroupMode = false }) {
   // 安全檢查，確保 surgeries 存在且為數組
   if (!group.surgeries || !Array.isArray(group.surgeries) || group.surgeries.length === 0) {
@@ -11,26 +10,16 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
     return null;
   }
   
-  // 群組的寬度應該等於所有手術的寬度總和
-  // 左邊位置應該等於第一個手術的開始位置
-  const firstSurgery = group.surgeries[0];
-  const lastSurgery = group.surgeries[group.surgeries.length - 1];
-  
-  // 計算群組的開始和結束時間
-  const startTime = firstSurgery.startTime;
-  const endTime = lastSurgery.endTime;
-  
   // 計算群組包含的手術（不含銜接時間）
   const actualSurgeries = group.surgeries.filter(s => !s.isCleaningTime);
-  console.log('actualSurgeries', actualSurgeries);
   
   // 創建群組的展示資料
   const groupItem = {
     id: group.id,
     doctor: `${actualSurgeries.length} 個手術`,
     surgery: '群組手術',
-    startTime: startTime,
-    endTime: endTime,
+    startTime: group.startTime,
+    endTime: group.endTime,
     color: group.color || 'orange', // 使用傳入的顏色，或默認橘色
     isGroup: true,
     surgeries: group.surgeries,
@@ -39,7 +28,9 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
     applicationId: group.applicationId || actualSurgeries[0]?.applicationId,
     roomId: group.roomId || actualSurgeries[0]?.roomId || roomIndex,
     operatingRoomName: roomName || group.operatingRoomName,
-    roomIndex: roomIndex || group.roomIndex
+    roomIndex: roomIndex || group.roomIndex,
+    // 確保群組 ID 可用於解除操作
+    groupApplicationIds: group.groupApplicationIds || []
   };
   
   return (
@@ -84,18 +75,5 @@ function Group({ group, roomIndex, fixedHeight, isDragging, isPinned, roomName, 
     </div>
   );
 }
-
-// 輔助函數：將時間轉換為分鐘數
-const timeToMinutes = (timeString) => {
-  const [hours, minutes] = timeString.split(':').map(Number);
-  return hours * 60 + minutes;
-};
-
-// 輔助函數：將分鐘數轉換為時間字符串
-const minutesToTime = (minutes) => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-};
 
 export default Group; 

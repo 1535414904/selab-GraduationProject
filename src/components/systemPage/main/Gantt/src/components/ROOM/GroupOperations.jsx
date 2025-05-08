@@ -125,10 +125,10 @@ export const getRangeItems = (selectedItems, roomData) => {
   return roomData.slice(firstIndex, endIndex + 1);
 };
 
-// 創建群組
+// 創建群組 - 更新為單一手術生成邏輯
 export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
   // 提取所選手術的 ID
-  const ids = selectedItems.map(s => s.id);
+  const ids = selectedItems.filter(item => !item.isCleaningTime).map(s => s.applicationId);
   console.log('正在創建手術群組，包含手術 ID:', ids);
 
   if (!selectedItems || selectedItems.length < 2) {
@@ -148,19 +148,6 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
     return { success: false, message: '只能將連續的手術進行群組（可以包含中間的銜接時間）' };
   }
 
-  // 獲取範圍內的所有項目
-  const rangeItems = getRangeItems(selectedItems, roomData);
-
-  // 檢查範圍內是否包含未選中的非銜接時間項目
-  const nonCleaningInRange = rangeItems.filter(item => !item.isCleaningTime);
-  const allNonCleaningSelected = nonCleaningInRange.every(item =>
-    nonCleaningItems.some(selected => selected.id === item.id)
-  );
-
-  if (!allNonCleaningSelected) {
-    return { success: false, message: '群組中包含了未選中的手術，請確保選擇了範圍內的所有手術' };
-  }
-
   // 排序選中的手術，按開始時間排序
   const sortedItems = [...nonCleaningItems].sort((a, b) => {
     return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
@@ -168,271 +155,56 @@ export const createGroup = (selectedItems, roomData, roomIndex, roomName) => {
 
   // 創建群組項目
   const groupId = generateUniqueId('group');
-
+  
   // 確保時間連續性：使用第一個項目的開始時間和最後一個項目的結束時間
   const firstItem = sortedItems[0];
   const lastItem = sortedItems[sortedItems.length - 1];
-
-  // 找出第一個和最後一個項目在 roomData 中的索引
-  const firstIndex = roomData.findIndex(item => item.id === firstItem.id);
-  const lastIndex = roomData.findIndex(item => item.id === lastItem.id);
-
-  if (firstIndex === -1 || lastIndex === -1) {
-    return { success: false, message: '找不到選中項目在房間資料中的位置' };
-  }
-
-  // 檢查最後一個項目後是否有銜接時間，如果有則併入群組
-  let lastEndTime = lastItem.endTime;
-  if (lastIndex < roomData.length - 1 && roomData[lastIndex + 1].isCleaningTime) {
-    lastEndTime = roomData[lastIndex + 1].endTime;
-
-    // 確保該銜接時間也被加入到 rangeItems 中
-    if (!rangeItems.some(item => item.id === roomData[lastIndex + 1].id)) {
-      rangeItems.push(roomData[lastIndex + 1]);
-    }
-  }
-
-  // 按開始時間排序所有要包含的項目
-  const allGroupItems = [...rangeItems].sort((a, b) => {
-    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
-  });
-
-  // 獲取最後一個非銜接時間項目的顏色
-  const lastNonCleaningItem = [...nonCleaningItems].sort((a, b) => {
-    return timeToMinutes(b.endTime) - timeToMinutes(a.endTime);
-  })[0];
-
-  const groupColor = getColorByEndTime(lastNonCleaningItem.endTime, false, true);
-
-  const groupItem = {
-    id: groupId,
-    doctor: `${nonCleaningItems.length} 個手術`,
-    surgery: '群組手術',
-    startTime: firstItem.startTime,
-    endTime: lastEndTime,
-    color: "group",
-    isGroup: true,
-    surgeries: allGroupItems, // 包含範圍內的所有項目，包括銜接時間
-    isCleaningTime: false,
-    operatingRoomName: roomName,
-    // 添加必要的引用信息，用於拖曳時保持關係
-    roomId: roomData[0]?.roomId,
-    orderInRoom: sortedItems[0]?.orderInRoom ?? null,
-    roomIndex,
-    applicationId: sortedItems[0].applicationId,
-    // 保存群組內部時間信息，用於解除群組時恢復
-    originalTimeInfo: {
-      startTime: firstItem.startTime,
-      endTime: lastEndTime,
-      items: allGroupItems.map((item) => ({
-        id: item.id,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        isCleaningTime: item.isCleaningTime,
-        color: item.color,
-      }))
-      
-    }
-  };
-// 🔧 在建立群組後，逐一更新每筆手術的 orderInRoom 至後端
-nonCleaningItems.forEach((item, index) => {
-  const newOrder = index + 1;
-  axios.put(`${BASE_URL}/api/system/surgery/${item.applicationId}/order-in-room`, {
-    orderInRoom: newOrder,
-    operatingRoomId: roomData[0]?.roomId
-  }).then(() => {
-    console.log(`✅ 更新手術 ${item.applicationId} 的順序為 ${newOrder}`);
-  }).catch(err => {
-    console.error(`❌ 更新手術 ${item.applicationId} 的順序失敗`, err);
-  });
-});
-
-  // ===== 全新的創建群組邏輯 =====
-  // 我們不再移除和添加項目，而是創建一個全新的房間數據陣列
-  const newRoomData = [];
-
-  // 遍歷原始房間數據
-  for (let i = 0; i < roomData.length; i++) {
-    const item = roomData[i];
-
-    // 檢查這個項目是否是被選中的項目或其相關的銜接時間
-    const isSelectedItem = selectedItems.some(selected => selected.id === item.id);
-    const isPreviousItemSelected = i > 0 && selectedItems.some(selected => selected.id === roomData[i - 1].id);
-    const isCleaningAfterSelected = item.isCleaningTime && isPreviousItemSelected;
-
-    // 如果是第一個被選中的項目，插入群組
-    if (i === firstIndex) {
-      newRoomData.push(groupItem);
-    }
-
-    // 如果不是被選中的項目或其相關的銜接時間，則保留原始項目
-    if (!isSelectedItem && !isCleaningAfterSelected) {
-      newRoomData.push(item);
-    }
-  }
-
-  // 如果房間數據為空，或者第一個被選中的項目是第一個項目，直接在開頭插入群組
-  if (roomData.length === 0 || firstIndex === -1) {
-    newRoomData.unshift(groupItem);
-  }
-
-  // 確保時間連續性
-  ensureTimeConsistency(newRoomData, 0, roomName);
   
-  // 更新群組後所有項目的時間連續性
-  for (let i = 0; i < newRoomData.length; i++) {
-    // 找到剛建立的群組
-    if (newRoomData[i].id === groupItem.id) {
-      // 從群組後開始更新所有後續時間
-      updateFollowingItemsTime(newRoomData, i + 1, roomName);
-      break;
-    }
-  }
-
   // 呼叫後端 API 創建手術群組
   axios.post(`${BASE_URL}/api/system/surgeries/group`, ids)
   .then(response => {
-    // 處理成功的情況
     console.log('群組創建成功', response.data);
-    // 在此處理成功後的邏輯，比如更新房間數據等
-    return {
-      success: true,
-      newRoomData,
-      groupItem
-    };
+    // 刷新頁面顯示新的群組狀態
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   })
   .catch(error => {
-    // 處理錯誤的情況
     console.error('創建群組時發生錯誤:', error);
     return { success: false, message: '創建群組時發生錯誤' };
   });
 
   return {
     success: true,
-    newRoomData,
-    groupItem
+    message: '群組創建請求已發送'
   };
 };
 
-// 解除群組
+// 解除群組 - 簡化為單一 API 調用
 export const ungroup = (groupItem, roomData, roomName) => {
-  console.log('正在解除群組，手術 ID:', groupItem);
-  // if (!groupItem || !groupItem.isGroup) {
-  //   return { success: false, message: '選擇的項目不是群組' };
-  // }
-
-  if (groupItem.groupApplicationIds.length === 0) {
+  console.log('正在解除群組，手術 ID:', groupItem.applicationId);
+  
+  if (!groupItem.applicationId || !groupItem.groupApplicationIds || groupItem.groupApplicationIds.length === 0) {
     return { success: false, message: '選擇的項目不是群組' };
   }
 
-  // 找到群組在房間資料中的位置
-  const groupIndex = roomData.findIndex(item => item.id === groupItem.id);
-
-  if (groupIndex === -1) {
-    return { success: false, message: '找不到要解除的群組' };
-  }
-
-  // 創建新的房間資料，移除群組
-  const newRoomData = [...roomData];
-  newRoomData.splice(groupIndex, 1);
-
-  // 獲取群組內的項目
-  const groupItems = groupItem.surgeries || [];
-
-  // 檢查是否有原始時間信息，用於恢復時間
-  const hasOriginalTimeInfo = groupItem.originalTimeInfo &&
-    groupItem.originalTimeInfo.items &&
-    groupItem.originalTimeInfo.items.length > 0;
-
-  // 按時間排序群組內的項目
-  const sortedItems = [...groupItems].sort((a, b) => {
-    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
-  });
-
-  // 獲取每個手術的原始持續時間
-  const originalDurations = [];
-  for (const item of sortedItems) {
-    const itemDuration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
-    originalDurations.push({
-      id: item.id,
-      duration: itemDuration,
-      isCleaningTime: item.isCleaningTime
-    });
-  }
-
-  // 獲取清潔時間設置
-  const cleaningTime = getCleaningDuration(true);
-
-  // 插入所有原始項目
-  let insertIndex = groupIndex;
-  let currentStartTime = groupItem.startTime; // 從群組的開始時間開始
-
-  for (let i = 0; i < sortedItems.length; i++) {
-    const item = sortedItems[i];
-    
-    // 獲取原始持續時間或使用默認值
-    let originalDuration;
-    if (item.isCleaningTime) {
-      // 使用設定中的銜接時間
-      originalDuration = cleaningTime;
-    } else {
-      originalDuration = originalDurations.find(d => d.id === item.id)?.duration || 0;
-    }
-
-    // 創建還原後的手術項目
-    let restoredItem = { ...item };
-    
-    // 設置手術的開始時間和結束時間，保持原始持續時間
-    restoredItem.startTime = currentStartTime;
-    restoredItem.endTime = minutesToTime(timeToMinutes(currentStartTime) + originalDuration);
-    currentStartTime = restoredItem.endTime; // 更新下一個手術的開始時間
-
-    // 更新顏色
-    if (restoredItem.isCleaningTime) {
-      restoredItem.color = getCleaningColor();
-      restoredItem.duration = cleaningTime; // 確保使用正確的銜接時間
-    } else {
-      restoredItem.color = getColorByEndTime(restoredItem.endTime, false, true);
-    }
-
-    // 確保項目ID是唯一的
-    if (!restoredItem.id) {
-      restoredItem.id = generateUniqueId('restored');
-    }
-
-    // 插入項目
-    newRoomData.splice(insertIndex, 0, restoredItem);
-    insertIndex++;
-  }
-
-  // 檢查群組前後項目的時間銜接
-  ensureTimeConsistency(newRoomData, groupIndex, roomName);
-  
-  // 更新群組解除後的所有項目時間
-  updateFollowingItemsTime(newRoomData, groupIndex, roomName);
-
-  // 呼叫後端 API 創建手術群組
+  // 呼叫後端 API 解除群組
   axios.post(`${BASE_URL}/api/system/surgeries/group/clear`, groupItem.applicationId)
   .then(response => {
-    // 處理成功的情況
     console.log('群組解除成功', response.data);
-    // 在此處理成功後的邏輯，比如更新房間數據等
-    return {
-      success: true,
-      newRoomData,
-      groupItem
-    };
+    // 刷新頁面顯示更新後的狀態
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   })
   .catch(error => {
-    // 處理錯誤的情況
-    console.error('創建解除時發生錯誤:', error);
-    return { success: false, message: '創建解除時發生錯誤' };
+    console.error('解除群組時發生錯誤:', error);
+    return { success: false, message: '解除群組時發生錯誤' };
   });
 
   return {
     success: true,
-    newRoomData,
-    groupItem
+    message: '群組解除請求已發送'
   };
 };
 
