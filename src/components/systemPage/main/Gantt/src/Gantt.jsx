@@ -42,6 +42,8 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   // 選中的關閉手術房 ID 列表
   const [selectedClosedRooms, setSelectedClosedRooms] = useState([]);
+  // 新增：追蹤是否有篩選條件
+  const [isFiltered, setIsFiltered] = useState(false);
   // 初始化數據
   useEffect(() => {
     const initializeData = async () => {
@@ -400,13 +402,53 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
   };
 
   // 處理篩選結果
-  const handleFilterChange = (filteredData) => {
+  const handleFilterChange = (filteredData, hasActiveFilters) => {
     setFilteredRows(filteredData);
+    
+    // 判斷篩選狀態：優先使用 GanttFilter 傳來的篩選狀態
+    let hasFilters = false;
+    
+    // 如果收到明確的篩選狀態標記，直接使用
+    if (hasActiveFilters !== undefined) {
+      console.log("使用 GanttFilter 傳來的篩選狀態:", hasActiveFilters);
+      hasFilters = hasActiveFilters;
+    } else {
+      // 備用方案：比較原始數據和篩選後的數據
+      // 檢查行數是否不同
+      if (rows.length !== filteredData.length) {
+        hasFilters = true;
+      } else {
+        // 檢查每個手術室的手術數量是否不同
+        for (let i = 0; i < rows.length; i++) {
+          const originalRoom = rows[i];
+          const filteredRoom = filteredData[i];
+          
+          // 如果找不到對應的房間，認為有篩選
+          if (!originalRoom || !filteredRoom) {
+            hasFilters = true;
+            break;
+          }
+          
+          // 比較手術數量
+          const originalSurgeries = originalRoom.data?.filter(s => !s.isCleaningTime) || [];
+          const filteredSurgeries = filteredRoom.data?.filter(s => !s.isCleaningTime) || [];
+          
+          if (originalSurgeries.length !== filteredSurgeries.length) {
+            hasFilters = true;
+            break;
+          }
+        }
+      }
+    }
+    
+    console.log("篩選狀態檢測結果:", hasFilters);
+    setIsFiltered(hasFilters);
   };
 
   // 處理拖拽結束事件，確保UI更新
   const onDragEndHandler = async (result) => {
-    if (!result.destination) return;
+    // 如果有篩選條件，不允許拖曳
+    if (!result.destination || isFiltered) return;
 
     console.log("排程管理甘特圖拖曳結束，更新界面", result);
 
@@ -592,16 +634,18 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
           <div className="gantt-chart-wrapper flex-1 relative transition-all duration-500 ease-in-out">
             {!loading && !error && filteredRows.length > 0 && (
               <div className="gantt-content">
-                <DragDropContext onDragStart={handleDragStart} onDragEnd={onDragEndHandler}>
-                  {/* ✅ 單一滾動容器中包住時間刻度與甘特內容 */}
+                {isFiltered ? (
+                  // 如果有篩選，不使用 DragDropContext，禁用所有拖曳功能
                   <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
                     <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
+                      {/* 篩選模式警告提示 */}
+                      <div className="filtered-mode-warning">
+                        已啟用篩選模式，拖曳功能暫時禁用，避免篩選結果受影響
+                      </div>
                       {/* 甘特內容 */}
-                      <div ref={ganttChartRef} className="gantt-chart-container">
+                      <div ref={ganttChartRef} className="gantt-chart-container filtered-mode-active">
                         <div className="gantt-chart">
                           {filteredRows.map((room, roomIndex) => {
-                            // {[...filteredRows].sort((a, b) => (a.room || '').localeCompare(b.room || '')).map((room, roomIndex) => {
-
                             // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
                             const sortedData = room.data || [];
 
@@ -613,10 +657,11 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
                                 <RoomSection
                                   room={{ ...room, data: sortedData }}
                                   roomIndex={roomIndex}
-                                  readOnly={readOnly}
+                                  readOnly={true} // 強制只讀
                                   onSurgeryClick={handleSurgeryClick}
                                   onGroupOperation={handleGroupOperation}
                                   onPinStatusChange={handleRoomPinStatusChange}
+                                  isFiltered={true}
                                 />
                               </div>
                             );
@@ -625,7 +670,42 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
                       </div>
                     </TimeWrapper>
                   </div>
-                </DragDropContext>
+                ) : (
+                  // 如果沒有篩選，使用正常的 DragDropContext
+                  <DragDropContext onDragStart={handleDragStart} onDragEnd={onDragEndHandler}>
+                    {/* ✅ 單一滾動容器中包住時間刻度與甘特內容 */}
+                    <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
+                      <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
+                        {/* 甘特內容 */}
+                        <div ref={ganttChartRef} className="gantt-chart-container">
+                          <div className="gantt-chart">
+                            {filteredRows.map((room, roomIndex) => {
+                              // 直接使用 room.data，省略排序選擇邏輯，因為在 ganttData.jsx 中已經處理過了
+                              const sortedData = room.data || [];
+
+                              return (
+                                <div
+                                  key={room.room || roomIndex}
+                                  className={`row ${roomIndex % 2 === 0 ? 'row-even' : 'row-odd'} ${room.isPinned ? 'row-pinned' : ''}`}
+                                >
+                                  <RoomSection
+                                    room={{ ...room, data: sortedData }}
+                                    roomIndex={roomIndex}
+                                    readOnly={readOnly}
+                                    onSurgeryClick={handleSurgeryClick}
+                                    onGroupOperation={handleGroupOperation}
+                                    onPinStatusChange={handleRoomPinStatusChange}
+                                    isFiltered={false}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </TimeWrapper>
+                    </div>
+                  </DragDropContext>
+                )}
               </div>
             )}
 

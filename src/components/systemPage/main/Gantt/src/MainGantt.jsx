@@ -27,10 +27,62 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
   const [userRole, setUserRole] = useState(user?.role || null); // 優先使用傳入的用戶角色
   const [tipsCollapsed, setTipsCollapsed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(true);
+  // 新增：追蹤是否有篩選條件
+  const [isFiltered, setIsFiltered] = useState(false);
+
   // 處理篩選結果 - 提前定義並使用 useCallback 包裝
-  const handleFilterChange = useCallback((filteredData) => {
+  const handleFilterChange = useCallback((filteredData, hasActiveFilters) => {
     setFilteredRows(filteredData);
-  }, []);
+    
+    // 判斷篩選狀態：優先使用 GanttFilter 傳來的篩選狀態
+    let hasFilters = false;
+    
+    // 如果收到明確的篩選狀態標記，直接使用
+    if (hasActiveFilters !== undefined) {
+      console.log("主頁使用 GanttFilter 傳來的篩選狀態:", hasActiveFilters);
+      hasFilters = hasActiveFilters;
+    } else {
+      // 備用方案：比較原始數據和篩選後的數據
+      // 檢查行數是否不同
+      if (rows.length !== filteredData.length) {
+        hasFilters = true;
+      } else {
+        // 檢查每個手術室的手術數量是否不同
+        for (let i = 0; i < rows.length; i++) {
+          const originalRoom = rows[i];
+          const filteredRoom = filteredData[i];
+          
+          // 如果找不到對應的房間，認為有篩選
+          if (!originalRoom || !filteredRoom) {
+            hasFilters = true;
+            break;
+          }
+          
+          // 比較手術數量
+          const originalSurgeries = originalRoom.data?.filter(s => !s.isCleaningTime) || [];
+          const filteredSurgeries = filteredRoom.data?.filter(s => !s.isCleaningTime) || [];
+          
+          if (originalSurgeries.length !== filteredSurgeries.length) {
+            hasFilters = true;
+            break;
+          }
+        }
+      }
+    }
+    
+    console.log("主頁篩選狀態檢測結果:", hasFilters);
+    setIsFiltered(hasFilters);
+    
+    // 同時更新 mainGanttRef
+    if (mainGanttRef && mainGanttRef.current) {
+      mainGanttRef.current = {
+        ...mainGanttRef.current,
+        filteredRows: rows,
+        setFilteredRows,
+        isFiltered: hasFilters
+      };
+    }
+  }, [rows, mainGanttRef]);
 
   // 初始化數據
   useEffect(() => {
@@ -103,7 +155,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
 
       // 如果有篩選條件，則重新應用篩選
       if (filteredRows.length !== rows.length) {
-        handleFilterChange([...rows]);
+        handleFilterChange([...rows], true);
       }
     };
 
@@ -298,7 +350,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
 
   // 處理拖拽結束事件，需要確保UI更新
   const onDragEndHandler = async (result) => {
-    if (!result.destination || readOnly) return;
+    if (!result.destination || readOnly || isFiltered) return;
 
     console.log("主頁甘特圖拖曳結束，更新界面");
 
@@ -381,11 +433,11 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
           </div>
 
           <div className="gantt-buttons">
-            {Number(userRole) === 3 && (
+            {Number(userRole) === 3 && !isFiltered && (
               <button
                 className={`edit-mode-button ${!readOnly ? 'active' : ''}`}
                 onClick={toggleEditMode}
-                disabled={isSaving}
+                disabled={isSaving || isFiltered}
               >
                 {readOnly ? '啟用移動修改' : '關閉移動修改'}
               </button>
@@ -412,10 +464,10 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             <ul className="gantt-tips-list">
               <li>可以橫向滾動查看不同時間段的排程</li>
               <li>點擊「生成 PDF」按鈕可將當前甘特圖生成 PDF 檔案</li>
-              <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>
+              {!isFiltered && <li>點擊「啟用移動修改」按鈕可臨時調整排程位置</li>}
               <li>點擊手術項目可查看詳細資訊</li>
-              {/* <li>如果手術呈現橘色表示手術正與其他手術一起群組，<b>無須驚慌</b></li> */}
-              {!readOnly && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
+              {isFiltered && <li><b style={{ color: "red" }}>篩選模式下不能拖曳手術，避免篩選結果受影響</b></li>}
+              {!readOnly && !isFiltered && <li><b style={{ color: "red" }}>完成修改後，點擊「關閉移動修改」按鈕會自動保存所有變更</b></li>}
             </ul>
           )}
         </div>
@@ -432,11 +484,15 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
             <div className="gantt-chart-scroll-area unified-scroll" ref={scrollContainerRef}>
               <div className="gantt-chart-scrollable" ref={timeScaleRef}>
                 <TimeWrapper containerWidth={containerWidth} timeScaleOnly={false}>
-                  <div ref={ganttChartRef} className="gantt-chart-container">
+                  {/* 篩選模式警告提示 */}
+                  {isFiltered && (
+                    <div className="filtered-mode-warning">
+                      已啟用篩選模式，拖曳功能暫時禁用，避免篩選結果受影響
+                    </div>
+                  )}
+                  <div ref={ganttChartRef} className={`gantt-chart-container ${isFiltered ? 'filtered-mode-active' : ''}`}>
                     <div className="gantt-chart">
                       {filteredRows.map((room, roomIndex) => {
-                        {/* {[...filteredRows].sort((a, b) => (a.room || '').localeCompare(b.room || '')).map((room, roomIndex) => { */ }
-
                         const originalData = room.data || [];
                         const surgeriesOnly = originalData.filter(item => (!item.isCleaningTime && item.orderInRoom != null) || item.isGroup);
                         const sortedSurgeries = [...surgeriesOnly].sort((a, b) => a.orderInRoom - b.orderInRoom);
@@ -449,9 +505,10 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
                             <RoomSection
                               room={{ ...room, data: sortedData }}
                               roomIndex={roomIndex}
-                              readOnly={readOnly}
+                              readOnly={readOnly || isFiltered}
                               onSurgeryClick={handleSurgeryClick}
                               isMainPage={true}
+                              isFiltered={isFiltered}
                             />
                           </div>
                         );
@@ -482,4 +539,5 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
     </div>
   );
 }
+
 export default MainGantt;

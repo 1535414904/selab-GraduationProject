@@ -1669,3 +1669,31 @@ body {
   border-radius: 10%;
   box-shadow: 0 0 2px rgba(0, 0, 0, 1);
 }
+
+/* 篩選狀態下禁用拖曳的樣式 */
+.filtered-mode-warning {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(239, 68, 68, 0.8);
+  color: white;
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: bold;
+  z-index: 100;
+  display: none;
+}
+
+.filtered-mode-active .filtered-mode-warning {
+  display: block;
+}
+
+.filtered-mode-active .gantt-chart {
+  position: relative;
+  cursor: not-allowed !important;
+}
+
+.filtered-mode-active .gantt-chart-container * {
+  cursor: not-allowed !important;
+}

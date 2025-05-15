@@ -271,6 +271,19 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
       return;
     }
 
+    // 檢查是否有篩選條件被應用
+    const hasActiveFilters = (
+      Object.values(filterValues).some(values => values && values.length > 0) ||
+      timeRange.min !== "" || 
+      timeRange.max !== ""
+    );
+    
+    console.log("GanttFilter: 篩選條件檢查:", { 
+      filterValues, 
+      timeRange, 
+      hasActiveFilters 
+    });
+
     // 對所有手術進行標記
     flattenedRows.forEach((s) => {
       let meetsFilter = true;
@@ -344,7 +357,9 @@ const GanttFilter = ({ originalRows, onFilteredDataChange }) => {
     });
 
     const groupedData = groupByRoom(flattenedRows);
-    onFilteredDataChange(groupedData);
+    
+    // 向父組件傳遞篩選後的數據和篩選狀態
+    onFilteredDataChange(groupedData, hasActiveFilters);
   };
 
   // 6) 新增篩選條件

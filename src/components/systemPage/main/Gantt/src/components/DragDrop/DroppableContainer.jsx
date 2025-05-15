@@ -14,7 +14,8 @@ function DroppableContainer({
   isMultiSelectMode = false,
   isUngroupMode = false,
   selectedSurgeries = [],
-  isMainPage = false 
+  isMainPage = false,
+  isFiltered = false
 }) {
   const fixedHeight = "60px";
 
@@ -137,8 +138,10 @@ function DroppableContainer({
     return hours * 60 + minutes;
   };
 
-  // 如果是只讀模式或群組模式或解除模式或多選模式，直接渲染不可拖動的內容
-  if (readOnly || isGroupMode || isUngroupMode || isMultiSelectMode) {
+  // 開始修改：如果有篩選條件，確保返回不可拖曳的版本
+  // 如果是只讀模式或群組模式或解除模式或多選模式或已篩選，直接渲染不可拖動的內容
+  if (readOnly || isGroupMode || isUngroupMode || isMultiSelectMode || isFiltered) {
+    console.log("DroppableContainer: 渲染不可拖曳的內容，isFiltered =", isFiltered, "readOnly =", readOnly);
     return (
       <div
         style={{
@@ -148,6 +151,7 @@ function DroppableContainer({
           minWidth: "100px",
           position: "relative",
           background: !isMainPage && isPinned ? "rgba(254, 226, 226, 0.4)" : "transparent",
+          cursor: isFiltered ? "not-allowed" : "default",
         }}
       >
         {(room.data && room.data.length > 0
@@ -175,6 +179,9 @@ function DroppableContainer({
       </div>
     );
   }
+  
+  // 確保完全禁用拖曳功能
+  console.log("DroppableContainer: 渲染可拖曳的內容");
 
   // 否則，使用拖放功能
   return (
@@ -229,7 +236,7 @@ function DroppableContainer({
                   key={surgery.id}
                   draggableId={surgery.id}
                   index={index}
-                  isDragDisabled={!isMainPage && isPinned}
+                  isDragDisabled={!isMainPage && isPinned || isFiltered}
                 >
                   {(provided, snapshot) => (
                     <div
@@ -268,7 +275,7 @@ function DroppableContainer({
                   key={surgery.id}
                   draggableId={surgery.id}
                   index={index}
-                  isDragDisabled={!isMainPage && isPinned}
+                  isDragDisabled={!isMainPage && isPinned || isFiltered}
                 >
                   {(provided, snapshot) => (
                     <div
@@ -299,7 +306,7 @@ function DroppableContainer({
                 key={surgery.id}
                 draggableId={surgery.id}
                 index={index}
-                isDragDisabled={!isMainPage && isPinned}
+                isDragDisabled={!isMainPage && isPinned || isFiltered}
               >
                 {(provided, snapshot) => (
                   <div
