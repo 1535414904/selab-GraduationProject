@@ -13,6 +13,26 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
   const [groupOptions, setGroupOptions] = useState(false);
   const [selectedSurgeries, setSelectedSurgeries] = useState([]);
 
+  // 從 localStorage 讀取釘選狀態
+  useEffect(() => {
+    try {
+      const pinnedRoomsStr = localStorage.getItem('pinnedRooms');
+      if (pinnedRoomsStr) {
+        const pinnedRooms = JSON.parse(pinnedRoomsStr);
+        if (pinnedRooms[room.roomId] !== undefined) {
+          setIsPinned(pinnedRooms[room.roomId]);
+          
+          // 通知父組件釘選狀態已從 localStorage 恢復
+          if (onPinStatusChange) {
+            onPinStatusChange(roomIndex, pinnedRooms[room.roomId]);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('解析釘選手術房出錯:', error);
+    }
+  }, [room.roomId]);
+
   // 處理釘選按鈕點擊
   const handlePinClick = async (e) => {
     e.stopPropagation();
@@ -23,11 +43,23 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
         pinned: newPinnedStatus,
       });
       setIsPinned(newPinnedStatus);
+
+      // 將釘選狀態保存到 localStorage
+      try {
+        const pinnedRoomsStr = localStorage.getItem('pinnedRooms');
+        let pinnedRooms = {};
+        if (pinnedRoomsStr) {
+          pinnedRooms = JSON.parse(pinnedRoomsStr);
+        }
+        pinnedRooms[room.roomId] = newPinnedStatus;
+        localStorage.setItem('pinnedRooms', JSON.stringify(pinnedRooms));
+      } catch (error) {
+        console.error('保存釘選狀態出錯:', error);
+      }
     } catch (error) {
       console.error("Error updating pin status:", error);
       alert("更新釘選狀態失敗，請稍後再試。");
     }
-    // setIsPinned(newPinnedStatus);
 
     // 通知父組件釘選狀態已更改
     if (onPinStatusChange) {
@@ -212,33 +244,13 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
             {/* 群組模式下選定後的操作按鈕 */}
             {isGroupMode && selectedSurgeries.length > 0 && (
               <div className="room-group-options"
-                // style={{
-                //   display: 'flex',
-                //   alignItems: 'center',
-                //   background: '#f3f4f6',
-                //   // padding: '0.7px 8px',
-                //   padding: '0 8px',
-                //   borderRadius: '4px',
-                //   marginLeft: '8px'
-
-                //   // // display: 'flex',
-                //   // alignItems: 'center',
-                //   // background: '#f3f4f6',
-                //   // // padding: '2px 8px',
-                //   // borderRadius: '4px',
-                //   // marginRight: '8px',
-                //   // fontWeight: 'bold',
-
-                // }}
                 style={{
                   alignItems: 'center',
                   background: '#f3f4f6',
-                  // padding: '2px 8px',
                   padding: '0 8px',
                   borderRadius: '4px',
                   marginRight: '8px',
                   fontWeight: 'bold',
-
                 }}
               >
                 <span>{`已選擇 ${selectedSurgeries.length} 個項目`}</span>
@@ -247,7 +259,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                   style={{
                     border: 'none',
                     cursor: 'pointer',
-                    // padding: '2px 8px',
                     padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',
@@ -266,7 +277,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: '#EF4444',
                     border: 'none',
                     cursor: 'pointer',
-                    // padding: '2px 8px',
                     padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',
@@ -282,22 +292,13 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
             {isUngroupMode && (
               <div className="room-ungroup-hint"
                 style={{
-                  // display: 'flex',
                   alignItems: 'center',
                   background: '#f3f4f6',
-                  // padding: '1px 8px',
                   padding: '0 8px',
                   borderRadius: '4px',
                   marginLeft: '8px',
                   fontWeight: 'bold',
-
                 }}
-
-
-
-
-
-
               >
                 <span style={{ color: '#EF4444' }}>點擊群組項目進行解除</span>
                 <button
@@ -306,7 +307,6 @@ function RoomSection({ room, roomIndex, onPinStatusChange, readOnly = false, onS
                     background: '#EF4444',
                     border: 'none',
                     cursor: 'pointer',
-                    // padding: '2px 8px',
                     padding: '0 8px',
                     borderRadius: '4px',
                     color: 'white',

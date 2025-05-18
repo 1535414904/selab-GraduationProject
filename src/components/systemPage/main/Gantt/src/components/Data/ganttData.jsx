@@ -28,6 +28,17 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
       }
     }
 
+    // 從 localStorage 讀取釘選狀態
+    let pinnedRooms = {};
+    try {
+      const pinnedRoomsStr = localStorage.getItem('pinnedRooms');
+      if (pinnedRoomsStr) {
+        pinnedRooms = JSON.parse(pinnedRoomsStr);
+      }
+    } catch (error) {
+      console.error('解析釘選手術房狀態出錯:', error);
+    }
+
     const filteredOperatingRooms = isMainPage ? openRooms : [...openRooms, ...reservedClosedRooms];
 
     for (const room of filteredOperatingRooms) {
@@ -39,8 +50,21 @@ export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage
         const roomWithSurgeries = {
           roomId: room.id,
           room: room.operatingRoomName,
+          isPinned: pinnedRooms[room.id] === true, // 從 localStorage 讀取釘選狀態
           data: []
         };
+
+        // 將釘選狀態同步到後端
+        if (roomWithSurgeries.isPinned) {
+          try {
+            await axios.post(`${BASE_URL}/api/system/algorithm/pin`, {
+              roomId: room.id,
+              pinned: true,
+            });
+          } catch (error) {
+            console.error("同步釘選狀態到後端失敗:", error);
+          }
+        }
 
         const sortedSurgeries = [...surgeriesResponse.data].sort((a, b) => {
           if (a.prioritySequence && b.prioritySequence) return a.prioritySequence - b.prioritySequence;
