@@ -12,7 +12,7 @@ import { handleGroupDragEnd } from "./components/DragDrop/groupDragHandler";
 import SurgeryModal from "./components/Modal/SurgeryModal";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
-import { clearTempTimeSettings } from "./components/Time/timeUtils";
+import { clearTempTimeSettings, isTimeAfterNextDay8AM } from "./components/Time/timeUtils";
 import ORSMButton from "./components/Time/ORSMButton";
 import GanttHeader from "./header/GanttHeader";
 
@@ -464,6 +464,49 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
     // 如果不是群組拖曳，則按一般手術拖曳處理
     if (!isGroupDrag) {
       await handleDragEnd(result, filteredRows, setRows);
+    }
+    
+    // 檢查是否有手術時間超過隔天早上8點
+    let hasOverNextDay = false;
+    let overTimeRoom = null;
+    
+    for (let i = 0; i < filteredRows.length; i++) {
+      const roomData = filteredRows[i].data;
+      if (!roomData) continue;
+      
+      for (let j = 0; j < roomData.length; j++) {
+        const item = roomData[j];
+        if (item.isCleaningTime) continue; // 跳過銜接時間
+        
+        if (isTimeAfterNextDay8AM(item.endTime)) {
+          hasOverNextDay = true;
+          overTimeRoom = filteredRows[i].room || `手術室 ${i+1}`;
+          break;
+        }
+        
+        // 檢查群組內的手術
+        if (item.isGroup && item.surgeries) {
+          for (let k = 0; k < item.surgeries.length; k++) {
+            const surgery = item.surgeries[k];
+            if (surgery.isCleaningTime) continue;
+            
+            if (isTimeAfterNextDay8AM(surgery.endTime)) {
+              hasOverNextDay = true;
+              overTimeRoom = filteredRows[i].room || `手術室 ${i+1}`;
+              break;
+            }
+          }
+        }
+        
+        if (hasOverNextDay) break;
+      }
+      
+      if (hasOverNextDay) break;
+    }
+    
+    // 如果有手術時間超過隔天早上8點，顯示警告訊息
+    if (hasOverNextDay) {
+      alert(`警告：${overTimeRoom}中有手術排程超過隔天早上8點，請調整排程時間！`);
     }
 
     // 確保UI更新

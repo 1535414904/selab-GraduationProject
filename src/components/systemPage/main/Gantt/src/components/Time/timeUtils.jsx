@@ -14,6 +14,14 @@ export const addMinutesToTime = (time, minutes) => {
   return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
 };
 
+// 檢查時間是否超過隔天早上8點
+export const isTimeAfterNextDay8AM = (time) => {
+  const [hours, mins] = time.split(":").map(Number);
+  // 將時間轉換為分鐘數，32:00 表示隔天8點 (24 + 8 = 32)
+  const totalMinutes = hours * 60 + mins;
+  return totalMinutes >= 32 * 60; // 超過隔天8點
+};
+
 // 用於暫存排程管理頁面的時間設定
 let tempTimeSettings = null;
 

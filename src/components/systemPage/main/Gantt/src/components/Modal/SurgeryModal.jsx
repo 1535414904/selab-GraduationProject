@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./SurgeryModal.css";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
+import { isTimeAfterNextDay8AM } from "../Time/timeUtils";
 
 function SurgeryModal({ surgery, onClose, error: initialError }) {
   if (!surgery) return null;
@@ -297,9 +298,19 @@ function SurgeryModal({ surgery, onClose, error: initialError }) {
               </p>
             )}
             {displaySurgery.endTime && (
-              <p>
-                <strong>結束時間：</strong> {formatTime(displaySurgery.endTime)}
-              </p>
+              <div>
+                <p>
+                  <strong>結束時間：</strong> {formatTime(displaySurgery.endTime)}
+                  {isTimeAfterNextDay8AM(displaySurgery.endTime) && (
+                    <span className="text-red-600 font-bold ml-2">⚠️ 超過隔天早上8點</span>
+                  )}
+                </p>
+                {isTimeAfterNextDay8AM(displaySurgery.endTime) && (
+                  <p className="text-red-600 text-sm mt-1">
+                    注意：此手術結束時間超過隔天早上8點，請調整排程。
+                  </p>
+                )}
+              </div>
             )}
             <p>
               <strong>麻醉方式：</strong> {displaySurgery.anesthesiaMethod || '未指定'}
