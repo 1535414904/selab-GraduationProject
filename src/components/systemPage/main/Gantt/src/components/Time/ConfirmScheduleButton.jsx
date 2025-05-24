@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import { BASE_URL } from "/src/config";
 import { updateSurgeryInDatabase } from "../DragDrop/dragEndHandler";
-import { getTimeSettings, clearTempTimeSettings } from "./timeUtils";
+import { getTimeSettings, clearTempTimeSettings, clearTempScheduleData } from "./timeUtils";
 
 const ConfirmScheduleButton = ({ rows }) => {
   const confirmChanges = async () => {
@@ -10,29 +10,8 @@ const ConfirmScheduleButton = ({ rows }) => {
       // 開始確認修改
       console.log('開始確認修改排程...');
 
-      const updatePromises = [];
-
-      // 遍歷每個手術房
-      for (const roomIndex in rows) {
-        const room = rows[roomIndex];
-        if (room.data && room.data.length > 0) {
-          // 使用 updateSurgeryInDatabase 函數更新每個手術房的數據
-          // 參數傳遞: rows, sourceRoomIndex, destinationRoomIndex, sourceIndex, destinationIndex
-          // 因為是確認操作，這裡源和目標都是同一個房間
-          const updatePromise = updateSurgeryInDatabase(
-            rows,
-            parseInt(roomIndex),
-            parseInt(roomIndex),
-            0,
-            0
-          );
-
-          updatePromises.push(updatePromise);
-        }
-      }
-
-      // 等待所有更新完成
-      await Promise.all(updatePromises);
+      // 使用 updateSurgeryInDatabase 函數更新所有手術房的數據
+      await updateSurgeryInDatabase(rows);
 
       // 如果有臨時時間設定，則將其保存到 localStorage
       const tempSettings = getTimeSettings(true);
@@ -42,6 +21,9 @@ const ConfirmScheduleButton = ({ rows }) => {
         // 清除臨時設定
         clearTempTimeSettings();
       }
+
+      // 清除臨時排程數據
+      clearTempScheduleData();
 
       // 通知用戶更新成功
       alert('排程已成功更新！');

@@ -355,7 +355,7 @@ function MainGantt({ rows, setRows, mainGanttRef, user }) {
     console.log("主頁甘特圖拖曳結束，更新界面");
 
     // 處理拖曳結束
-    const { updatedRows, hasChanges: dragHasChanges } = await handleDragEnd(result, filteredRows, setFilteredRows);
+    const { updatedRows, hasChanges: dragHasChanges } = await handleDragEnd(result, filteredRows, setFilteredRows, false);
 
     // 確保UI更新
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));

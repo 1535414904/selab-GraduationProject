@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { calculateDuration, addMinutesToTime, getTimeSettings, isTimeAfterNextDay8AM } from '../Time/timeUtils';
+import { calculateDuration, addMinutesToTime, getTimeSettings, isTimeAfterNextDay8AM, saveTempScheduleData } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 import {
@@ -10,10 +10,12 @@ import {
 } from '../ROOM/GroupOperations';
 import { use, useEffect } from 'react';
 
-// 修改：處理拖曳結束，增加對群組的處理
-export const handleDragEnd = async (result, rows, setRows) => {
+// 修改：處理拖曳結束，增加對群組的處理，增加臨時設定支援
+export const handleDragEnd = async (result, rows, setRows, isScheduleManagementPage = false) => {
   console.log("開始處理拖曳結束事件");
   console.log("拖曳結果:", result);
+  console.log("是否為排班管理頁面:", isScheduleManagementPage);
+  
   const { source, destination } = result;
   if (!destination) return null;
 
@@ -90,7 +92,12 @@ export const handleDragEnd = async (result, rows, setRows) => {
     alert(`警告：${overTimeRoom}中有手術排程超過隔天早上8點，請調整排程時間！`);
   }
 
-  // 只更新前端界面，不發送後端請求
+  // 如果是排班管理頁面，保存到臨時設定；否則只更新前端界面
+  if (isScheduleManagementPage) {
+    console.log("排班管理頁面：保存拖曳結果到臨時設定");
+    saveTempScheduleData(newRows);
+  }
+  
   setRows(newRows);
   console.log("前端界面更新完成，標記有未保存的變更");
 
@@ -241,11 +248,15 @@ const handleGroupDrag = (newRows, sourceRoomIndex, destinationRoomIndex, sourceI
     // 更新群組主手術的手術室和順序
     const mainGroupSurgeryId = groupSurgeryIds[0]; // 主手術 ID
     
-    // 更新主手術的順序和房間ID
-    const groupIndex = destRegularSurgeries.findIndex(s => s.isGroup);
-    const groupOrder = groupIndex !== -1 ? groupIndex + 1 : 1;
+    // 排班管理頁面不直接更新資料庫，只記錄變更
+    console.log(`準備更新群組主手術 ${mainGroupSurgeryId} 的手術室 ID 為 ${newRows[destinationRoomIndex].roomId}`);
     
-    // 更新主手術的房間和順序
+    // 主手術需要設定orderInRoom
+    const surgeriesOnly = destRoomData.filter(item => !item.isCleaningTime && !item.isGroup);
+    const newOrder = surgeriesOnly.findIndex(s => s.applicationId === mainGroupSurgeryId) + 1;
+    console.log(`準備更新群組主手術 ${mainGroupSurgeryId} 的 orderInRoom 為 ${newOrder}`);
+    
+    // 更新主手術的順序和房間ID
     // 首先更新手術室ID
     axios.put(`${BASE_URL}/api/system/surgery/${mainGroupSurgeryId}/${destRoomId}`)
       .then(response => {
@@ -253,9 +264,9 @@ const handleGroupDrag = (newRows, sourceRoomIndex, destinationRoomIndex, sourceI
         
         // 然後再更新順序
         axios.put(`${BASE_URL}/api/system/surgery/${mainGroupSurgeryId}/order-in-room`, {
-          orderInRoom: groupOrder
+          orderInRoom: newOrder
         }).then(() => {
-          console.log(`✅ 已更新群組主手術 ${mainGroupSurgeryId} 的 orderInRoom 為 ${groupOrder}`);
+          console.log(`✅ 已更新群組主手術 ${mainGroupSurgeryId} 的 orderInRoom 為 ${newOrder}`);
         }).catch(err => {
           console.error(`❌ 更新群組主手術 ${mainGroupSurgeryId} 的順序失敗`, err);
         });
@@ -303,13 +314,8 @@ const handleGroupDrag = (newRows, sourceRoomIndex, destinationRoomIndex, sourceI
       const newOrder = isInGroup ? null : index + 1;
       surgery.orderInRoom = newOrder;
       
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-        orderInRoom: newOrder
-      }).then(() => {
-        console.log(`✅ 已更新 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-      }).catch((err) => {
-        console.error(`❌ 更新 ${surgery.applicationId} 的順序失敗`, err);
-      });
+      // 排班管理頁面不直接更新資料庫，只更新本地狀態
+      console.log(`準備更新 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     });
     
     // 更新群組主手術的順序
@@ -462,15 +468,8 @@ const handleSameRoomDrag = (newRows, roomIndex, sourceIndex, destinationIndex) =
     if (surgery.orderInRoom !== newOrder) {
       surgery.orderInRoom = newOrder;
 
-      // 發送更新到後端
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`,
-        { orderInRoom: newOrder }
-      )
-        .then(() => {
-          console.log(`✅ 已更新 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-        }).catch((err) => {
-          console.error(`❌ 更新 ${surgery.applicationId} 的順序失敗`, err);
-        });
+      // 排班管理頁面不直接更新資料庫，只更新本地狀態
+      console.log(`準備更新 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     }
   });
 
@@ -533,45 +532,10 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
     const mainSurgeryId = groupIds[0];
     const otherSurgeryIds = groupIds.slice(1);
     
-    // 更新主手術的手術室ID及順序
-    axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/${newRows[destRoomIndex].roomId}`)
-      .then(response => {
-        console.log(`✅ 已更新群組主手術 ${mainSurgeryId} 的手術室 ID`);
-        
-        // 主手術需要設定orderInRoom
-        const surgeriesOnly = destRoomData.filter(item => !item.isCleaningTime && !item.isGroup);
-        const newOrder = surgeriesOnly.findIndex(s => s.applicationId === mainSurgeryId) + 1;
-        
-        axios.put(`${BASE_URL}/api/system/surgery/${mainSurgeryId}/order-in-room`, {
-          orderInRoom: newOrder
-        }).then(() => {
-          console.log(`✅ 已更新群組主手術 ${mainSurgeryId} 的 orderInRoom 為 ${newOrder}`);
-        }).catch(err => {
-          console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的順序失敗`, err);
-        });
-      })
-      .catch(error => {
-        console.error(`❌ 更新群組主手術 ${mainSurgeryId} 的手術室失敗:`, error);
-      });
-    
-    // 更新附屬手術的手術室ID，但orderInRoom設為null
+    // 排班管理頁面不直接更新資料庫，只記錄變更
     for (const surgeryId of otherSurgeryIds) {
-      axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/${newRows[destRoomIndex].roomId}`)
-        .then(response => {
-          console.log(`✅ 已更新群組附屬手術 ${surgeryId} 的手術室 ID`);
-          
-          // 附屬手術設置orderInRoom為null
-          axios.put(`${BASE_URL}/api/system/surgery/${surgeryId}/order-in-room`, {
-            orderInRoom: null
-          }).then(() => {
-            console.log(`✅ 已更新群組附屬手術 ${surgeryId} 的 orderInRoom 為 null`);
-          }).catch(err => {
-            console.error(`❌ 更新群組附屬手術 ${surgeryId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新群組附屬手術 ${surgeryId} 的手術室失敗:`, error);
-        });
+      console.log(`準備更新群組附屬手術 ${surgeryId} 的手術室 ID 為 ${newRows[destRoomIndex].roomId}`);
+      console.log(`準備更新群組附屬手術 ${surgeryId} 的 orderInRoom 為 null`);
     }
     
     // 更新源房間的非群組手術順序
@@ -581,23 +545,10 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
       !(Array.isArray(item.groupApplicationIds) && item.groupApplicationIds.length > 0)
     );
     
+    // 排班管理頁面不直接更新資料庫，只記錄變更
     sourceNonGroupSurgeries.forEach((surgery, index) => {
       const newOrder = index + 1;
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${newRows[sourceRoomIndex].roomId}`)
-        .then(response => {
-          console.log(`✅ 已確認源房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新源房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      console.log(`準備更新源房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     });
     
     // 更新目標房間的非群組手術順序
@@ -607,34 +558,14 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
       !(Array.isArray(item.groupApplicationIds) && item.groupApplicationIds.length > 0)
     );
     
+    // 排班管理頁面不直接更新資料庫，只記錄變更
     destNonGroupSurgeries.forEach((surgery, index) => {
       const newOrder = index + 1;
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${newRows[destRoomIndex].roomId}`)
-        .then(response => {
-          console.log(`✅ 已確認目標房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新目標房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      console.log(`準備更新目標房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     });
   } else {
-    // 如果是單個手術，只更新這一個手術的手術室
-    axios.put(`${BASE_URL}/api/system/surgery/${result.draggableId}/${newRows[destRoomIndex].roomId}`)
-      .then(response => {
-        console.log("手術室更新成功:", response.data);
-      })
-      .catch(error => {
-        console.error("手術室更新失敗:", error);
-      });
-      
+    // 排班管理頁面不直接更新資料庫，只記錄變更
+    console.log(`準備更新單個手術 ${result.draggableId} 的手術室 ID 為 ${newRows[destRoomIndex].roomId}`);
     // 更新源房間和目標房間的非群組手術順序
     const sourceNonGroupSurgeries = sourceRoomData.filter(item => 
       !item.isCleaningTime && !item.isGroup
@@ -643,44 +574,16 @@ const handleCrossRoomDrag = (result, newRows, sourceRoomIndex, destRoomIndex, so
       !item.isCleaningTime && !item.isGroup
     );
     
-    // 更新源房間非群組手術順序
+    // 排班管理頁面不直接更新資料庫，只記錄變更
     sourceNonGroupSurgeries.forEach((surgery, index) => {
       const newOrder = index + 1;
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${newRows[sourceRoomIndex].roomId}`)
-        .then(response => {
-          console.log(`✅ 已確認源房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新源房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新源房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      console.log(`準備更新源房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     });
     
-    // 更新目標房間非群組手術順序
+    // 排班管理頁面不直接更新資料庫，只記錄變更
     destNonGroupSurgeries.forEach((surgery, index) => {
       const newOrder = index + 1;
-      axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/${newRows[destRoomIndex].roomId}`)
-        .then(response => {
-          console.log(`✅ 已確認目標房間手術 ${surgery.applicationId} 的手術室 ID`);
-          
-          axios.put(`${BASE_URL}/api/system/surgery/${surgery.applicationId}/order-in-room`, {
-            orderInRoom: newOrder
-          }).then(() => {
-            console.log(`✅ 已更新目標房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
-          }).catch(err => {
-            console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的順序失敗`, err);
-          });
-        })
-        .catch(error => {
-          console.error(`❌ 更新目標房間手術 ${surgery.applicationId} 的手術室確認失敗:`, error);
-        });
+      console.log(`準備更新目標房間手術 ${surgery.applicationId} 的 orderInRoom 為 ${newOrder}`);
     });
   }
 };

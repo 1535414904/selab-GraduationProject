@@ -113,11 +113,10 @@ function Gantt({ reservedRooms, setReservedRooms, rows, setRows, initialTimeSett
     const isGroupDrag = await handleGroupDragEnd(result, filteredRows, setRows, setFilteredRows);
 
     if (!isGroupDrag) {
-      await handleDragEnd(setLoading, setError, result, filteredRows, setFilteredRows);
+      await handleDragEnd(result, filteredRows, setFilteredRows, true); // 傳入 true 表示這是排班管理頁面
     }
 
-    fetchSurgeryData(setRows, setLoading, setError, false);
-
+    // 不再調用 fetchSurgeryData，因為 handleDragEnd 已經處理了臨時數據保存
     setRows([...filteredRows]);
 
     window.dispatchEvent(new CustomEvent('ganttDragEnd'));
