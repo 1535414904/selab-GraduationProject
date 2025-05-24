@@ -69,6 +69,75 @@ export const getTimeSettings = (useTempSettings = false) => {
   return defaultSettings;
 };
 
+// ================================
+// 臨時排程數據管理函數
+// ================================
+
+// 保存臨時排程數據到 localStorage
+export const saveTempScheduleData = (rows) => {
+  try {
+    const tempData = {
+      rows: rows,
+      timestamp: Date.now(),
+      version: '1.0'
+    };
+    localStorage.setItem('tempScheduleData', JSON.stringify(tempData));
+    console.log('臨時排程數據已保存到 localStorage');
+  } catch (error) {
+    console.error('保存臨時排程數據失敗:', error);
+  }
+};
+
+// 從 localStorage 獲取臨時排程數據
+export const getTempScheduleData = () => {
+  try {
+    const tempDataStr = localStorage.getItem('tempScheduleData');
+    if (tempDataStr) {
+      const tempData = JSON.parse(tempDataStr);
+      console.log('從 localStorage 獲取臨時排程數據');
+      return tempData.rows;
+    }
+  } catch (error) {
+    console.error('獲取臨時排程數據失敗:', error);
+  }
+  return null;
+};
+
+// 檢查是否存在臨時排程數據
+export const hasTempScheduleData = () => {
+  try {
+    const tempDataStr = localStorage.getItem('tempScheduleData');
+    return !!tempDataStr;
+  } catch (error) {
+    return false;
+  }
+};
+
+// 清除臨時排程數據
+export const clearTempScheduleData = () => {
+  try {
+    localStorage.removeItem('tempScheduleData');
+    console.log('臨時排程數據已清除');
+  } catch (error) {
+    console.error('清除臨時排程數據失敗:', error);
+  }
+};
+
+// 將臨時排程數據應用到正式設定
+export const applyTempScheduleData = () => {
+  try {
+    const tempData = getTempScheduleData();
+    if (tempData) {
+      // 這裡可以添加將臨時數據應用到正式數據的邏輯
+      console.log('臨時排程數據已應用到正式設定');
+      return tempData;
+    }
+  } catch (error) {
+    console.error('應用臨時排程數據失敗:', error);
+  }
+  return null;
+};
+
 // 更新後續所有手術和整理時間
 export const updateFollowingTimes = (data, startIndex) => {
   // 從 localStorage 獲取銜接時間

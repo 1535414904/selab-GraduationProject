@@ -1,11 +1,25 @@
 import axios from 'axios';
-import { addMinutesToTime, getTimeSettings } from '../Time/timeUtils';
+import { addMinutesToTime, getTimeSettings, getTempScheduleData, hasTempScheduleData } from '../Time/timeUtils';
 import { getColorByEndTime, getCleaningColor } from '../ROOM/colorUtils';
 import { BASE_URL } from "/src/config";
 
 export const fetchSurgeryData = async (setRows, setLoading, setError, isMainPage = false) => {
   setLoading(true);
   setError(null);
+  
+  // 如果是排班管理頁面且存在臨時數據，則使用臨時數據
+  if (!isMainPage && hasTempScheduleData()) {
+    console.log('排班管理頁面：使用臨時排程數據');
+    const tempData = getTempScheduleData();
+    if (tempData) {
+      // 使用臨時設定重新格式化數據
+      const formattedData = formatRoomData(tempData, true, isMainPage, null);
+      setRows(formattedData);
+      setLoading(false);
+      return formattedData;
+    }
+  }
+  
   try {
     const operatingRoomsResponse = await axios.get(`${BASE_URL}/api/system/operating-rooms`, {
       headers: { 'Content-Type': 'application/json' }
