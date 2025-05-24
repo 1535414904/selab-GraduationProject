@@ -16,7 +16,7 @@ function ORHeaderWrapper({
       id: "",
       operatingRoomName: "",
       departmentId: "1",
-      roomType: "",
+      roomType: "普通房",
       status: 1,
       uniqueId: Date.now()  // 使用當前時間戳作為唯一 ID
     };
