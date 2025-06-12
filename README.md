@@ -1,3 +1,8 @@
+### 實作成果
+[查看實作成果](docs/0527專題簡報.pdf)
+
+
+
 ### frontend
 1. push 之後先執行 npm install
 2. 之後就跟之前一樣執行 npm run dev

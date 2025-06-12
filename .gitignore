@@ -25,7 +25,6 @@ dist-ssr
 *.csv
 *.xlsx
 *.jpg
-*.pdf
 *.png
 
 # IntelliJ
