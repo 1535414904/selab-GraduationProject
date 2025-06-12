@@ -25,7 +25,7 @@ dist-ssr
 *.xlsx
 *.jpg
 *.png
-
+*.csv
 # IntelliJ
 SERVER\server\ORSM 2025\*.csv
 SERVER\server\ORSM 2025\*.xlsx
