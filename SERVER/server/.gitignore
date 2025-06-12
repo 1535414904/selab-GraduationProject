@@ -33,7 +33,7 @@ build/
 .vscode/
 
 
-*.csv
+
 *.xlsx
 *.jpg
 *.pdf
