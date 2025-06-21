@@ -7,6 +7,16 @@
 #include <iomanip>
 #include <map>
 #include <fstream>
+#include <ctime>
+
+std::string getCurrentDateTime()
+{
+    std::time_t t = std::time(nullptr);
+    std::tm *tm = std::localtime(&t);
+    char buf[20];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H%M", tm);
+    return buf;
+}
 
 std::vector<Surgery> generateNeighbor(const std::vector<Surgery> &current, const std::vector<Room> &rooms)
 {
@@ -118,7 +128,7 @@ void printScheduleSummary(const std::vector<Surgery> &schedule, const std::vecto
     }
 }
 
-void saveScheduleToCSV(const std::vector<Surgery> &schedule, const std::string &filename)
+void saveScheduleToCSV(const std::vector<Surgery> &schedule, const std::string &filename, const std::string &datetime)
 {
     std::ofstream out(filename);
     if (!out)
@@ -131,7 +141,7 @@ void saveScheduleToCSV(const std::vector<Surgery> &schedule, const std::string &
 
     for (const auto &s : schedule)
     {
-        out << "2025-06-06 0830" << ","
+        out << datetime << ","
             << s.applyId << ","
             << s.patientId << ","
             << s.department << ","
