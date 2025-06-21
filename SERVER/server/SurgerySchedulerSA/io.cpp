@@ -142,13 +142,39 @@ std::vector<Room> loadRooms(const std::string &filename)
 int loadCleaningTime(const std::string &filename)
 {
     std::ifstream file(filename);
+    if (!file)
+    {
+        std::cerr << "[Error] 無法開啟檔案: " << filename << std::endl;
+        return 0;
+    }
+
     std::string line;
-    getline(file, line); // skip header
-    getline(file, line);
-    std::stringstream ss(line);
-    std::string item;
-    for (int i = 0; i < 3; ++i)
-        std::getline(ss, item, ',');
-    std::getline(ss, item);
-    return std::stoi(trim(item));
+    int lineNumber = 0;
+
+    while (std::getline(file, line))
+    {
+        std::string trimmed = trim(line);
+
+        // 忽略註解或空行
+        if (trimmed.empty() || trimmed[0] == '#')
+            continue;
+
+        ++lineNumber;
+
+        if (lineNumber == 4)
+        {
+            try
+            {
+                return std::stoi(trimmed);
+            }
+            catch (...)
+            {
+                std::cerr << "[Error] 解析數值失敗: " << trimmed << std::endl;
+                return 0;
+            }
+        }
+    }
+
+    std::cerr << "[Error] 找不到第 4 行資料於 " << filename << std::endl;
+    return 0;
 }
