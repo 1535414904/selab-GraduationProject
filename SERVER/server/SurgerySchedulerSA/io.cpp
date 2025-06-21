@@ -13,29 +13,53 @@ std::string trim(const std::string &s)
     return (start == std::string::npos || end == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
 
+// 檢查第一行是否為表頭
+bool isHeaderLine(std::string line)
+{
+    // 移除 UTF-8 BOM
+    if (line.size() >= 3 &&
+        static_cast<unsigned char>(line[0]) == 0xEF &&
+        static_cast<unsigned char>(line[1]) == 0xBB &&
+        static_cast<unsigned char>(line[2]) == 0xBF)
+    {
+        line = line.substr(3);
+    }
+
+    if (!line.empty() && line[0] == '?')
+        line.erase(0, 1);
+
+    std::stringstream ss(line);
+    std::string firstToken;
+    if (!std::getline(ss, firstToken, ','))
+        return true; // 空行視為表頭
+
+    firstToken = trim(firstToken);
+    if (firstToken.empty())
+        return true;
+
+    return !std::isdigit(static_cast<unsigned char>(firstToken[0]));
+}
+
 std::vector<Surgery> loadSurgeries(const std::string &filename)
 {
     std::ifstream file(filename);
     std::vector<Surgery> result;
     std::string line;
-    getline(file, line); // skip header
 
-    while (getline(file, line))
+    auto handleLine = [&](const std::string &ln)
     {
-        std::stringstream ss(line);
+        std::stringstream ss(ln);
         std::vector<std::string> tokens;
         std::string token;
 
         while (std::getline(ss, token, ','))
-        {
             tokens.push_back(trim(token));
-        }
 
         // 新格式總共 10 欄
         if (tokens.size() < 10)
         {
-            std::cerr << "[Skip] 欄位不足: " << line << std::endl;
-            continue;
+            std::cerr << "[Skip] 欄位不足: " << ln << std::endl;
+            return;
         }
 
         Surgery s;
@@ -54,7 +78,7 @@ std::vector<Surgery> loadSurgeries(const std::string &filename)
         catch (...)
         {
             std::cerr << "[Error] 無法轉換手術時長: " << tokens[7] << std::endl;
-            continue;
+            return;
         }
 
         try
@@ -71,11 +95,22 @@ std::vector<Surgery> loadSurgeries(const std::string &filename)
 
         if (s.duration <= 0 || s.room.empty())
         {
-            std::cerr << "[Skip] 不合法手術資料: " << line << std::endl;
-            continue;
+            std::cerr << "[Skip] 不合法手術資料: " << ln << std::endl;
+            return;
         }
 
         result.push_back(s);
+    };
+
+    if (getline(file, line))
+    {
+        if (!isHeaderLine(line))
+            handleLine(line);
+    }
+
+    while (getline(file, line))
+    {
+        handleLine(line);
     }
 
     return result;
