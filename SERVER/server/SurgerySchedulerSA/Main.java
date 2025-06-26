@@ -5,6 +5,7 @@ public class Main {
 
         // 讀取時間參數
         System.out.println("讀取時間參數...");
+        int startTime = DataLoader.loadTime("Arguments4Exec.csv", 0);
         int regular = DataLoader.loadTime("Arguments4Exec.csv", 1);
         int overtime = DataLoader.loadTime("Arguments4Exec.csv", 2);
         int cleaning = DataLoader.loadTime("Arguments4Exec.csv", 3);
@@ -57,7 +58,9 @@ public class Main {
                 .sum();
         System.out.println("最佳解找到，共有 " + surgeryCount + " 台手術被排入手術室。");
 
-        OutputWriter.writeNewTimeTable("newTimeTable.csv", sa.bestSolution); // 寫出新的手術室排程表
+        // 輸出結果
+        OutputWriter.writeNewTimeTable("newTimeTable.csv", sa.bestSolution);
+        OutputWriter.writeGuidelinesCsv("Guidelines.csv", sa.bestSolution, startTime);
 
         System.out.println("排程成本分析:");
         // 計算總成本差異
