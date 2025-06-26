@@ -1,27 +1,26 @@
 @echo off
-cd /d "D:\SurgerySchedulerSA"
+cd /d "%~dp0"
 
-:: 組合 lib 資料夾內的所有 jar 檔案成 classpath
-setlocal EnableDelayedExpansion
+rem 啟用延伸變數展開
+setlocal enabledelayedexpansion
+
+rem 收集 lib 資料夾下的所有 jar 檔案
 set "classpath=."
-for %%j in (lib\*.jar) do (
-    set "classpath=!classpath!;%%j"
+for %%f in (lib\*.jar) do (
+    set "classpath=!classpath!;%%f"
 )
 
-:: 編譯 Main.java
+rem 編譯 Main.java
 javac -cp "!classpath!" Main.java
 if errorlevel 1 (
-    echo 編譯失敗，請檢查錯誤
-    pause
-    exit /b
+    echo 編譯失敗！
+    exit /b 1
 )
 
-:: 執行主程式
-echo 執行模擬退火...
+rem 執行 Main.class
 java -cp "!classpath!" Main
+
+endlocal
 pause
-if errorlevel 1 (
-    echo 執行失敗，請檢查錯誤
-    pause
-    exit /b
-)
+
+

@@ -29,7 +29,7 @@ def generate_room_ids(count):
         ids.append(f"{letter}{number}")
     return ids
 
-def create_room_csv(filename="room.csv"):
+def create_room_csv(filename="data\\in\\room.csv"):
     """
     生成 room.csv 檔案，並返回所有房間ID和特殊房間ID。
     """
@@ -55,7 +55,7 @@ def create_room_csv(filename="room.csv"):
         return None, None
 
 
-def create_timetable_csv(filename="TimeTable.csv", all_rooms=None, special_rooms=None):
+def create_timetable_csv(filename="data\\in\\TimeTable.csv", all_rooms=None, special_rooms=None):
     """
     生成 TimeTable.csv 檔案，並預先分配好手術房。
     """

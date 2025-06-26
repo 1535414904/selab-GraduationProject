@@ -7,7 +7,7 @@ matplotlib.rcParams['font.family'] = 'Microsoft JhengHei'
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 # 載入排程參數
-def load_exec_params(path="Arguments4Exec.csv"):
+def load_exec_params(path="data\\in\\Arguments4Exec.csv"):
     encodings = ["utf-8-sig", "cp950", "big5", "utf-8"]
     for enc in encodings:
         try:
@@ -192,8 +192,8 @@ def plot_stacked_gantt(df_old, df_new):
     plt.show()
 
 if __name__ == "__main__":
-    old_df = load_schedule("TimeTable.csv")
-    new_df = load_schedule("newTimeTable.csv")
+    old_df = load_schedule("data\\in\\TimeTable.csv")
+    new_df = load_schedule("data\\out\\newTimeTable.csv")
     
     if not old_df.empty and not new_df.empty:
         plot_stacked_gantt(old_df, new_df)
